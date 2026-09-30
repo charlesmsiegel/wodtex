@@ -1,0 +1,65 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{m20-pdf-tables}[2026/09/30 ordered fixed-width row blocks]
+\RequirePackage{array}
+\newdimen\mTwentyTableWidth
+\newdimen\mTwentyCellWidth
+\newbox\mTwentyTableRow
+\newcount\mTwentyTableColumns
+\ExplSyntaxOn
+\tl_new:N \l_mtw_table_width_tl
+\tl_new:N \l_mtw_table_align_tl
+\tl_new:N \l_mtw_table_id_tl
+\fp_new:N \l_mtw_table_scale_fp
+\int_new:N \l_mtw_table_head_int
+\seq_new:N \l_mtw_rows_seq
+\seq_new:N \l_mtw_columns_seq
+\keys_define:nn {m20/table} {
+ id .tl_set:N = \l_mtw_table_id_tl,
+ width .tl_set:N = \l_mtw_table_width_tl,
+ scale .fp_set:N = \l_mtw_table_scale_fp,
+ align .choices:nn = {left,center,right}{\tl_set:Nx \l_mtw_table_align_tl{\l_keys_choice_tl}},
+ head-rows .int_set:N = \l_mtw_table_head_int,
+ epub .choices:nn = {table,records}{},
+ unknown .code:n = \PackageError{m20}{M20_E_UNKNOWN_TABLE:~\l_keys_key_str}{Unknown~table~key}
+}
+\cs_new_protected:Npn \mTwentyTablePDF #1#2#3 {
+ \group_begin:
+ \tl_set:Nn \l_mtw_table_width_tl {container}
+ \tl_set:Nn \l_mtw_table_align_tl {center}
+ \tl_set:Nn \l_mtw_table_id_tl {table}
+ \fp_set:Nn \l_mtw_table_scale_fp {1}
+ \int_zero:N \l_mtw_table_head_int
+ \keys_set:nn {m20/table}{#1}
+ \fp_compare:nNnT {\l_mtw_table_scale_fp} > {1}{\PackageError{m20}{M20_E_TABLE_SCALE}{Scale~must~be~in~0..1}}
+ \fp_compare:nNnF {\l_mtw_table_scale_fp} > {0}{\PackageError{m20}{M20_E_TABLE_SCALE}{Scale~must~be~in~0..1}}
+ \str_case:VnF \l_mtw_table_width_tl {
+  {container}{\ifmTwentySidebarActive\mTwentyTableWidth=\mTwentyUsableWidth\else\mTwentyTableWidth=\linewidth\fi}
+  {column}{\ifmTwentySidebarActive\mTwentyTableWidth=\mTwentyTextWidth\else\mTwentyTableWidth=\mTwentyColumnWidth\fi}
+ }{\mTwentyTableWidth=\l_mtw_table_width_tl\relax}
+ \mTwentyTableWidth=\fp_to_decimal:N \l_mtw_table_scale_fp\mTwentyTableWidth
+ \mTwentyTableColumns=0
+ \tl_map_inline:nn {#2} {\str_case:nn {##1} {{l}{\advance\mTwentyTableColumns1}{c}{\advance\mTwentyTableColumns1}{r}{\advance\mTwentyTableColumns1}{p}{\advance\mTwentyTableColumns1}}}
+ \ifnum\mTwentyTableColumns<1 \PackageError{m20}{M20_E_TABLE_COLUMN_SPEC}{Use~native~l/c/r/p~column~specification}\fi
+ \mTwentyCellWidth=\mTwentyTableWidth\divide\mTwentyCellWidth\mTwentyTableColumns
+ \advance\mTwentyCellWidth-2\tabcolsep
+ \seq_set_split:Nnn \l_mtw_rows_seq {\\} {#3}
+ \par\noindent
+ \mTwentyPosition{\tl_use:N \l_mtw_table_id_tl}{\mTwentyTableWidth}{\mTwentyTableWidth}{1}{table}{0}{flow}{}
+ \seq_map_inline:Nn \l_mtw_rows_seq {
+  \tl_if_blank:nF {##1}{\mTwentyEmitRow{##1}}
+ }
+ \par\group_end:
+}
+\ExplSyntaxOff
+\newcommand\mTwentyEmitRow[1]{%
+ \setbox\mTwentyTableRow=\vbox{\hsize=\mTwentyTableWidth\small\noindent\begin{tabular}{*{\number\mTwentyTableColumns}{>{\raggedright\arraybackslash}p{\mTwentyCellWidth}}}#1\\\end{tabular}}%
+ \ifdim\ht\mTwentyTableRow>\dimexpr\textheight-58bp\relax
+  \PackageError{m20}{M20_E_ROW_OVERHEIGHT}{An atomic table row exceeds a usable page. Split it semantically or change width.}%
+ \fi
+ \par\noindent\hbox to\linewidth{\hfil\box\mTwentyTableRow\hfil}\par\penalty0
+}
+\NewDocumentEnvironment{m20table}{O{}m+b}{%
+ \ifmTwentyEpub\begin{tabular}{#2}#3\end{tabular}%
+ \else\ifmTwentySidebarActive\else\mTwentySuspendEnvironment{m20table}\fi\mTwentyTablePDF{#1}{#2}{#3}\fi
+}{\ifmTwentyEpub\else\ifmTwentySidebarActive\else\aftergroup\mTwentyBodyBegin\fi\fi}
+\endinput

@@ -1,0 +1,11 @@
+.runtime/
+build/
+fonts/
+assets/
+inputs/
+.superpowers/
+__pycache__/
+*.pyc
+.reader/
+
+.publish/

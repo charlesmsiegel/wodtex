@@ -1,0 +1,19 @@
+\NeedsTeXFormat{LaTeX2e}[2022-06-01]
+\ProvidesClass{m20book}[2026/09/30 M20 semantic book and output adapters]
+\RequirePackage{expl3,xparse}
+\newif\ifmTwentyEpub
+\DeclareOption{output=pdf}{\mTwentyEpubfalse}
+\DeclareOption{output=epub}{\mTwentyEpubtrue}
+\DeclareOption*{\PassOptionsToClass{\CurrentOption}{book}}
+\ProcessOptions\relax
+\LoadClass[10pt,letterpaper,twoside,openright]{book}
+\RequirePackage{tex/m20-core}
+\ifmTwentyEpub
+  \RequirePackage{fontspec}
+  \AtBeginDocument{\mTwentyLoadFonts}
+\else
+  \RequirePackage{tex/m20-pdf-layout}
+  \RequirePackage{tex/m20-pdf-sidebars}
+  \RequirePackage{tex/m20-pdf-tables}
+\fi
+\endinput

@@ -1,0 +1,134 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{m20-pdf-sidebars}[2026/09/30 once-typeset explicit sidebar paginator]
+\newbox\mTwentyGalley
+\newbox\mTwentyLeft
+\newbox\mTwentyRight
+\newbox\mTwentyFrameContent
+\newdimen\mTwentyOuterWidth
+\newdimen\mTwentyUsableWidth
+\newdimen\mTwentyTextWidth
+\newdimen\mTwentyAvailable
+\newdimen\mTwentySplitHeight
+\newdimen\mTwentyFrameHeight
+\newcount\mTwentySegment
+\newtoks\mTwentyNotes
+\newif\ifmTwentyNarrow
+\newif\ifmTwentyMoreContent
+\newcommand\mTwentyLocalNote[1]{\stepcounter{m20sidebarnote}\textsuperscript{\arabic{m20sidebarnote}}\begingroup\edef\mTwentyNewNote{\noexpand\par\noexpand\noindent\noexpand\textsuperscript{\arabic{m20sidebarnote}}}\global\mTwentyNotes\expandafter{\the\expandafter\mTwentyNotes\mTwentyNewNote #1}\endgroup}
+\newcommand\mTwentyRemaining{%
+ \par
+ \ifmTwentyBodyActive
+  \mTwentyAvailable=\@colroom
+  \@tempdima=\pagetotal
+  \loop\ifdim\@tempdima>\@colroom\advance\@tempdima-\@colroom\repeat
+  \advance\mTwentyAvailable-\@tempdima
+ \else
+  \ifdim\pagegoal=\maxdimen\mTwentyAvailable=\textheight\else
+    \mTwentyAvailable=\pagegoal\advance\mTwentyAvailable-\pagetotal
+  \fi
+ \fi
+ \advance\mTwentyAvailable-4bp
+}
+\newcommand\mTwentyAdvance{\ifmTwentyNarrow\ifmTwentyBodyActive\columnbreak\else\newpage\fi\else\newpage\fi}
+\newcommand\mTwentyPlacement{%
+ \def\mTwentyNextPage{next-page}\def\mTwentyHere{here}%
+ \ifx\mTwentySidebarPlace\mTwentyNextPage
+  \ifmTwentyBodyActive\mTwentySuspendEnvironment{m20sidebar}\clearpage\mTwentyBodyBegin\else\clearpage\fi
+ \fi
+ \mTwentyRemaining
+ \ifdim\mTwentyAvailable<70bp
+  \ifx\mTwentySidebarPlace\mTwentyHere
+   \PackageError{m20}{M20_E_PLACEMENT_UNAVAILABLE: \mTwentySidebarID}{Required first segment needs at least 70bp at this exact anchor. Choose another anchor or next-page.}%
+  \else\mTwentyAdvance\mTwentyRemaining\fi
+ \fi}
+\newcommand\mTwentyFrame{%
+ \setbox\mTwentyFrameContent=\vbox{%
+  \hsize=\mTwentyUsableWidth\linewidth=\hsize
+  \vskip7.2bp
+  {\centering\mTwentyHeadingFont\fontsize{18bp}{18bp}\selectfont\color{m20gold}\mTwentySidebarTitle\ifnum\mTwentySegment>1\space(continued)\fi\par}%
+  \vskip5bp
+  \nointerlineskip\hbox{\box\mTwentyLeft\ifnum\mTwentySidebarColumns=2\hskip12bp\box\mTwentyRight\fi}%
+  \vskip10bp}
+ \mTwentyFrameHeight=\ht\mTwentyFrameContent\advance\mTwentyFrameHeight\dp\mTwentyFrameContent\advance\mTwentyFrameHeight14bp
+ \par\noindent
+ \mTwentyPosition{\mTwentySidebarID}{\mTwentyOuterWidth}{\mTwentyUsableWidth}{\mTwentySidebarColumns}{sidebar}{\number\mTwentySegment}{\mTwentySidebarPlace}{}%
+ \begin{tikzpicture}[baseline=(m20content.base)]
+  \path[use as bounding box] (0,0) rectangle (\mTwentyOuterWidth,\mTwentyFrameHeight);
+  \fill[m20purple] (0,0) rectangle (\mTwentyOuterWidth,\mTwentyFrameHeight);
+  \IfFileExists{\mTwentyAssetPath sidebar_texture.png}{\node[inner sep=0bp,anchor=south west,opacity=.5] at (0,0) {\includegraphics[width=\mTwentyOuterWidth,height=\mTwentyFrameHeight]{\mTwentyAssetPath sidebar_texture.png}};}{}%
+  \draw[line width=7bp,m20gold] (3.5bp,3.5bp) rectangle (\dimexpr\mTwentyOuterWidth-3.5bp,\dimexpr\mTwentyFrameHeight-3.5bp);
+  \draw[line width=.7bp,black!75] (7bp,7bp) rectangle (\dimexpr\mTwentyOuterWidth-7bp,\dimexpr\mTwentyFrameHeight-7bp);
+  \node[inner sep=0bp,anchor=north west,text=white] (m20content) at (25bp,\dimexpr\mTwentyFrameHeight-7bp) {\box\mTwentyFrameContent};
+ \end{tikzpicture}\par
+ \vskip2.52bp
+}
+\newcommand\mTwentyTypesetText[1]{%
+ \global\mTwentyNotes={}%
+ \setbox\mTwentyGalley=\vbox{%
+  \hsize=\mTwentyTextWidth\linewidth=\hsize\columnwidth=\hsize\textwidth=\hsize
+  \mTwentySidebarFont\fontsize{10bp}{10bp}\selectfont\color{white}%
+  \parindent=0bp\parskip=2.52bp\relax
+  \let\footnote\mTwentyLocalNote
+  \let\mTwentyNote\mTwentyLocalNote
+  #1\par
+  \the\mTwentyNotes\par}
+ \splittopskip=0bp\splitmaxdepth=3bp
+ \mTwentyMoreContenttrue
+ \loop\ifmTwentyMoreContent
+  \mTwentyRemaining
+  \mTwentySplitHeight=\mTwentyAvailable\advance\mTwentySplitHeight-58bp
+  \ifdim\mTwentySplitHeight<12bp
+   \mTwentyAdvance\mTwentyRemaining\mTwentySplitHeight=\mTwentyAvailable\advance\mTwentySplitHeight-58bp
+  \fi
+  \ifnum\mTwentySidebarColumns=2
+   \@tempdima=\ht\mTwentyGalley\advance\@tempdima\dp\mTwentyGalley
+   \@tempdimb=2\mTwentySplitHeight
+   \ifdim\@tempdima<\@tempdimb
+    \mTwentyBalanceFinal
+   \fi
+  \fi
+  \setbox\mTwentyLeft=\vsplit\mTwentyGalley to\mTwentySplitHeight
+  \setbox\mTwentyLeft=\vbox{\unvbox\mTwentyLeft}
+  \ifnum\mTwentySidebarColumns=2
+   \setbox\mTwentyRight=\vsplit\mTwentyGalley to\mTwentySplitHeight
+   \setbox\mTwentyRight=\vbox{\unvbox\mTwentyRight}
+  \fi
+  \advance\mTwentySegment1
+  \mTwentyFrame
+  \ifvoid\mTwentyGalley\mTwentyMoreContentfalse\else
+   \ifdim\ht\mTwentyGalley<.1bp\mTwentyMoreContentfalse\else\mTwentyAdvance\fi
+  \fi
+ \repeat}
+\ExplSyntaxOn
+\seq_new:N \l_mtw_blocks_seq
+\seq_new:N \l_mtw_table_parts_seq
+\tl_new:N \l_mtw_piece_tl
+\cs_new_protected:Npn \mTwentyWideBlocks:n #1 {
+ \seq_set_split:Nnn \l_mtw_blocks_seq {\begin{m20table}} {#1}
+ \seq_pop_left:NN \l_mtw_blocks_seq \l_mtw_piece_tl
+ \exp_args:NV \mTwentyTypesetText \l_mtw_piece_tl
+ \seq_map_inline:Nn \l_mtw_blocks_seq {
+   \seq_set_split:Nnn \l_mtw_table_parts_seq {\end{m20table}} {##1}
+   \seq_pop_left:NN \l_mtw_table_parts_seq \l_mtw_piece_tl
+   \exp_after:wN \mTwentySpanTableTokens \l_mtw_piece_tl \mTwentyStop
+   \seq_pop_left:NN \l_mtw_table_parts_seq \l_mtw_piece_tl
+   \exp_args:NV \mTwentyTypesetText \l_mtw_piece_tl
+ }
+}
+\NewDocumentCommand\mTwentySpanTableTokens{O{} m +u{\mTwentyStop}}{\mTwentyTablePDF{#1}{#2}{#3}}
+\cs_new_protected:Npn \mTwentyBalanceFinal {
+ \bool_if:NT \l_mtw_balance_bool {\mTwentySplitHeight=.5\@tempdima\advance\mTwentySplitHeight6bp}
+}
+\ExplSyntaxOff
+\newcommand\mTwentySidebarPDF[3]{%
+ \def\mTwentySidebarTitle{#2}%
+ \def\mTwentyNarrowName{narrow}\def\mTwentyKind{#1}%
+ \ifx\mTwentyKind\mTwentyNarrowName\mTwentyNarrowtrue\mTwentyOuterWidth=\mTwentyColumnWidth\else\mTwentyNarrowfalse\mTwentyOuterWidth=\textwidth\fi
+ \mTwentyUsableWidth=\mTwentyOuterWidth\advance\mTwentyUsableWidth-50bp
+ \mTwentyTextWidth=\mTwentyUsableWidth
+ \ifnum\mTwentySidebarColumns=2\advance\mTwentyTextWidth-12bp\divide\mTwentyTextWidth2\fi
+ \mTwentySegment=0
+ \mTwentyPlacement
+ \csname mTwentyWideBlocks:n\endcsname{#3}%
+}
+\endinput

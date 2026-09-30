@@ -1,0 +1,57 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{m20-pdf-layout}[2026/09/30 isolated live body regions]
+\RequirePackage{fontspec,geometry,multicol,xcolor,tikz}
+\InputIfFileExists{profiles/m20.tex}{}{%
+ \def\mTwentyPageWidth{612bp}\def\mTwentyPageHeight{792bp}%
+ \def\mTwentyBodyWidth{490.4496bp}\def\mTwentyBodyHeight{657bp}%
+ \def\mTwentyTop{63bp}\def\mTwentyInner{54bp}\def\mTwentyOuter{67.5504bp}%
+ \def\mTwentyColumnWidth{239.2248bp}\def\mTwentyGutter{12bp}}
+\geometry{paperwidth=\mTwentyPageWidth,paperheight=\mTwentyPageHeight,inner=\mTwentyInner,outer=\mTwentyOuter,top=\mTwentyTop,textheight=\mTwentyBodyHeight,headheight=0bp,headsep=0bp,footskip=27bp}
+\setlength\columnsep{\mTwentyGutter}
+\setlength\parindent{18bp}
+\setlength\parskip{1.44bp plus .2bp}
+\setlength\multicolsep{0bp}
+\setlength\premulticols{0bp}
+\setlength\postmulticols{0bp}
+\newif\ifmTwentyBodyActive
+\renewcommand\mTwentyBodyBegin{\ifmTwentyBodyActive\else\global\mTwentyBodyActivetrue\begin{multicols}{2}\raggedcolumns\fi}
+\renewcommand\mTwentyBodyEnd{\ifmTwentyBodyActive\par\end{multicols}\global\mTwentyBodyActivefalse\fi}
+\newcommand\mTwentySuspendEnvironment[1]{\ifmTwentyBodyActive\endgroup\mTwentyBodyEnd\begingroup\def\@currenvir{#1}\fi}
+\renewcommand\mTwentyNewPage{\mTwentyBodyEnd\clearpage\mTwentyBodyBegin}
+\newwrite\mTwentyPositionStream
+\AtBeginDocument{\mTwentyLoadFonts\fontsize{10bp}{12bp}\selectfont\immediate\openout\mTwentyPositionStream=\jobname.m20pos\relax\mTwentyBodyBegin}
+\AtEndDocument{\mTwentyBodyEnd\clearpage\immediate\closeout\mTwentyPositionStream}
+% Values are frozen now; page and position primitives are evaluated at shipout.
+\newcommand\mTwentyPosition[8]{%
+ \savepos
+ \begingroup
+ \edef\mTwentyWrite{\write\mTwentyPositionStream{#1|\noexpand\thepage|\noexpand\the\noexpand\lastxpos|\noexpand\the\noexpand\lastypos|\number\dimexpr#2\relax|\number\dimexpr#3\relax|#4|#5|#6|#7}}%
+ \mTwentyWrite\endgroup}
+\renewcommand\mTwentyAnchor[1]{\par\noindent\mTwentyPosition{#1}{\linewidth}{\linewidth}{1}{anchor}{0}{flow}{}\par}
+\let\mTwentyOriginalSection\section
+\RenewDocumentCommand\section{s o m}{%
+ \mTwentyBodyEnd
+ \par\addvspace{20.7bp}% before-span and active heading gap calibrated separately
+ \noindent\mTwentyPosition{span-heading}{\textwidth}{\textwidth}{2}{heading}{0}{flow}{}%
+ \IfBooleanTF{#1}{\mTwentyOriginalSection*{#3}}{\IfNoValueTF{#2}{\mTwentyOriginalSection{#3}}{\mTwentyOriginalSection[#2]{#3}}}%
+ \mTwentyBodyBegin}
+\renewcommand\@seccntformat[1]{}
+\renewcommand\@startsection[6]{\if@noskipsec\leavevmode\fi\par\@tempskipa #4\relax\@afterindenttrue\ifdim\@tempskipa<\z@\@tempskipa-\@tempskipa\@afterindentfalse\fi\if@nobreak\everypar{}\else\addpenalty\@secpenalty\addvspace\@tempskipa\fi\@ifstar{\@ssect{#3}{#4}{#5}{#6}}{\@dblarg{\@sect{#1}{#2}{#3}{#4}{#5}{#6}}}}
+\renewcommand\section{\@startsection{section}{1}{\z@}{7.2bp}{2.1528bp}{\centering\mTwentyHeadingFont\fontsize{24bp}{25bp}\selectfont}}
+% Wrap the styled native section only after defining its style.
+\let\mTwentyStyledSection\section
+\RenewDocumentCommand\section{s o m}{\mTwentyBodyEnd\addvspace{13.5bp}\noindent\mTwentyPosition{span-heading}{\textwidth}{\textwidth}{2}{heading}{0}{flow}{}\IfBooleanTF{#1}{\mTwentyStyledSection*{#3}}{\IfNoValueTF{#2}{\mTwentyStyledSection{#3}}{\mTwentyStyledSection[#2]{#3}}}\vspace{1.8bp}\hrule height1.25bp\vspace{13.5bp}\mTwentyBodyBegin}
+\renewcommand\subsection{\@startsection{subsection}{2}{\z@}{7.2bp}{0bp}{\mTwentyHeadingFont\fontsize{18bp}{18bp}\selectfont}}
+\renewcommand\subsubsection{\@startsection{subsubsection}{3}{\z@}{7.2bp}{0bp}{\mTwentyHeadingFont\fontsize{12bp}{14bp}\selectfont}}
+\let\mTwentyOriginalChapter\chapter
+\RenewDocumentCommand\chapter{s o m}{%
+ \mTwentyBodyEnd\clearpage
+ \ifodd\c@page\null\thispagestyle{empty}\newpage\fi
+ \null\thispagestyle{empty}\newpage
+ \IfBooleanTF{#1}{\mTwentyOriginalChapter*{#3}}{\IfNoValueTF{#2}{\mTwentyOriginalChapter{#3}}{\mTwentyOriginalChapter[#2]{#3}}}%
+ \mTwentyBodyBegin}
+\def\@makechapterhead#1{\vspace*{6bp}{\parindent\z@\centering\mTwentyHeadingFont\fontsize{60bp}{54bp}\selectfont\color{m20gold}#1\par}\vspace{6bp}}
+\definecolor{m20gold}{RGB}{183,137,47}
+\definecolor{m20purple}{RGB}{44,25,63}
+\pagestyle{plain}
+\endinput

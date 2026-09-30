@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "pdf_engine": "lualatex",
+  "dependencies": [
+    {
+      "name": "luaotfload",
+      "archive": "luaotfload.zip",
+      "sha256": "21e08eef057c9e2e52767aaf7f7d8d80a8d9a278346a2067b5cba07f0c4256da",
+      "url": "https://mirror.ox.ac.uk/sites/ctan.org/macros/luatex/generic/luaotfload.zip?source=runtime",
+      "license": "LPPL 1.3c / GPL as provided in original archive; source archive retained"
+    },
+    {
+      "name": "lualibs",
+      "archive": "lualibs.zip",
+      "sha256": "f6e59d4455b3af2bcee2fa4ae35f3a56d7247351852b9d1880cba4e5bff271e3",
+      "url": "https://mirror.ox.ac.uk/sites/ctan.org/macros/luatex/generic/lualibs.zip?source=runtime",
+      "license": "LPPL 1.3c / GPL as provided in original archive; source archive retained"
+    },
+    {
+      "name": "luatexbase",
+      "archive": "luatexbase.zip",
+      "sha256": "1108e8883668722f70c73ad6e4cbf4d946128a0e44bfc794968bfe88252fffe0",
+      "url": "https://mirror.ox.ac.uk/sites/ctan.org/macros/luatex/generic/luatexbase.zip?source=runtime",
+      "license": "LPPL 1.3c / GPL as provided in original archive; source archive retained"
+    },
+    {
+      "name": "make4ht",
+      "archive": "make4ht.zip",
+      "sha256": "e9f01cccd7b470f566d05f76267602a6b9b2e5721f8c9b39036f5e4691549fd6",
+      "url": "https://mirror.ox.ac.uk/sites/ctan.org/support/make4ht.zip?source=runtime",
+      "license": "LPPL 1.3c / GPL as provided in original archive; source archive retained"
+    },
+    {
+      "name": "tex4ebook",
+      "archive": "tex4ebook.zip",
+      "sha256": "d03e3ad1eb2d17e4e69e4f4935cc4bb0c075ede582cac606435e8562eb28bb7d",
+      "url": "https://mirror.ox.ac.uk/sites/ctan.org/support/tex4ebook.zip?source=runtime",
+      "license": "LPPL 1.3c / GPL as provided in original archive; source archive retained"
+    },
+    {
+      "name": "tex4ht",
+      "archive": "tex4ht.tar.xz",
+      "sha256": "be3664ab3683e744731e47c14ed009d9160c31e07a3a48b8a11667d4f5d74a2e",
+      "url": "https://mirror.ox.ac.uk/sites/ctan.org/systems/texlive/tlnet/archive/tex4ht.tar.xz?source=runtime",
+      "license": "Original official TeX Live archive notices retained"
+    },
+    {
+      "name": "lua-uni-algos",
+      "archive": "lua-uni-algos.tar.xz",
+      "sha256": "a7f9a14f2cb5dedd3d67997d9db3de9cfdef7003a797b33892fa8728578dfb95",
+      "url": "https://mirror.ox.ac.uk/sites/ctan.org/systems/texlive/tlnet/archive/lua-uni-algos.tar.xz?source=runtime",
+      "license": "Original official TeX Live archive notices retained"
+    },
+    {
+      "name": "epubcheck",
+      "archive": "epubcheck.zip",
+      "sha256": "6c07e68584b2e2ce2f89fe06e1246dfead3eb36b46b340e7d93524f29dcff6c5",
+      "url": "https://github.com/w3c/epubcheck/releases/download/v5.3.0/epubcheck-5.3.0.zip?source=runtime",
+      "version": "5.3.0",
+      "license": "BSD 3-Clause and bundled notices"
+    },
+    {
+      "name": "luaxml",
+      "archive": "luaxml.tar.xz",
+      "sha256": "956006bd3045b5e949610371604008003554f17ae9daeb17e57952c901313207",
+      "url": "https://mirror.ox.ac.uk/sites/ctan.org/systems/texlive/tlnet/archive/luaxml.tar.xz?source=runtime",
+      "license": "MIT; original official TeX Live archive retained"
+    }
+  ]
+}

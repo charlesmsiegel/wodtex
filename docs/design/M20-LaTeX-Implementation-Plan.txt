@@ -1,0 +1,179 @@
+M20 LaTeX PDF and EPUB Implementation Plan
+30 September 2026
+For review before implementation
+
+Goal
+
+Build the approved M20 template as one LaTeX source with two outputs: a PDF calibrated against the InDesign original, and a reflowable EPUB preserving information and meaningful art. Begin with a small rendered specimen. This plan does not convert the book collection, resume InDesign work or create a separate application.
+
+Design authority
+
+M20-LaTeX-Template-Design.txt, approved revision of 30 September 2026, SHA256 d7801cabd8f5ec86c06731c2c04289f80b3f2871c46b1dcfd07ee0048b1b85b7. Read it alongside this plan. Original IDML, font files and reference PDF remain authoritative for visual measurements.
+
+First milestone
+
+A reproducible local runtime and an actual rendered PDF proof using the supplied fonts. The proof must show two-column body flow, a spanning heading, all three sidebar forms, a break in each form, a table and forced placement together. Also generate an early EPUB showing that the custom sidebar commands retain their content. Do not expand into a full book until this proves the layout/conversion approach.
+
+Architecture and file ownership
+
+Create a new m20-template directory; do not modify the existing InDesign packages or original assets. Paths below are relative to that new directory.
+
+- m20book.cls and tex/m20-core.sty: public commands, semantic metadata, output selection and diagnostics
+- tex/m20-pdf-layout.sty: body columns, spanning regions, chapter pairs, page decoration, art placement and running matter
+- tex/m20-pdf-sidebars.sty: the three sidebar variants and their shared segment paginator
+- tex/m20-pdf-tables.sty: table row blocks, width selection and continuation headings
+- tex/m20-fonts.sty and tex/m20-references.sty: actual font faces, languages, math mode, contents, index and references
+- profiles/m20.json and profiles/m20.tex: resolved source measurements and generated TeX settings from that single profile
+- assets/pdf, assets/epub and fonts: prepared selected resources, preserving source provenance and licenses
+- epub/m20book.4ht, epub/m20.cfg, epub/m20.mk4 and epub/m20.css: semantic conversion and reflow styling
+- scripts/preflight.py, scripts/prepare_assets.py, scripts/build.py and scripts/verify.py: bounded runtime/build/verification tools
+- examples/book.tex, examples/specimen.tex and examples/content: editable starter and shared fixtures
+- tests, docs and build: assertions, command reference, rendered evidence and build reports
+
+Use the standard book semantics, LuaLaTeX for PDF and tex4ebook/TeX4ht for EPUB 3. The initial PDF composition candidate is normal two-column flow with a tested spanning-region adapter and one sidebar paginator. That paginator, rather than independently nested boxes, owns column segments and spanning tables. The first milestone may select a better-supported column backend behind the same interface if necessary; any change to promised behavior requires a design decision, not a silent downgrade.
+
+Global constraints
+
+- One manuscript; output-specific adapters interpret the same content and metadata
+- Page: US Letter, 612 by 792 bp. Body region: 490.4496 by 657 bp, top 63 bp, inner margin 54 bp, outer margin 67.5504 bp. Two 239.2248 bp columns, 12 bp gutter
+- Body style n: Goudy Old Style 10/12, 18 bp first-line indent, 1.44 bp before and after, and 98 percent vertical glyph scale
+- Preserve every active heading, sidebar, baseline, stroke, gradient, spacing and inset value specified by the design and original IDML; do not blindly add inherited inactive values
+- All three sidebar layouts support long content and mandatory forced placement; table width defaults to the usable sidebar width
+- A long narrow sidebar stays narrow; rows and nested tables remain atomic and overheight rows produce diagnostics
+- Every chapter has its own fresh blank even-numbered verso facing its odd-numbered opener
+- EPUB uses single-column semantic asides, reader-default colors and preserved meaningful art; print-only textures and empty reservations are omitted
+- Official dependencies only, pinned in a manifest; install into the workspace/user-owned runtime without root or system changes
+- Do not silently change the PDF engine, synthesize font faces, lose unknown content, or declare visual equivalence without measured/rendered evidence
+- Leave original/frozen files untouched. If no usable Git repository exists, record a checksum snapshot at every passing milestone instead of inventing a commit
+
+Public contract to fix before parallel work
+
+- Class option output=pdf|epub; the build driver supplies it through a wrapper without editing the manuscript
+- \m20setup{profile, asset-path, font-path, running-title, math=legacy|unicode, ...}
+- m20sidebar[place=flow|here|next-page, breakable=true|false, ...]{title}: narrow, one text column
+- m20sidebarwide[columns=1|2, place=flow|here|next-page, balance=true|false, ...]{title}: wide, one or two text columns
+- m20table[width=container|column|dimension, scale=0..1, align=left|center|right, head-rows=N, epub=table|records]{column specification}; scale multiplies the chosen width
+- \m20sidebarbreak[page|column]: an explicit continuation boundary, valid only inside a sidebar
+- \m20artreserve[kind=horizontal|vertical, place=flow|here|next-page, position=top|bottom|inner|outer, image=path, alt={...}, caption={...}, credit={...}, role=meaningful|decorative]{id}
+
+Invalid combinations must fail clearly. In particular, narrow sidebars cannot request two internal columns; images require a unique ID; EPUB records mode must retain every header/cell association. Here means a nonfloating source anchor, not a float preference. If the first required segment cannot fit there, report M20_E_PLACEMENT_UNAVAILABLE. Do not relocate it silently.
+
+The build command is: python3 scripts/build.py --target pdf|epub|all --source examples/specimen.tex --out build/specimen --verify
+
+It returns a nonzero exit status on failure and writes build-report.json with target/status, engine versions, source/profile hashes, output paths and diagnostics. Verification consumes the same report. Layout evidence records actual shipped page/column/region positions; semantic evidence records stable IDs and ordered content/art occurrences. Trial measurement must not duplicate counters, labels, index entries or footnotes.
+
+Review focus
+
+1. Measuring a box or table must not duplicate labels, notes, index entries or counters
+2. Forced wide material late in a right column, especially with footnotes, must not overlap or silently move
+3. Nested table groups, multicolumn cells and spanning tables must preserve every cell and source order
+4. Combining marks, script changes and math-bearing headings must retain glyphs, emphasis and valid bookmarks
+5. Unmapped custom content, a missing image or mistaken decorative classification must stop the build rather than lose information
+
+Execution steps
+
+Each task uses the same cycle: write the named failing fixture/assertions, run it and observe the expected failure, implement the smallest change, rerun, inspect its actual output, and save a passing snapshot. Commands below are acceptance commands to implement and run during execution, not claims that the files already exist.
+
+Task 1  Establish the runtime and measured resources
+
+Files: scripts/preflight.py, scripts/prepare_assets.py, profiles/m20.json, profiles/m20.tex, runtime.lock.json, tests/__init__.py, tests/support.py, tests/test_runtime.py, tests/test_profile.py, examples/runtime-smoke.tex.
+
+Interfaces: preflight(cache_dir, prepare=False) returns engine/package/font/index/converter availability and versions. resolve_profile(idml_path) returns the complete inherited active style/geometry record. prepare_assets(profile, output_dir) returns resource IDs, paths, hashes and roles. All writable caches/formats live under .runtime or build.
+
+Tests first: test_missing_luaotfload_is_blocking; test_writes_stay_in_workspace; test_profile_units_and_inheritance; test_unindented_style_does_not_inherit_98_percent_scale; test_real_font_faces_and_glyphs. Assert page=[612,792], gutter=12, body indent=18, n vertical scale=98 and source-derived first-paragraph scale separately.
+
+Implement only the needed official runtime pieces and selected resource conversions. Preserve source bytes; log licenses and hashes. Build a font/spacing smoke sheet using actual Abbess, Goudy and Futura, genuine emphasis and representative fallback scripts. Also prove tex4ebook and EPUBCheck can run on a tiny semantic example.
+
+Run: python3 -m unittest tests.test_runtime tests.test_profile -v, then the smoke build. Pass: fonts actually load and embed, no missing glyphs, PDF rendered and inspected, tiny EPUB validates. A different PDF engine needs approval before use.
+
+Task 2  Prove the shared interface and column composition
+
+Files: m20book.cls, tex/m20-core.sty, initial PDF layout/sidebar/table modules, initial epub/m20book.4ht, examples/layout-proof.tex, tests/test_layout_proof.py.
+
+Consumes Task 1 profile/resources. Produces the public contract above and one internal sidebar segment record: id, outer width, internal columns, usable width/height, source-order range, continuation state and actual placement. A spanning table is a distinct ordered block, not another float.
+
+Tests first: test_three_sidebar_layouts; test_forced_here_all_variants; test_forced_next_page_all_variants; test_first_segment_cannot_fit_errors; test_spanning_heading; test_measurement_is_side_effect_free. Include a right-column insertion with a footnote and exactly one label, index entry and note inside measured content.
+
+Implement the smallest real composition proof, including a continuation for each variant and a wide table between two-text-column segments. Use either live regions or explicitly assembled column segments; never put multipage multicols inside a boxed tcolorbox. Emit actual placement evidence rather than trusting intended coordinates. Convert the same three sidebar commands to readable EPUB asides immediately.
+
+Run: python3 -m unittest tests.test_layout_proof -v and build both proof outputs. Render/inspect every proof page. Pass only when geometry, ordering, forced placement and unique side effects are correct. If not, fix or change the isolated backend before proceeding. This is the first milestone gate.
+
+Task 3  Complete long sidebars and tables
+
+Files: tex/m20-pdf-sidebars.sty, tex/m20-pdf-tables.sty, examples/content/sidebars.tex, examples/content/tables.tex, tests/test_sidebars.py, tests/test_tables.py.
+
+Consumes the segment interface. Produces all long-flow behavior, width choices, repeated titles/table headings and local notes through that same paginator. Internally typeset rows as independently breakable units with shared widths; a nested table stays inside its atomic outer row.
+
+Tests first: test_narrow_sidebar_stays_narrow_across_three_pages; test_wide_one_column_continuations; test_wide_two_column_continuations; test_wide_table_pauses_resumes_columns; test_column_and_scaled_table_widths; test_nested_cell_order; test_multicolumn_cell_header_associations; test_overheight_row_errors; test_table_measurement_no_duplicate_notes. Assert unsupported nesting emits M20_E_UNSUPPORTED_NESTING and oversized rows emit M20_E_ROW_TOO_TALL.
+
+Implement frame continuation, table headers, balance/unbalanced endings, manual breaks and notes. Ordinary longtable is only for an explicitly selected full-width passage outside active box/multicolumn containers.
+
+Run: python3 -m unittest tests.test_sidebars tests.test_tables -v and render the sidebar/table specimen. Pass: every row/content ID appears once in order, continuations are readable, requested widths/positions hold, negative fixtures fail with their documented diagnostics.
+
+Task 4  Calibrate PDF appearance, chapter pairs and art
+
+Files: tex/m20-pdf-layout.sty, profiles/m20.json, profiles/m20.tex, examples/content/openings-art.tex, tests/test_geometry.py, tests/test_openings_art.py, build/visual-comparison.
+
+Consumes locked source profile and placement interface. Produces calibrated decoration/headings/paragraph spacing, paired openers and fixed-geometry image reservations. Keep profile generation single-source; never adjust the JSON and TeX constants independently.
+
+Tests first: test_blank_verso_after_odd_end; test_blank_verso_after_even_end; test_long_title_needs_explicit_override; test_art_both_shapes_both_parities; test_replacing_art_preserves_reserved_bounds; test_no_text_in_art_region. Verify opener odd, preceding fresh page even/empty; after an even ending verify both required padding pages. Test force-here and force-next-page for each art shape.
+
+Implement source baseline behavior, active span gaps/rules, glyph scale, footer and texture cropping, strokes/gradients and shadows. Build matching reference passages and measure actual baseline/boundary differences. Inspect overlays at print size and high resolution. Keep a discrepancy register with before/after measurements; do not mask differences by rasterizing text.
+
+Run: python3 -m unittest tests.test_geometry tests.test_openings_art -v and render all comparison pages. Pass: no collision/clipping, preserved art geometry and documented fidelity evidence; remaining visual differences are explicit.
+
+Task 5  Complete language, math and native navigation
+
+Files: tex/m20-fonts.sty, tex/m20-references.sty, scripts/build.py, examples/content/navigation-language-math.tex, tests/test_references.py, tests/test_fonts_math.py.
+
+Consumes semantic IDs and original face mappings. Produces native contents/bookmarks, stable reference anchors, explicit index processing, legacy/unicode math options and configured language/script support.
+
+Tests first: test_index_sort_keys_subentries_ranges; test_toc_ref_index_after_early_insertion; test_combining_rtl_and_emphasis; test_math_heading_print_bookmark_variants; test_legacy_unicode_modes_do_not_mix_silently. Include nested emphasis, a deep inline formula, a displayed equation, TikZ, and a note near a spanning-region boundary.
+
+Implement build-until-settled behavior with makeindex invoked explicitly. Validate xindy only for a configured language-specific index. Detect a nonconverging build and report it rather than accepting stale auxiliary files. A build-step limit is a failure guard, not a successful stopping condition.
+
+Run: python3 -m unittest tests.test_references tests.test_fonts_math -v, build, insert an early fixture paragraph, rebuild. Pass: displayed reference values and actual destinations update, glyphs/shaping remain intact, no silent font substitutions or stale index pages.
+
+Task 6  Complete the reflowable EPUB adapter
+
+Files: epub/m20book.4ht, epub/m20.cfg, epub/m20.mk4, epub/m20.css, scripts/verify.py, epub/supported-content.json, tests/test_epub.py.
+
+Consumes the public semantic contract and image/anchor inventory. Produces EPUB 3 with single-column asides, real tables or explicitly requested labeled records, linked contents/index/references, notes with backlinks and meaningful art. Reader styling must not depend on gold/purple contrast or fixed dimensions.
+
+Tests first: test_all_sidebar_text_in_reading_order; test_no_print_textures_or_empty_versos; test_all_meaningful_art_with_alt_caption_credit; test_table_cells_and_headers_conserved; test_note_backlinks_and_index_targets; test_mathml_svg_formula_inventory; test_unknown_custom_environment_fails; test_missing_image_fails. Author-defined content commands/environments need an explicit adapter or declared safe expansion; unknown mappings produce M20_E_EPUB_UNMAPPED_CONTENT.
+
+Implement semantic wrappers and conversion mappings, not extraction from the PDF. Keep color originals for meaningful art. Use validated MathML with SVG/text alternatives where needed; verify every formula occurrence. Preserve the original header/cell associations in labeled-record mode. Scope conversion to the documented class/package interface and make unsupported content actionable.
+
+Run: python3 -m unittest tests.test_epub -v and build the shared specimen EPUB. Pass: semantic inventory reconciles, link targets exist, no useful content is discarded, EPUBCheck reports no errors and all warnings are reviewed.
+
+Task 7  Verify both outputs under real reading conditions
+
+Files: scripts/verify.py, tests/test_end_to_end.py, examples/specimen.tex, build/verification-report.json, build/reader-review.txt.
+
+Consumes finished PDF/EPUB builds. Produces separate fidelity and content-preservation reports; one output passing cannot hide the other's failure.
+
+Tests first: test_pdf_epub_semantic_inventory_agrees; test_early_insertion_updates_both; test_forced_placement_manifest_matches_shipped_positions; test_clean_rebuild_is_reproducible. Compare text after only documented layout/Unicode equivalences, never a blanket stripping rule that could hide lost symbols.
+
+Run the complete unittest suite, clean-build both targets, render every PDF specimen page, inspect embedding, then run EPUBCheck. Open the EPUB in an actual reading application; aim for a second rendering system too. Inspect narrow/wide views, enlarged text, grayscale and dark mode, including every sidebar/table/math/art case and navigation/backlinks. Record application/version and what was actually tested. Do not label a software grayscale preview as physical e-ink validation.
+
+Pass: no missing/duplicated semantic content, bad links, unreviewed overflow or visible collisions; all required cases reviewed. Any unavailable reader check is a stated remaining gate, not a completion claim.
+
+Task 8  Package the reusable template
+
+Files: examples/book.tex, docs/README.txt, docs/Command-Reference.txt, docs/Supported-Content.txt, docs/Validation.txt, package-manifest.json, tests/test_package.py.
+
+Consumes only passing builds. Produce the source class/modules, selected permitted assets, both example outputs, dependency manifest and short instructions. Include font/asset setup and license limitations, all three sidebar recipes, table width choices, forced-placement diagnostics, image semantics and both build commands. Document known verified differences from InDesign and reader limitations plainly.
+
+Test first: test_fresh_unpack_builds_both_targets; test_package_has_no_absolute_workspace_paths; test_package_contains_no_unneeded_private_or_licensed_assets. Build from a fresh unpacked copy. Verify output files and hashes before delivery. Do not package the existing book corpus or frozen InDesign work.
+
+Pass: a user can edit normal LaTeX, choose a sidebar/table/art treatment, and rebuild both demonstrated outputs using the documented setup.
+
+Sequencing and recommended execution
+
+Complete Tasks 1 and 2 first. Task 3 fixes the detailed sidebar/table contract. Tasks 4 and 5 can then progress alongside the EPUB adapter where file ownership is separate. Finish with the shared verification and fresh-unpack delivery gates.
+
+Recommended approach: staged implementation with an independent check at each milestone, starting with the small rendered proof. This is preferable here because the highest-risk failures involve interactions among column flow, boxed content, footnotes and conversion, and can otherwise remain hidden until a full book is built. A single continuous implementation pass has less review overhead but delays independent checking until the end.
+
+Review decision
+
+Does this plan capture the intended PDF and EPUB results, and should execution use the recommended reviewed milestones or a single continuous pass? Implementation begins after review of this written plan and the execution choice.
