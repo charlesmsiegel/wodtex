@@ -1,0 +1,17 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{m20-references}[2026/09/30 native linked book navigation]
+\RequirePackage[unicode,hidelinks,bookmarksopen]{hyperref}
+\ifmTwentyEpub\else
+ \let\mTwentyNativeContents\tableofcontents
+ \renewcommand\tableofcontents{\mTwentyBodyEnd\mTwentyNativeContents\mTwentyBodyBegin}
+ \AddToHook{env/theindex/before}{\mTwentyBodyEnd}
+ \AddToHook{env/theindex/after}{\mTwentyBodyBegin}
+ % book's index switches document-level columns; keep one output routine.
+ \renewenvironment{theindex}{%
+   \mTwentyBodyEnd\chapter*{\indexname}\mTwentyBodyEnd
+   \addcontentsline{toc}{chapter}{\indexname}\markboth{\indexname}{\indexname}%
+   \parindent\z@\parskip\z@ plus .3bp\relax\let\item\@idxitem
+   \begin{multicols}{2}
+ }{\end{multicols}\clearpage}
+\fi
+\endinput

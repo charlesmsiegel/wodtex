@@ -1,0 +1,48 @@
+% Native book navigation plus semantic M20 custom content.
+% TeX4ht already loads book.4ht for the inherited book class. Loading it
+% twice recursively wraps title/author and exhausts TeX's input stack.
+\renewcommand\mTwentyAsideBegin[2]{%
+  \ifvmode\IgnorePar\fi\EndP
+  \HCode{<aside class="m20-sidebar" id="#1"><h2>}#2\HCode{</h2>}\par}
+\renewcommand\mTwentyAsideEnd{\ifvmode\IgnorePar\fi\EndP\HCode{</aside>}\par}
+\renewcommand\mTwentySidebarBreak[1][]{\par}
+\providecommand\columnbreak{\par}
+\renewcommand\mTwentyArtEpub{%
+ \def\mTwentyMeaningful{meaningful}%
+ \ifx\mTwentyArtRole\mTwentyMeaningful
+  \ifvmode\IgnorePar\fi\EndP
+  \HCode{<figure class="m20-art" id="\mTwentyArtID"><span class="m20-art-alt">}\mTwentyArtAlt\HCode{</span>}\par
+  \includegraphics{\mTwentyArtImage}\par
+  \ifvmode\IgnorePar\fi\EndP\HCode{<figcaption>}\mTwentyArtCaption\space\HCode{<span class="m20-credit">}\mTwentyArtCredit\HCode{</span></figcaption></figure>}\par
+ \fi
+}
+\newcounter{m20epubtable}
+\ExplSyntaxOn
+\tl_new:N \l_mtw_et_id_tl
+\tl_new:N \l_mtw_et_mode_tl
+\int_new:N \l_mtw_et_head_int
+\keys_define:nn {m20/epub-table}{
+ id .tl_set:N = \l_mtw_et_id_tl,
+ head-rows .int_set:N = \l_mtw_et_head_int,
+ epub .choices:nn = {table,records}{\tl_set_eq:NN \l_mtw_et_mode_tl \l_keys_choice_tl},
+ width .code:n = {}, scale .code:n = {}, align .code:n = {},
+ unknown .code:n = \PackageError{m20}{M20_E_UNKNOWN_TABLE}{Unknown~table~key}
+}
+\NewDocumentCommand\mTwentyTableEpub{m m +m}{
+ \group_begin:\stepcounter{m20epubtable}
+ \tl_set:Nx \l_mtw_et_id_tl {table-\arabic{m20epubtable}}
+ \tl_set:Nn \l_mtw_et_mode_tl {table}
+ \int_zero:N \l_mtw_et_head_int
+ \keys_set:nn {m20/epub-table}{#1}
+ \exp_args:NV \mTwentyRegisterID:n \l_mtw_et_id_tl
+ \ifvmode\IgnorePar\fi\EndP
+ \HCode{<div~class="m20-table"~id="\l_mtw_et_id_tl"~data-head-rows="\int_use:N\l_mtw_et_head_int"~data-mode="\l_mtw_et_mode_tl">}
+ \begin{tabular}{#2}#3\end{tabular}
+ \ifvmode\IgnorePar\fi\EndP\HCode{</div>}\par
+ \group_end:
+}
+\ExplSyntaxOff
+% A reflow location is a linked destination, not a pretend print page.
+\let\mTwentyPrintPageRef\pageref
+\renewcommand\pageref[1]{\ref{#1}}
+\endinput

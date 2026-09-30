@@ -6,6 +6,7 @@ import shutil
 import subprocess
 import unittest
 import zipfile
+import xml.etree.ElementTree as ET
 from pathlib import Path
 from tests.support import ROOT
 
@@ -19,13 +20,13 @@ def compile_source(source, name='layout-proof', success=True):
     spec.loader.exec_module(m)
     env = os.environ.copy()
     env.update({k: str(v) for k, v in m.runtime_environment(ROOT / '.runtime').items() if k != 'shell_escape'})
-    env['TEXINPUTS'] = str(ROOT) + '//:' + env.get('TEXINPUTS', '')
+    env['TEXINPUTS'] = str(ROOT) + ':' + str(ROOT/'epub') + ':'
     OUT.mkdir(parents=True, exist_ok=True)
     path = OUT / (name + '.tex')
     path.write_text(source)
     command = [shutil.which('lualatex'), '-no-shell-escape', '-interaction=nonstopmode', '-halt-on-error', '-output-directory=' + str(OUT), str(path)]
     for _ in range(2 if success else 1):
-        p = subprocess.run(command, cwd=ROOT, env=env, text=True, capture_output=True)
+        p = subprocess.run(command, cwd=ROOT, env=env, text=True, capture_output=True, timeout=120)
         if p.returncode:
             break
     if success:
@@ -37,11 +38,12 @@ def positions(path):
     result = []
     for line in path.with_suffix('.m20pos').read_text().splitlines():
         p = line.split('|')
-        if len(p) == 10:
+        if len(p) >= 10:
             result.append(dict(id=p[0], page=int(p[1]), x=int(p[2])/65536/1.00375,
                                y=792-int(p[3])/65536/1.00375, width=int(p[4])/65536/1.00375,
                                usable=int(p[5])/65536/1.00375, columns=int(p[6]),
-                               kind=p[7], segment=int(p[8]), placement=p[9]))
+                               kind=p[7], segment=int(p[8]), placement=p[9],
+                               height=float(p[10])/65536/1.00375 if len(p)>10 else 0))
     return result
 
 
@@ -51,6 +53,11 @@ class LayoutProofTests(unittest.TestCase):
         cls.compile_error = None
         try:
             _, cls.path = compile_source((ROOT / 'examples/layout-proof.tex').read_text())
+            conversion = subprocess.run(['python3',str(ROOT/'scripts/build.py'),'--target','epub',
+                                         '--source',str(ROOT/'examples/layout-proof.tex'),
+                                         '--out',str(OUT/'converted')],cwd=ROOT,text=True,capture_output=True,timeout=240)
+            assert conversion.returncode == 0, conversion.stdout + conversion.stderr
+            shutil.copyfile(OUT/'converted/epub/layout-proof.epub',OUT/'layout-proof.epub')
             cls.p = positions(cls.path)
             cls.text = subprocess.check_output(['pdftotext', '-layout', str(cls.path.with_suffix('.pdf')), '-'], text=True)
         except (AssertionError, FileNotFoundError) as exc:
@@ -101,6 +108,15 @@ class LayoutProofTests(unittest.TestCase):
         self.assertAlmostEqual(heading['width'], 490.4496, places=2)
         self.assertIn('A Heading Across Both Columns', self.text)
 
+    def test_body_color_recovers_after_long_sidebar(self):
+        import fitz
+        with fitz.open(self.path.with_suffix('.pdf')) as document:
+            spans = [s for page in document for b in page.get_text('dict',flags=fitz.TEXTFLAGS_DICT & ~fitz.TEXT_PRESERVE_IMAGES)['blocks'] if 'lines' in b
+                     for line in b['lines'] for s in line['spans']]
+        following = [s for s in spans if 'Wide-one preceding body' in s['text']]
+        self.assertTrue(following)
+        self.assertTrue(all(s['color'] == 0 for s in following), following)
+
     def test_measurement_is_side_effect_free(self):
         self.assertEqual(self.text.count('BODY-NOTE-ONCE'), 1)
         self.assertEqual(self.text.count('SIDEBAR-NOTE-ONCE'), 1)
@@ -115,9 +131,11 @@ class LayoutProofTests(unittest.TestCase):
         self.assertTrue(epub.exists(), 'real tex4ebook conversion required')
         with zipfile.ZipFile(epub) as z:
             html = '\n'.join(z.read(n).decode() for n in z.namelist() if n.endswith(('.xhtml','.html')))
+            ids = {e.get('id') for n in z.namelist() if n.endswith(('.xhtml','.html'))
+                   for e in ET.fromstring(z.read(n)).iter() if e.get('id')}
         for id in ('long-narrow', 'long-wide1', 'long-wide2'):
             self.assertIn(id.upper() + '-END', html)
-            self.assertIn('id="' + id + '"', html)
+            self.assertIn(id, ids)
         self.assertEqual(html.count('SIDEBAR-NOTE-ONCE'), 1)
         self.assertIn('<aside', html)
         self.assertIn('TABLE-BETWEEN-SEGMENTS', html)

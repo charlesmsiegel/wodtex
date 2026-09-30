@@ -12,15 +12,19 @@
 \newdimen\mTwentyFrameHeight
 \newcount\mTwentySegment
 \newtoks\mTwentyNotes
+\newbox\mTwentyAtomicSidebar
+\newbox\mTwentyPendingGalley
+\def\mTwentyFrameKind{sidebar}
 \newif\ifmTwentyNarrow
 \newif\ifmTwentyMoreContent
-\newcommand\mTwentyLocalNote[1]{\stepcounter{m20sidebarnote}\textsuperscript{\arabic{m20sidebarnote}}\begingroup\edef\mTwentyNewNote{\noexpand\par\noexpand\noindent\noexpand\textsuperscript{\arabic{m20sidebarnote}}}\global\mTwentyNotes\expandafter{\the\expandafter\mTwentyNotes\mTwentyNewNote #1}\endgroup}
+\newcommand\mTwentyAppendNote[2]{\global\mTwentyNotes=\expandafter{\the\mTwentyNotes\par\noindent\textsuperscript{#1}#2}}
+\newcommand\mTwentyLocalNote[1]{\stepcounter{m20sidebarnote}\textsuperscript{\arabic{m20sidebarnote}}\begingroup\edef\mTwentyNewNote{\endgroup\noexpand\mTwentyAppendNote{\arabic{m20sidebarnote}}{\unexpanded{#1}}}\mTwentyNewNote}
 \newcommand\mTwentyRemaining{%
  \par
  \ifmTwentyBodyActive
   \mTwentyAvailable=\@colroom
   \@tempdima=\pagetotal
-  \loop\ifdim\@tempdima>\@colroom\advance\@tempdima-\@colroom\repeat
+  \@whiledim\@tempdima>\@colroom\do{\advance\@tempdima-\@colroom}
   \advance\mTwentyAvailable-\@tempdima
  \else
   \ifdim\pagegoal=\maxdimen\mTwentyAvailable=\textheight\else
@@ -33,7 +37,7 @@
 \newcommand\mTwentyPlacement{%
  \def\mTwentyNextPage{next-page}\def\mTwentyHere{here}%
  \ifx\mTwentySidebarPlace\mTwentyNextPage
-  \ifmTwentyBodyActive\mTwentySuspendEnvironment{m20sidebar}\clearpage\mTwentyBodyBegin\else\clearpage\fi
+  \clearpage
  \fi
  \mTwentyRemaining
  \ifdim\mTwentyAvailable<70bp
@@ -45,41 +49,65 @@
  \setbox\mTwentyFrameContent=\vbox{%
   \hsize=\mTwentyUsableWidth\linewidth=\hsize
   \vskip7.2bp
-  {\centering\mTwentyHeadingFont\fontsize{18bp}{18bp}\selectfont\color{m20gold}\mTwentySidebarTitle\ifnum\mTwentySegment>1\space(continued)\fi\par}%
+  {\centering\mTwentyHeadingNarrowFont\fontsize{18bp}{18bp}\selectfont\color{m20gold}\mTwentySidebarTitle\ifnum\mTwentySegment>1\space(continued)\fi\par}%
   \vskip5bp
+  \ifnum\mTwentySegment>1\relax\ifvoid\mTwentyTableHeader\else\copy\mTwentyTableHeader\vskip4bp\fi\fi
   \nointerlineskip\hbox{\box\mTwentyLeft\ifnum\mTwentySidebarColumns=2\hskip12bp\box\mTwentyRight\fi}%
   \vskip10bp}
  \mTwentyFrameHeight=\ht\mTwentyFrameContent\advance\mTwentyFrameHeight\dp\mTwentyFrameContent\advance\mTwentyFrameHeight14bp
  \par\noindent
- \mTwentyPosition{\mTwentySidebarID}{\mTwentyOuterWidth}{\mTwentyUsableWidth}{\mTwentySidebarColumns}{sidebar}{\number\mTwentySegment}{\mTwentySidebarPlace}{}%
- \begin{tikzpicture}[baseline=(m20content.base)]
+ \begin{tikzpicture}[baseline=0bp]
   \path[use as bounding box] (0,0) rectangle (\mTwentyOuterWidth,\mTwentyFrameHeight);
   \fill[m20purple] (0,0) rectangle (\mTwentyOuterWidth,\mTwentyFrameHeight);
   \IfFileExists{\mTwentyAssetPath sidebar_texture.png}{\node[inner sep=0bp,anchor=south west,opacity=.5] at (0,0) {\includegraphics[width=\mTwentyOuterWidth,height=\mTwentyFrameHeight]{\mTwentyAssetPath sidebar_texture.png}};}{}%
   \draw[line width=7bp,m20gold] (3.5bp,3.5bp) rectangle (\dimexpr\mTwentyOuterWidth-3.5bp,\dimexpr\mTwentyFrameHeight-3.5bp);
   \draw[line width=.7bp,black!75] (7bp,7bp) rectangle (\dimexpr\mTwentyOuterWidth-7bp,\dimexpr\mTwentyFrameHeight-7bp);
   \node[inner sep=0bp,anchor=north west,text=white] (m20content) at (25bp,\dimexpr\mTwentyFrameHeight-7bp) {\box\mTwentyFrameContent};
+  \node[inner sep=0bp,anchor=north west] at (0,\mTwentyFrameHeight) {\mTwentyPosition{\mTwentySidebarID}{\mTwentyOuterWidth}{\mTwentyUsableWidth}{\mTwentySidebarColumns}{\mTwentyFrameKind}{\number\mTwentySegment}{\mTwentySidebarPlace}{\mTwentyFrameHeight}};
  \end{tikzpicture}\par
- \vskip2.52bp
+ \vskip2.52bp\relax
 }
 \newcommand\mTwentyTypesetText[1]{%
- \global\mTwentyNotes={}%
  \setbox\mTwentyGalley=\vbox{%
   \hsize=\mTwentyTextWidth\linewidth=\hsize\columnwidth=\hsize\textwidth=\hsize
-  \mTwentySidebarFont\fontsize{10bp}{10bp}\selectfont\color{white}%
+  \everypar{}%
+  % Color belongs to each shipped frame, not to the split galley. A color
+  % stack push in the galley would cross pages and turn later body text white.
+  \mTwentySidebarFont\fontsize{10bp}{10bp}\selectfont
   \parindent=0bp\parskip=2.52bp\relax
+  \emergencystretch=12bp\tolerance=2000
   \let\footnote\mTwentyLocalNote
   \let\mTwentyNote\mTwentyLocalNote
-  #1\par
-  \the\mTwentyNotes\par}
+  #1\par}
+ \csname mTwentyCheckAtomic:\endcsname
+ \mTwentyPaginateChunks
+}
+\newcommand\mTwentySetSplitHeight{%
+ \mTwentyRemaining
+ \mTwentySplitHeight=\mTwentyAvailable\advance\mTwentySplitHeight-70bp
+ \ifnum\mTwentySegment>0\relax\ifvoid\mTwentyTableHeader\else\advance\mTwentySplitHeight-\ht\mTwentyTableHeader\advance\mTwentySplitHeight-\dp\mTwentyTableHeader\advance\mTwentySplitHeight-4bp\fi\fi
+}
+\newcommand\mTwentyPaginateChunks{%
+ \directlua{m20tables.cut_manual(\number\mTwentyGalley,\number\mTwentyPendingGalley)}%
+ \mTwentyPaginateGalley
+ \ifx\mTwentyManualMode\@empty\else
+  \def\mTwentyPageMode{page}%
+  \ifx\mTwentyManualMode\mTwentyPageMode\clearpage\else\mTwentyAdvance\fi
+  \setbox\mTwentyGalley=\box\mTwentyPendingGalley
+  \expandafter\mTwentyPaginateChunks
+ \fi
+}
+\newcommand\mTwentyPaginateGalley{%
  \splittopskip=0bp\splitmaxdepth=3bp
  \mTwentyMoreContenttrue
- \loop\ifmTwentyMoreContent
-  \mTwentyRemaining
-  \mTwentySplitHeight=\mTwentyAvailable\advance\mTwentySplitHeight-58bp
+ \ifdim\dimexpr\ht\mTwentyGalley+\dp\mTwentyGalley\relax<.1bp\relax\mTwentyMoreContentfalse\fi
+ \@whilesw\ifmTwentyMoreContent\fi{%
+  \mTwentySetSplitHeight
   \ifdim\mTwentySplitHeight<12bp
-   \mTwentyAdvance\mTwentyRemaining\mTwentySplitHeight=\mTwentyAvailable\advance\mTwentySplitHeight-58bp
+   \ifnum\mTwentySegment=0\relax\def\mTwentyHere{here}\ifx\mTwentySidebarPlace\mTwentyHere\PackageError{m20}{M20_E_PLACEMENT_UNAVAILABLE}{The required first segment does not fit at this anchor.}\fi\fi
+   \mTwentyAdvance\mTwentySetSplitHeight
   \fi
+  \directlua{m20tables.check_first(\number\mTwentyGalley,\number\mTwentySplitHeight,"\mTwentySidebarPlace",\number\mTwentySegment,\number\dimexpr\textheight-74bp\relax)}
   \ifnum\mTwentySidebarColumns=2
    \@tempdima=\ht\mTwentyGalley\advance\@tempdima\dp\mTwentyGalley
    \@tempdimb=2\mTwentySplitHeight
@@ -96,31 +124,79 @@
   \advance\mTwentySegment1
   \mTwentyFrame
   \ifvoid\mTwentyGalley\mTwentyMoreContentfalse\else
-   \ifdim\ht\mTwentyGalley<.1bp\mTwentyMoreContentfalse\else\mTwentyAdvance\fi
+   \ifdim\ht\mTwentyGalley<.1bp\relax\mTwentyMoreContentfalse\else\mTwentyAdvance\fi
   \fi
- \repeat}
+ }}
 \ExplSyntaxOn
 \seq_new:N \l_mtw_blocks_seq
 \seq_new:N \l_mtw_table_parts_seq
 \tl_new:N \l_mtw_piece_tl
+\tl_new:N \l_mtw_sidebar_body_tl
 \cs_new_protected:Npn \mTwentyWideBlocks:n #1 {
- \seq_set_split:Nnn \l_mtw_blocks_seq {\begin{m20table}} {#1}
+ \tl_set:Nn \l_mtw_sidebar_body_tl {#1}
+ \regex_replace_all:nnN {\c{begin}\cB\{m20table\cE\}} {\c{mTwentyTableStart}} \l_mtw_sidebar_body_tl
+ \regex_replace_all:nnN {\c{end}\cB\{m20table\cE\}} {\c{mTwentyTableEnd}} \l_mtw_sidebar_body_tl
+ \seq_set_split:NnV \l_mtw_blocks_seq {\mTwentyTableStart} \l_mtw_sidebar_body_tl
  \seq_pop_left:NN \l_mtw_blocks_seq \l_mtw_piece_tl
  \exp_args:NV \mTwentyTypesetText \l_mtw_piece_tl
  \seq_map_inline:Nn \l_mtw_blocks_seq {
-   \seq_set_split:Nnn \l_mtw_table_parts_seq {\end{m20table}} {##1}
+   \seq_set_split:Nnn \l_mtw_table_parts_seq {\mTwentyTableEnd} {##1}
    \seq_pop_left:NN \l_mtw_table_parts_seq \l_mtw_piece_tl
    \exp_after:wN \mTwentySpanTableTokens \l_mtw_piece_tl \mTwentyStop
    \seq_pop_left:NN \l_mtw_table_parts_seq \l_mtw_piece_tl
    \exp_args:NV \mTwentyTypesetText \l_mtw_piece_tl
  }
 }
-\NewDocumentCommand\mTwentySpanTableTokens{O{} m +u{\mTwentyStop}}{\mTwentyTablePDF{#1}{#2}{#3}}
+\NewDocumentCommand\mTwentySpanTableTokens{O{} m +u{\mTwentyStop}}{%
+ \group_begin:
+ \def\mTwentyFrameKind{table-segment}
+ \mTwentyOriginalColumnWidth=\mTwentyTextWidth
+ \def\mTwentySidebarColumns{1}
+ \mTwentyTextWidth=\mTwentyUsableWidth
+ \mTwentySegment=0
+ \mTwentyTypesetText{\mTwentyTablePDF{#1}{#2}{#3}}
+ \global\setbox\mTwentyTableHeader=\box\voidb@x
+ \group_end:
+}
+\cs_new_protected:Npn \mTwentyCheckAtomic: {
+ \bool_if:NF \l_mtw_breakable_bool {
+  \dim_compare:nNnT {\ht\mTwentyGalley+\dp\mTwentyGalley} > {\mTwentySidebarColumns\dimexpr\textheight-70bp\relax} {
+   \PackageError{m20}{M20_E_SIDEBAR_TOO_TALL}{An~unbreakable~sidebar~exceeds~the~usable~page.~Enable~breaking~or~shorten~it.}
+  }
+ }
+}
 \cs_new_protected:Npn \mTwentyBalanceFinal {
  \bool_if:NT \l_mtw_balance_bool {\mTwentySplitHeight=.5\@tempdima\advance\mTwentySplitHeight6bp}
 }
+\cs_new_protected:Npn \mTwentyComposeSidebar:n #1 {
+ \mTwentyWideBlocks:n {#1}
+ \if\relax\detokenize\expandafter{\the\mTwentyNotes}\relax\else
+  \mTwentyTypesetText{\the\mTwentyNotes}
+ \fi
+}
+\cs_new_protected:Npn \mTwentyComposeOrAtomic:n #1 {
+ \bool_if:NTF \l_mtw_breakable_bool {\mTwentyComposeSidebar:n {#1}} {
+  \setbox\mTwentyAtomicSidebar=\vbox{
+   \hsize=\mTwentyOuterWidth
+   \renewcommand\mTwentyRemaining{\mTwentyAvailable=\dimexpr\textheight-4bp\relax}
+   \renewcommand\mTwentyAdvance{\par}
+   \mTwentyComposeSidebar:n {#1}
+  }
+  \dim_compare:nNnT {\ht\mTwentyAtomicSidebar+\dp\mTwentyAtomicSidebar} > {\textheight-4bp} {
+   \PackageError{m20}{M20_E_SIDEBAR_TOO_TALL}{The~complete~unbreakable~sidebar~exceeds~one~usable~region.}
+  }
+  \mTwentyRemaining
+  \dim_compare:nNnT {\ht\mTwentyAtomicSidebar+\dp\mTwentyAtomicSidebar} > {\mTwentyAvailable} {
+   \str_if_eq:eeTF {\mTwentySidebarPlace}{here}
+    {\PackageError{m20}{M20_E_PLACEMENT_UNAVAILABLE}{The~complete~unbreakable~sidebar~does~not~fit~this~anchor.}}
+    {\mTwentyAdvance}
+  }
+  \par\noindent\box\mTwentyAtomicSidebar\par
+ }
+}
 \ExplSyntaxOff
 \newcommand\mTwentySidebarPDF[3]{%
+ \global\mTwentyNotes={}%
  \def\mTwentySidebarTitle{#2}%
  \def\mTwentyNarrowName{narrow}\def\mTwentyKind{#1}%
  \ifx\mTwentyKind\mTwentyNarrowName\mTwentyNarrowtrue\mTwentyOuterWidth=\mTwentyColumnWidth\else\mTwentyNarrowfalse\mTwentyOuterWidth=\textwidth\fi
@@ -129,6 +205,6 @@
  \ifnum\mTwentySidebarColumns=2\advance\mTwentyTextWidth-12bp\divide\mTwentyTextWidth2\fi
  \mTwentySegment=0
  \mTwentyPlacement
- \csname mTwentyWideBlocks:n\endcsname{#3}%
+ \csname mTwentyComposeOrAtomic:n\endcsname{#3}%
 }
 \endinput

@@ -5,6 +5,7 @@
 \author{WodTeX}
 \newcommand\ProofPara[1]{\par\noindent #1. The changing world calls for thoughtful observation. Every voice, every story and every detail belongs in the same living source. These paragraphs exercise genuine font metrics and normal automatic composition.\par}
 \newcommand\ProofLong[2]{\newcount\proofcount\proofcount=0\loop\ifnum\proofcount<#1\advance\proofcount1\ProofPara{#2-\number\proofcount}\repeat}
+\m20epubsafe{ProofPara,ProofLong}
 \begin{document}
 \chapter{Chapter\\Number:\\Title}
 \section{A Heading Across Both Columns}

@@ -123,7 +123,7 @@ def resolve_profile(idml_path):
     originals={'heading_regular':'abbess-regular.ttf','body_regular':'GOUDOS.TTF','body_bold':'GOUDOSB_0.TTF','body_italic':'GOUDOSI_0.TTF','sidebar_regular':'FuturaPTBook.otf'}
     for key, filename in originals.items():fonts.append(font_record(key,path.parent/'Document fonts'/filename,key))
     selected = {p.name:p for base in (Path('/usr/share/fonts'), ROOT/'.runtime/fonts') if base.exists() for p in base.rglob('*.ttf')}
-    supplements={'script_fallback':'NotoSerif-Regular.ttf','body_bold_italic':'NotoSerif-BoldItalic.ttf','sidebar_bold':'NotoSans-Bold.ttf','sidebar_italic':'NotoSans-Italic.ttf','sidebar_bold_italic':'NotoSans-BoldItalic.ttf','mono_regular':'DejaVuSansMono.ttf','script_sans':'NotoSans-Regular.ttf'}
+    supplements={'script_fallback':'NotoSerif-Regular.ttf','body_bold_italic':'NotoSerif-BoldItalic.ttf','sidebar_bold':'NotoSans-Bold.ttf','sidebar_italic':'NotoSans-Italic.ttf','sidebar_bold_italic':'NotoSans-BoldItalic.ttf','mono_regular':'DejaVuSansMono.ttf','script_sans':'NotoSans-Regular.ttf','rtl_regular':'DejaVuSans.ttf','rtl_bold':'DejaVuSans-Bold.ttf','rtl_italic':'DejaVuSans-Oblique.ttf','rtl_bold_italic':'DejaVuSans-BoldOblique.ttf'}
     for key, filename in supplements.items():fonts.append(font_record(key,selected[filename],key,True))
     return {'schema_version':1,'profile':'m20','units':'bp','page':page,'page_size_pt':page,
             'source':{'idml':str(path),'sha256':digest(path),'authority':'Original supplied IDML; inherited/local styles resolve independently'},
@@ -163,7 +163,7 @@ def prepare_assets(profile, output_dir):
             original_mode=image.mode; original_size=list(image.size); info=dict(image.info)
             if image.mode not in ('RGB','RGBA','L','LA','P'):image=image.convert('RGBA')
             image.save(dst,format='PNG',icc_profile=info.get('icc_profile'),dpi=info.get('dpi',(300,300)))
-        resources.append({'id':role,'path':str(dst.relative_to(ROOT)),'sha256':digest(dst),'source_sha256':record['sha256'],'role':'decorative','kind':'artwork','source':str(src.relative_to(ROOT.parent)),'dimensions_px':original_size,'source_mode':original_mode,'color_note':'Lossless PNG; embedded source ICC retained where provided; CMYK source converted by Pillow must be visually calibrated','license':'Supplied proprietary artwork; no redistribution license granted'})
+        resources.append({'id':role,'path':str(dst.relative_to(ROOT)),'sha256':digest(dst),'source_sha256':record['sha256'],'role':'decorative','kind':'artwork','source':str(src.relative_to(base)),'dimensions_px':original_size,'source_mode':original_mode,'color_note':'Lossless PNG; embedded source ICC retained where provided; CMYK source converted by Pillow must be visually calibrated','license':'Supplied proprietary artwork; no redistribution license granted'})
     (out/'resources.json').write_text(json.dumps(resources,ensure_ascii=False,indent=2)+'\n')
     return resources
 
@@ -173,6 +173,8 @@ def write_profile_tex(profile, path):
     text='% Source-resolved M20 geometry in bp (72 units/inch), not TeX pt.\n'
     for name,value in values.items():text+='\\def\\mTwenty'+name+'{'+str(value)+'bp}\n'
     text+='\\def\\mTwentyBodySize{10bp}\n\\def\\mTwentyBodyLeading{12bp}\n\\def\\mTwentyBodyIndent{18bp}\n\\def\\mTwentyBodyBefore{1.44bp}\n\\def\\mTwentyBodyAfter{1.44bp}\n\\def\\mTwentyBodyVerticalScale{98}\n\\def\\mTwentyFirstVerticalScale{100}\n'
+    text+='\\def\\mTwentyOpenerBodyTop{'+str(profile['opener']['body_top'])+'bp}\n'
+    text+='\\def\\mTwentySidebarInset{'+str(profile['sidebar']['inset'])+'bp}\n'
     Path(path).write_text(text)
 
 def public_profile(profile):
@@ -184,9 +186,28 @@ def public_profile(profile):
     result['fonts'] = [{k:v for k,v in f.items() if k != 'source'} for f in profile['fonts']]
     return result
 
+def import_template_zip(path):
+    """Extract only the authorized interior input tree, leaving the ZIP intact."""
+    dest=ROOT/'inputs/M20';dest.mkdir(parents=True,exist_ok=True)
+    with zipfile.ZipFile(path) as z:
+        matches=[n for n in z.namelist() if Path(n).name=='M20 Template Interior.idml']
+        if len(matches)!=1:raise ValueError('Expected one original M20 Template Interior.idml in the template ZIP')
+        parent=Path(matches[0]).parent
+        for member in z.infolist():
+            p=Path(member.filename)
+            if p.is_absolute() or '..' in p.parts or ((member.external_attr>>16)&0o170000)==0o120000:raise ValueError('Unsafe template ZIP member')
+            if not p.is_relative_to(parent) or member.is_dir():continue
+            relative=p.relative_to(parent)
+            if relative.name!='M20 Template Interior.idml' and relative.parts[0] not in ('Document fonts','Links'):continue
+            target=dest/relative;target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(z.read(member))
+    return dest/'M20 Template Interior.idml'
+
 if __name__ == '__main__':
-    parser=argparse.ArgumentParser();parser.add_argument('--idml',default=str(SOURCE/'M20 Template Interior.idml'));parser.add_argument('--assets-out',default=str(ROOT/'assets'));args=parser.parse_args()
-    profile=resolve_profile(args.idml)
+    parser=argparse.ArgumentParser();parser.add_argument('--idml');parser.add_argument('--template-zip');parser.add_argument('--assets-out',default=str(ROOT/'assets'));args=parser.parse_args()
+    if args.idml and args.template_zip:parser.error('Choose --idml or --template-zip')
+    idml=import_template_zip(args.template_zip) if args.template_zip else Path(args.idml) if args.idml else ROOT/'inputs/M20/M20 Template Interior.idml'
+    if not idml.exists() and not (args.idml or args.template_zip):idml=SOURCE/'M20 Template Interior.idml'
+    profile=resolve_profile(idml)
     (ROOT/'profiles/m20.json').write_text(json.dumps(public_profile(profile),ensure_ascii=False,indent=2)+'\n')
     write_profile_tex(profile,ROOT/'profiles/m20.tex')
     resources=prepare_assets(profile,args.assets_out)

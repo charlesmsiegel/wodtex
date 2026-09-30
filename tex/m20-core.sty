@@ -3,22 +3,28 @@
 \RequirePackage{expl3,xparse,amsmath,graphicx,makeidx}
 \newcounter{m20sidebar}
 \newcounter{m20sidebarnote}
+\newcounter{m20table}
 \newif\ifmTwentySidebarActive
 \def\mTwentyProfile{m20}
-\def\mTwentyAssetPath{assets/}
-\def\mTwentyFontPath{fonts/}
+\providecommand\mTwentyBuildAssetPath{assets/}
+\providecommand\mTwentyBuildFontPath{fonts/}
+\let\mTwentyAssetPath\mTwentyBuildAssetPath
+\let\mTwentyFontPath\mTwentyBuildFontPath
 \def\mTwentyRunningTitle{}
 \def\mTwentyMath{legacy}
+\def\mTwentyChapterTitleSize{60bp}
+\def\mTwentyChapterTitleLeading{54bp}
 \providecommand\mTwentyBodyBegin{}
 \providecommand\mTwentyBodyEnd{}
 \providecommand\mTwentyNewPage{\clearpage}
 \providecommand\mTwentyAnchor[1]{}
-\def\mTwentyLoadFonts{%
- \setmainfont{GOUDOS.TTF}[Path=\mTwentyFontPath,BoldFont=GOUDOSB_0.TTF,ItalicFont=GOUDOSI_0.TTF]%
- \newfontfamily\mTwentyHeadingFont{abbess-regular.ttf}[Path=\mTwentyFontPath]%
- \newfontfamily\mTwentySidebarFont{FuturaPTBook.otf}[Path=\mTwentyFontPath]%
-}
 \ExplSyntaxOn
+\prop_new:N \g_mtw_ids_prop
+\cs_new_protected:Npn \mTwentyRegisterID:n #1 {
+ \regex_match:nnF {\A[A-Za-z][-A-Za-z0-9:._]*\Z}{#1}{\PackageError{m20}{M20_E_INVALID_ID}{Use~a~nonempty~stable~XML-safe~ID.}}
+ \prop_if_in:NnT \g_mtw_ids_prop {#1}{\PackageError{m20}{M20_E_DUPLICATE_ID:~#1}{Semantic~IDs~must~be~unique.}}
+ \prop_gput:Nnn \g_mtw_ids_prop {#1}{used}
+}
 \keys_define:nn {m20/setup} {
  profile .code:n = \def\mTwentyProfile{#1},
  asset-path .code:n = \def\mTwentyAssetPath{#1},
@@ -27,6 +33,8 @@
  math .choice:,
  math / legacy .code:n = \def\mTwentyMath{legacy},
  math / unicode .code:n = \def\mTwentyMath{unicode},
+ chapter-title-size .code:n = \gdef\mTwentyChapterTitleSize{#1},
+ chapter-title-leading .code:n = \gdef\mTwentyChapterTitleLeading{#1},
  unknown .code:n = \PackageError{m20}{M20_E_UNKNOWN_SETUP:~\l_keys_key_str}{Unknown~setup~key}
 }
 \NewDocumentCommand\mTwentySetup{m}{\keys_set:nn {m20/setup}{#1}}
@@ -47,6 +55,7 @@
  unknown .code:n = \PackageError{m20}{M20_E_UNKNOWN_SIDEBAR:~\l_keys_key_str}{Unknown~sidebar~key}
 }
 \cs_new_protected:Npn \mTwentySidebarSemantic:nnnn #1#2#3#4 {
+ \ifmTwentySidebarActive\PackageError{m20}{M20_E_UNSUPPORTED_NESTING}{A~breakable~sidebar~cannot~be~nested~inside~another~sidebar.}\fi
  \group_begin:
  \stepcounter{m20sidebar}
  \setcounter{m20sidebarnote}{0}
@@ -66,6 +75,7 @@
    {\PackageError{m20}{M20_E_NARROW_TWO_COLUMNS}{A~narrow~sidebar~has~one~text~column}}
  }
  \edef\mTwentySidebarID{\tl_use:N \l_mtw_id_tl}
+ \exp_args:NV \mTwentyRegisterID:n \l_mtw_id_tl
  \edef\mTwentySidebarPlace{\tl_use:N \l_mtw_place_tl}
  \edef\mTwentySidebarColumns{\int_use:N \l_mtw_columns_int}
  \ifmTwentyEpub
@@ -76,7 +86,16 @@
  \group_end:
 }
 \NewDocumentEnvironment{m20sidebar}{O{}m+b}{\mTwentySidebarSemantic:nnnn {narrow}{#1}{#2}{#3}}{}
-\NewDocumentEnvironment{m20sidebarwide}{O{}m+b}{\ifmTwentyEpub\else\mTwentySuspendEnvironment{m20sidebarwide}\fi\mTwentySidebarSemantic:nnnn {wide}{#1}{#2}{#3}}{\ifmTwentyEpub\else\aftergroup\mTwentyBodyBegin\fi}
+\NewDocumentEnvironment{m20sidebarwide}{O{}m+b}{\mTwentySidebarSemantic:nnnn {wide}{#1}{#2}{#3}}{}
+\AddToHook{env/m20sidebarwide/before}{\ifmTwentySidebarActive\PackageError{m20}{M20_E_UNSUPPORTED_NESTING}{A~sidebar~cannot~contain~another~sidebar.}\fi\ifmTwentyEpub\else\mTwentyBodyEnd\fi}
+\AddToHook{env/m20sidebarwide/after}{\ifmTwentyEpub\else\mTwentyBodyBegin\fi}
+\AddToHook{env/m20sidebar/after}{\ifmTwentyEpub\else\mTwentyBodyBegin\fi}
+\NewDocumentEnvironment{m20table}{O{}m+b}{%
+ \ifmTwentyEpub\mTwentyTableEpub{#1}{#2}{#3}%
+ \else\mTwentyTablePDF{#1}{#2}{#3}\fi
+}{}
+\AddToHook{env/m20table/before}{\ifmTwentyEpub\else\ifmTwentySidebarActive\else\mTwentyBodyEnd\fi\fi}
+\AddToHook{env/m20table/after}{\ifmTwentyEpub\else\ifmTwentySidebarActive\else\mTwentyBodyBegin\fi\fi}
 % TeX control words cannot contain digits. This dispatcher makes the public
 % literal manuscript spelling \m20setup{...} valid without changing catcodes.
 \tl_new:N \l_mtw_command_tl
@@ -93,13 +112,17 @@
 \providecommand\mTwentyAsideEnd{\par\medskip}
 \NewDocumentCommand\mTwentySidebarBreak{O{page}}{%
  \ifmTwentySidebarActive
-  \ifmTwentyEpub\par\else\penalty-10000\relax\fi
+  \def\mTwentyBreakMode{#1}\def\mTwentyPageMode{page}\def\mTwentyColumnMode{column}%
+  \ifx\mTwentyBreakMode\mTwentyPageMode\else\ifx\mTwentyBreakMode\mTwentyColumnMode\else
+   \PackageError{m20}{M20_E_BREAK_MODE}{Choose page or column.}\fi\fi
+  \par\ifmTwentyEpub\else\directlua{m20tables.manual_break("#1")}\fi
  \else\PackageError{m20}{M20_E_BREAK_OUTSIDE_SIDEBAR}{Sidebar breaks are only valid inside sidebars}\fi}
 \NewDocumentCommand\mTwentyNote{m}{\footnote{#1}}
+\NewDocumentCommand\mTwentyEpubSafe{m}{}
 
 \ExplSyntaxOn
-\clist_map_inline:nn {setup,bodybegin,bodyend,newpage,anchor,sidebarbreak,note} {
- \cs_new_protected:cpn {mTwentyPublic#1} {\use:c {mTwenty\str_case:nn {#1} {{setup}{Setup}{bodybegin}{BodyBegin}{bodyend}{BodyEnd}{newpage}{NewPage}{anchor}{Anchor}{sidebarbreak}{SidebarBreak}{note}{Note}}}}
+\clist_map_inline:nn {setup,bodybegin,bodyend,newpage,anchor,sidebarbreak,note,epubsafe} {
+ \cs_new_protected:cpn {mTwentyPublic#1} {\use:c {mTwenty\str_case:nn {#1} {{setup}{Setup}{bodybegin}{BodyBegin}{bodyend}{BodyEnd}{newpage}{NewPage}{anchor}{Anchor}{sidebarbreak}{SidebarBreak}{note}{Note}{epubsafe}{EpubSafe}}}}
 }
 \ExplSyntaxOff
 \endinput

@@ -57,6 +57,25 @@ def prepare_dependencies(cache):
     sources = runtime / 'sources'; sources.mkdir(exist_ok=True)
     texmf = runtime / 'texmf'; texmf.mkdir(exist_ok=True)
     fontdir = runtime / 'fonts'; fontdir.mkdir(exist_ok=True)
+    for item in lock.get('node_packages', []):
+        archive=downloads/item['archive']
+        if not archive.exists():
+            with urllib.request.urlopen(item['url'],timeout=60) as response: archive.write_bytes(response.read())
+        if digest(archive)!=item['sha256']: raise RuntimeError('M20_E_DEPENDENCY_HASH: '+item['name'])
+        dest=runtime/'node'/item['name'];dest.mkdir(parents=True,exist_ok=True)
+        with tarfile.open(archive) as z:
+            for member in z.getmembers():
+                parts=Path(member.name).parts[1:]
+                if not parts:continue
+                member.name=str(Path(*parts));z.extract(member,dest,filter='data')
+    for item in lock.get('font_archives', []):
+        archive=downloads/item['archive']
+        if not archive.exists():
+            with urllib.request.urlopen(item['url'],timeout=60) as response: archive.write_bytes(response.read())
+        if digest(archive)!=item['sha256']: raise RuntimeError('M20_E_DEPENDENCY_HASH: '+item['name'])
+        with zipfile.ZipFile(archive) as z:
+            for name in z.namelist():
+                if name.endswith('.ttf'): (fontdir/Path(name).name).write_bytes(z.read(name))
     for item in lock.get('supplemental_fonts', []):
         font = fontdir / item['file']
         if not font.exists():
@@ -64,6 +83,13 @@ def prepare_dependencies(cache):
                 font.write_bytes(response.read())
         if digest(font) != item['sha256']:
             raise RuntimeError('M20_E_DEPENDENCY_HASH: '+item['file'])
+    for item in lock.get('source_files', []):
+        source = downloads / item['file']
+        if not source.exists():
+            with urllib.request.urlopen(item['url'], timeout=60) as response:
+                source.write_bytes(response.read())
+        if digest(source) != item['sha256']:
+            raise RuntimeError('M20_E_DEPENDENCY_HASH: '+item['name'])
     for item in lock['dependencies']:
         archive = downloads / item['archive']
         if not archive.exists():
@@ -98,6 +124,12 @@ def prepare_dependencies(cache):
 
 def prepare_formats(cache_dir):
     cache = workspace_path(cache_dir); env = runtime_environment(cache)
+    if not (ROOT/'.runtime/texmf/texmf-dist/tex/generic/tex4ht/binhex.tex').exists():
+        work = cache/'docstrip-binhex'; work.mkdir(exist_ok=True)
+        shutil.copyfile(ROOT/'.runtime/downloads/binhex.dtx',work/'binhex.dtx')
+        (work/'extract.tex').write_text(r'\input docstrip.tex '+r'\keepsilent\askforoverwritefalse\generate{\file{binhex.tex}{\from{binhex.dtx}{style}}}\endbatchfile')
+        run(['pdftex','-ini','-no-shell-escape','-interaction=nonstopmode','-halt-on-error',r'\input plain \input extract'],work,env,work/'extract.stdout')
+        shutil.copyfile(work/'binhex.tex',ROOT/'.runtime/texmf/texmf-dist/tex/generic/tex4ht/binhex.tex')
     base = ROOT / '.runtime/sources/luatexbase'
     if not (ROOT / '.runtime/texmf/tex/luatex/lualibs/lualibs.lua').exists():
         work = cache / 'docstrip-lualibs'; work.mkdir(exist_ok=True)

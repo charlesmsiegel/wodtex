@@ -26,3 +26,24 @@ font/art files recovered; eight runtime/profile tests pass. Actual LuaLaTeX
 font smoke compiled twice, rendered, and visually inspected. Tiny EPUB runtime
 smoke still requires a missing transitive TeX4ht dependency. Task 1 is therefore
 not claimed complete yet. No licensed inputs are committed.
+
+## Working implementation checkpoint (2026-09-30)
+
+Native PDF layout, long sidebars and tables, chapter openings, art reservations,
+references/indexing, semantic EPUB conversion, bounded builds, and independent
+output verification are implemented. The branch includes their integration
+tests and a shared stress specimen. PDF layout proof: 20 pages. EPUB conversion
+and EPUBCheck run successfully on the specimen.
+
+Known nonblocking issue, deferred at the user's direction: changing from the
+independent first-paragraph font back to the normal body font can prevent
+Babel's automatic Greek, Cyrillic, Hebrew, and Arabic font selection. The
+multilingual test currently fails and the full specimen's PDF build reports
+`M20_E_MISSING_GLYPH`; the build does not silently bless missing characters.
+Explicit script fonts remain available. Preserve this regression test.
+
+Remaining work: clean package/setup verification, final source/output checks,
+reader rendering, documentation, and review before opening the PR to main.
+Exact visual calibration against an original exported reference PDF remains
+unverified because that reference was not supplied. This checkpoint is not a
+claim that every design acceptance criterion has passed.
