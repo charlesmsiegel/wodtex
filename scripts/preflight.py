@@ -56,6 +56,14 @@ def prepare_dependencies(cache):
     runtime = ROOT / '.runtime'; downloads = runtime / 'downloads'; downloads.mkdir(parents=True, exist_ok=True)
     sources = runtime / 'sources'; sources.mkdir(exist_ok=True)
     texmf = runtime / 'texmf'; texmf.mkdir(exist_ok=True)
+    fontdir = runtime / 'fonts'; fontdir.mkdir(exist_ok=True)
+    for item in lock.get('supplemental_fonts', []):
+        font = fontdir / item['file']
+        if not font.exists():
+            with urllib.request.urlopen(item['url'], timeout=60) as response:
+                font.write_bytes(response.read())
+        if digest(font) != item['sha256']:
+            raise RuntimeError('M20_E_DEPENDENCY_HASH: '+item['file'])
     for item in lock['dependencies']:
         archive = downloads / item['archive']
         if not archive.exists():
@@ -147,7 +155,7 @@ def preflight(cache_dir, prepare=False):
     result = evaluate_availability(engines, packages)
     result.update(engines=engines, packages=packages, environment=env,
                   index={'makeindex':tool_info('makeindex',env,args=('--help',))},
-                  converters={name:tool_info(name,env,args=('-v',) if name == 'epubcheck' else ('--version',)) for name in ('tex4ebook','make4ht','tex4ht','epubcheck')},
+                  converters={name:tool_info(name,env,args=('--version',)) for name in ('tex4ebook','make4ht','epubcheck')},
                   fonts=json.loads((ROOT / 'profiles/m20.json').read_text())['fonts'] if (ROOT / 'profiles/m20.json').exists() else [],
                   formats={name:str(cache / 'formats' / (name+'.fmt')) for name in ('lualatex','dvilualatex')})
     result['pdf_ready'] = result['pdf_ready'] and (cache / 'formats/lualatex.fmt').exists()

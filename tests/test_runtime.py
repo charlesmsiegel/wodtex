@@ -32,3 +32,8 @@ class RuntimeTests(unittest.TestCase):
         for key in ('engines', 'packages', 'fonts', 'index', 'converters', 'diagnostics', 'environment'):
             self.assertIn(key, report)
         self.assertTrue(report['engines']['lualatex']['available'])
+
+    def test_epubcheck_version_probe_is_runnable(self):
+        m = self.module()
+        report = m.preflight(ROOT / '.runtime', prepare=False)
+        self.assertTrue(report['converters']['epubcheck']['available'])

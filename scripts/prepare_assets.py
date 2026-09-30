@@ -14,8 +14,6 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT.parent / 'indesign-sample/template/M20/InDesign/M20 Template Interior'
-BASELINE = ROOT.parent / 'book-layouts/profiles/m20/template-profile.json'
-AUDIT = ROOT.parent / 'book-layouts/font-support/graveyards-of-hope/selected-assets.json'
 
 def digest(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
@@ -117,7 +115,6 @@ def resolve_profile(idml_path):
         page = [float(document_pref.get('PageWidth')),float(document_pref.get('PageHeight'))]
         masters = {name:geometry_records(archive.read(name)) for name in archive.namelist() if name.startswith('MasterSpreads/') and name.endswith('.xml')}
         spreads = {name:geometry_records(archive.read(name)) for name in archive.namelist() if name.startswith('Spreads/') and name.endswith('.xml')}
-    baseline = json.loads(BASELINE.read_text())
     margin = next(r['attributes'] for name, records in masters.items() for r in records if name.endswith('MasterSpread_ud3.xml') and r['type'] == 'MarginPreference')
     top, bottom, inner, outer, gutter = (float(margin[k]) for k in ('Top','Bottom','Left','Right','ColumnGutter'))
     body_width = page[0]-inner-outer; body_height=page[1]-top-bottom
@@ -125,20 +122,21 @@ def resolve_profile(idml_path):
     fonts=[]
     originals={'heading_regular':'abbess-regular.ttf','body_regular':'GOUDOS.TTF','body_bold':'GOUDOSB_0.TTF','body_italic':'GOUDOSI_0.TTF','sidebar_regular':'FuturaPTBook.otf'}
     for key, filename in originals.items():fonts.append(font_record(key,path.parent/'Document fonts'/filename,key))
-    audit = json.loads(AUDIT.read_text())['assets']
-    selected = {a['file']:Path(a['path']) for a in audit}
-    selected.update({'NotoSerif-Regular.ttf':Path('/usr/share/fonts/truetype/noto/NotoSerif-Regular.ttf'), 'NotoSans-Regular.ttf':Path('/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf')})
+    selected = {p.name:p for base in (Path('/usr/share/fonts'), ROOT/'.runtime/fonts') if base.exists() for p in base.rglob('*.ttf')}
     supplements={'script_fallback':'NotoSerif-Regular.ttf','body_bold_italic':'NotoSerif-BoldItalic.ttf','sidebar_bold':'NotoSans-Bold.ttf','sidebar_italic':'NotoSans-Italic.ttf','sidebar_bold_italic':'NotoSans-BoldItalic.ttf','mono_regular':'DejaVuSansMono.ttf','script_sans':'NotoSans-Regular.ttf'}
     for key, filename in supplements.items():fonts.append(font_record(key,selected[filename],key,True))
     return {'schema_version':1,'profile':'m20','units':'bp','page':page,'page_size_pt':page,
-            'source':{'idml':str(path.relative_to(ROOT.parent)),'sha256':digest(path),'authority':'Original supplied IDML; inherited/local styles resolve independently'},
+            'source':{'idml':str(path),'sha256':digest(path),'authority':'Original supplied IDML; inherited/local styles resolve independently'},
             'geometry':geometry,
-            'style_roles':baseline['style_roles'],'styles':styles,'resolved_styles':{k:v['resolved'] for k,v in styles.items()},
-            'opener':baseline['opener'],'sidebar':baseline['sidebar'],'art_reserves':baseline['art_reserves'],
+            'style_roles':{'body':'ParagraphStyle/n','first':'ParagraphStyle/n (no indent)','heading1':'ParagraphStyle/1','heading2':'ParagraphStyle/2','heading3':'ParagraphStyle/3'},
+            'styles':styles,'resolved_styles':{k:v['resolved'] for k,v in styles.items()},
+            'opener':{'body_top':355.5},'sidebar':{'border':7,'inset':25,'gutter':12},
+            'art_reserves':{'horizontal':[body_width,body_height/2],'vertical':[(body_width-gutter)/2,body_height]},
             'swatches':swatches,'source_master_geometry':masters,'source_spread_geometry':spreads,
             'composition':{'kerning':'metrics','tracking':0,'optical_margin_alignment':False,'generic_protrusion':False,'generic_expansion':False,
                            'paragraph_gap_policy':'Measure composition; do not add inactive/inherited span gaps blindly'},
-            'fonts':fonts,'assets':baseline['assets'],'source_asset_base':str(path.parent.relative_to(ROOT.parent)),
+            'fonts':fonts,'assets':[{'sourceRelative':str(p.relative_to(path.parent)),'sha256':digest(p)} for p in sorted((path.parent/'Links').iterdir()) if p.is_file()],
+            'source_asset_base':str(path.parent),
             'notes':['First paragraph is independently based on the no-paragraph-style base and resolves vertical scale to 100 percent.',
                      'Complete raw/resolved effects are retained separately from active properties.',
                      'Missing bold italic and sidebar emphasis use explicit genuine audited Noto faces; never synthetic styling.']}
@@ -177,10 +175,19 @@ def write_profile_tex(profile, path):
     text+='\\def\\mTwentyBodySize{10bp}\n\\def\\mTwentyBodyLeading{12bp}\n\\def\\mTwentyBodyIndent{18bp}\n\\def\\mTwentyBodyBefore{1.44bp}\n\\def\\mTwentyBodyAfter{1.44bp}\n\\def\\mTwentyBodyVerticalScale{98}\n\\def\\mTwentyFirstVerticalScale{100}\n'
     Path(path).write_text(text)
 
+def public_profile(profile):
+    """Keep reusable measurements; local source/audit paths are build evidence."""
+    result = {k:profile[k] for k in ('schema_version','profile','units','page','geometry','style_roles','opener','sidebar','art_reserves','composition','notes')}
+    result['source'] = {**profile['source'], 'idml':Path(profile['source']['idml']).name}
+    roles = set(profile['style_roles'].values()) | {'ParagraphStyle/sb 1','ParagraphStyle/sb 2'}
+    result['styles'] = {k:{'active':v['active'],'inheritance':v['inheritance']} for k,v in profile['styles'].items() if k in roles}
+    result['fonts'] = [{k:v for k,v in f.items() if k != 'source'} for f in profile['fonts']]
+    return result
+
 if __name__ == '__main__':
     parser=argparse.ArgumentParser();parser.add_argument('--idml',default=str(SOURCE/'M20 Template Interior.idml'));parser.add_argument('--assets-out',default=str(ROOT/'assets'));args=parser.parse_args()
     profile=resolve_profile(args.idml)
-    (ROOT/'profiles/m20.json').write_text(json.dumps(profile,ensure_ascii=False,indent=2)+'\n')
+    (ROOT/'profiles/m20.json').write_text(json.dumps(public_profile(profile),ensure_ascii=False,indent=2)+'\n')
     write_profile_tex(profile,ROOT/'profiles/m20.tex')
     resources=prepare_assets(profile,args.assets_out)
     print(json.dumps({'fonts':sum(r['kind']=='font' for r in resources),'artwork':sum(r['kind']=='artwork' for r in resources),'resources':str(Path(args.assets_out)/'resources.json')}))

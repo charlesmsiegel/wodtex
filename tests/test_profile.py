@@ -3,6 +3,11 @@ import unittest
 from tests.support import ROOT, IDML
 
 class ProfileTests(unittest.TestCase):
+    def test_import_requires_only_original_input_tree(self):
+        profile = self.module().resolve_profile(IDML)
+        self.assertEqual(profile['geometry']['body_height'], 657)
+        self.assertEqual(profile['opener']['body_top'], 355.5)
+
     def module(self):
         self.assertTrue((ROOT / 'scripts/prepare_assets.py').exists(), 'profile resolver required')
         spec = importlib.util.spec_from_file_location('m20assets', ROOT / 'scripts/prepare_assets.py')
