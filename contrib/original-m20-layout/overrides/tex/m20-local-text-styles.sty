@@ -1,0 +1,85 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{m20-local-text-styles}[2026/09/30 source and reference matched lists and stat blocks]
+\ifdefined\mTwentyLocalListNextItem\expandafter\endinput\fi
+\RequirePackage{enumitem,luatexbase,xcolor}
+% Original M20 IDML Bullet: Goudy 10/12, hanging text at 18bp,
+% marker at 4.5bp, right inset 9bp, 4.5bp paragraph spacing and
+% 10 percent purple shading with 1.44bp vertical padding.
+% User's supplied enumeration reference confirms alternating shaded rows.
+\newcount\mTwentyLocalListRow
+\let\mTwentyLocalNativeItem\item
+\newattribute\mTwentyListShadeAttribute
+\newattribute\mTwentyListLeftAttribute
+\newattribute\mTwentyListWidthAttribute
+\mTwentyListShadeAttribute=-1
+\convertcolorspec{named}{m20purple}{cmyk}\mTwentyListInkSpec
+\AtBeginDocument{\pgfutil@addpdfresource@extgs{/M20ListShade << /ca .1 >>}}
+\directlua{
+ local shade=luatexbase.attributes.mTwentyListShadeAttribute
+ local left=luatexbase.attributes.mTwentyListLeftAttribute
+ local width=luatexbase.attributes.mTwentyListWidthAttribute
+ local hlist=node.id('hlist')
+ local sp_per_bp=65536*72.27/72
+ local ink=('\mTwentyListInkSpec'):gsub(',', ' ')
+ luatexbase.add_to_callback('post_linebreak_filter',function(head)
+  for line in node.traverse_id(hlist,head) do
+   if node.has_attribute(line,shade)==1 then
+    local inset=(node.has_attribute(line,left) or 0)/sp_per_bp
+    local rowwidth=(node.has_attribute(line,width) or line.width)/sp_per_bp
+    local bottom=-3
+    local height=12
+    local literal=node.new('whatsit','pdf_literal')
+    literal.mode=0
+    literal.data='q /M20ListShade gs '..ink..' k '..(-inset)..' '..bottom..' '..rowwidth..' '..height..' re f Q'
+    line.head=node.insert_before(line.head,line.head,literal)
+   end
+  end
+  return head
+ end,'m20-local-list-row-backgrounds')
+}
+\newcommand\mTwentyLocalListNextItem{%
+ \par\advance\mTwentyLocalListRow\@ne
+ \ifmTwentySidebarActive
+  \mTwentyListShadeAttribute=-1
+ \else
+  \ifodd\mTwentyLocalListRow\mTwentyListShadeAttribute=1\else\mTwentyListShadeAttribute=0\fi
+ \fi
+ \mTwentyListLeftAttribute=\number\leftmargin
+ \mTwentyListWidthAttribute=\number\dimexpr\linewidth+\leftmargin+\rightmargin\relax
+ \mTwentyLocalNativeItem}
+\newcommand\mTwentyLocalListBegin{%
+ \mTwentyLocalListRow=0\mTwentyListShadeAttribute=-1
+ \ifmTwentySidebarActive
+  \mTwentySidebarFont\fontsize{10bp}{10bp}\selectfont
+ \else\rmfamily\fontsize{10bp}{12bp}\selectfont\fi
+ \let\item\mTwentyLocalListNextItem}
+\newcommand\mTwentyLocalListEnd{\par\mTwentyListShadeAttribute=-1}
+\setlist{leftmargin=18bp,rightmargin=9bp,labelindent=4.5bp,
+ labelwidth=9bp,labelsep=4.5bp,itemindent=0bp,align=left,
+ topsep=4.5bp,itemsep=4.5bp,parsep=0bp,partopsep=0bp,
+ before=\mTwentyLocalListBegin,after=\mTwentyLocalListEnd}
+% Marker definitions and native enumerate counters are deliberately untouched.
+\setlist[description]{style=standard,font=\bfseries}
+% The supplied stat-block reference uses purple Futura, bold run-in keys,
+% compact separate rows, and a modest inset. This is different from the
+% template's Goudy Stat Dots rating paragraph, so it has its own semantic
+% environment. Wrappers contain the existing manuscript text unchanged.
+\NewDocumentEnvironment{m20statblock}{}{%
+ \par\begingroup\mTwentyListShadeAttribute=-1
+ \mTwentySidebarFont\fontsize{10bp}{10bp}\selectfont
+ \color{m20purple}
+ \begin{list}{}{\leftmargin=13.5bp\rightmargin=0bp
+  \itemindent=0bp\labelwidth=0bp\labelsep=0bp
+  \topsep=1.44bp\itemsep=1.44bp\parsep=0bp\partopsep=0bp
+  \listparindent=0bp}%
+}{\end{list}\endgroup\par}
+\ExplSyntaxOn
+\tl_new:N \l_mtw_stat_display_tl
+\cs_new_protected:Npn \mTwentyStatDisplay:n #1 {
+ \tl_set:Nn \l_mtw_stat_display_tl {#1}
+ \tl_replace_all:Nnn \l_mtw_stat_display_tl {|}{\par\noindent}
+ \mTwentyLocalNativeItem[]\tl_use:N \l_mtw_stat_display_tl
+}
+\NewDocumentCommand\mTwentyStatEntry{m}{\mTwentyStatDisplay:n{#1}}
+\ExplSyntaxOff
+\endinput

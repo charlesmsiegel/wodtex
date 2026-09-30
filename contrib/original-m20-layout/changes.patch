@@ -1,0 +1,969 @@
+--- a/scripts/extract_spread_and_page_types.py
++++ b/scripts/extract_spread_and_page_types.py
+@@ -0,0 +1,51 @@
++#!/usr/bin/env python3
++"""Copy authentic decorative content from pinned original M20 PDF."""
++from pathlib import Path
++import argparse, hashlib, re, json
++import fitz
++p=argparse.ArgumentParser();p.add_argument('template',type=Path);p.add_argument('--out',type=Path,default=Path('assets'));a=p.parse_args()
++assert hashlib.sha256(a.template.read_bytes()).hexdigest()=='4c876e07b17f4a85877213d557b3f0236004bf6baa48d0bef708a68745e93df5'
++a.out.mkdir(parents=True,exist_ok=True)
++original=fitz.open(a.template)
++def page_only(index,stream):
++ d=fitz.open();d.insert_pdf(original,from_page=index,to_page=index)
++ pg=d[0];contents=pg.get_contents();d.update_stream(contents[0],stream)
++ for x in contents[1:]:d.update_stream(x,b'')
++ return d
++
++def save_clean(d,filename):
++ assert not ''.join(p.get_text() for p in d).strip(),filename+' retains text'
++ for p in d:p.clean_contents()
++ target=a.out/filename;d.save(target,garbage=4,deflate=True)
++ print(target,hashlib.sha256(target.read_bytes()).hexdigest())
++ return {'file':str(target),'sha256':hashlib.sha256(target.read_bytes()).hexdigest(),'bytes':target.stat().st_size}
++manifest=[]
++spread=fitz.open()
++for index in [5,6]:
++ d=page_only(index,b'q\n/GS0 gs\n0 TL/Fm0 Do\nQ\n');spread.insert_pdf(d)
++manifest.append(save_clean(spread,'spread-border.original-template.pdf'))
++# Original standalone interior title recto: genuine full-page purple background
++# and original translucent logo panel, excluding placeholder text/Author outlines.
++first=b''.join(original.xref_stream(x) for x in original[0].get_contents())
++background=first[:first.index(b'EMC')+3]+b'\nQ\n'
++manifest.append(save_clean(page_only(0,background),'sidebar-background.original-template.pdf'))
++d=page_only(0,background)
++# The Fm0 logo panel's fill and stroke are preserved; its two text spans removed.
++form=next(x for x,n,inv,bb in d[0].get_xobjects() if n=='Fm0' and inv==0)
++s=d.xref_stream(form);s=re.sub(rb'/Span <<.*?BDC\s*BT\b.*?ET\s*EMC',b'',s,flags=re.S)
++d.update_stream(form,s)
++manifest.append(save_clean(d,'interior-title.original-template.pdf'))
++for index,form,name,crop,pattern in [
++ (5,'Fm3','art-horizontal.original-template.pdf',fitz.Rect(66.5504,377.615,571.27,718.8949),'P2'),
++ (6,'Fm1','art-vertical.original-template.pdf',fitz.Rect(53,60.4601,312.2,731.5399),'P0')]:
++ s=b''.join(original.xref_stream(x) for x in original[index].get_contents())
++ pos=s.rfind(('0 TL/'+form+' Do').encode())
++ start=s.rfind(b'q\n0 0 612 792 re',0,pos)
++ end=s.index(b'/Span',pos)
++ fragment=b'q\n/CS0 CS\n'+s[start:end]+b'\nQ\n'
++ d=page_only(index,fragment)
++ assert not d[0].get_text().strip()
++ cropped=fitz.open();pg=cropped.new_page(width=crop.width,height=crop.height)
++ pg.show_pdf_page(pg.rect,d,0,clip=crop)
++ manifest.append(save_clean(cropped,name))
++(a.out/'spread-page-types.provenance.json').write_text(json.dumps({'source':str(a.template),'source_sha256':hashlib.sha256(a.template.read_bytes()).hexdigest(),'spread_pages':[6,7],'spread_master':'A-Master ud3','spread_asset':'M20 Two Page Spread.tif','title_page':1,'horizontal_art_page':6,'vertical_art_page':7,'outputs':manifest},indent=2)+'\n')
+--- a/scripts/extract_template_art.py
++++ b/scripts/extract_template_art.py
+@@ -0,0 +1,17 @@
++#!/usr/bin/env python3
++"""Extract verified original template decorative forms without redesign."""
++import argparse,hashlib
++from pathlib import Path
++import fitz
++p=argparse.ArgumentParser();p.add_argument('template',type=Path);p.add_argument('--out',type=Path,default=Path('assets'));a=p.parse_args()
++expected='4c876e07b17f4a85877213d557b3f0236004bf6baa48d0bef708a68745e93df5'
++if hashlib.sha256(a.template.read_bytes()).hexdigest()!=expected:raise SystemExit('Original template PDF hash mismatch')
++a.out.mkdir(parents=True,exist_ok=True);original=fitz.open(a.template)
++for form,filename in [('Fm0','page_border.png'),('Fm1','chapter-opener.original-template.pdf')]:
++ doc=fitz.open();doc.insert_pdf(original,from_page=4,to_page=4);page=doc[0]
++ doc.update_stream(page.get_contents()[0],('q\n/GS0 gs\n0 TL/'+form+' Do\nQ\n').encode())
++ if page.get_text().strip():raise SystemExit('Decorative extraction unexpectedly contains text')
++ target=a.out/filename
++ if target.suffix=='.png':page.get_pixmap(dpi=300,alpha=False).save(target)
++ else:doc.save(target)
++ print(target,hashlib.sha256(target.read_bytes()).hexdigest())
+--- a/scripts/verify.py
++++ b/scripts/verify.py
+@@ -41,7 +41,7 @@
+     records=[]
+     for line in path.read_text().splitlines():
+         p=line.split('|')
+-        if len(p)<11:continue
++        if len(p)<11 or not p[1].isdigit():continue
+         unit=65536*1.00375
+         records.append(dict(id=p[0],page=int(p[1]),x=int(p[2])/unit,y=792-int(p[3])/unit,
+                             width=int(p[4])/unit,usable=int(p[5])/unit,columns=int(p[6]),
+@@ -149,4 +149,3 @@
+     p=argparse.ArgumentParser();p.add_argument('output');p.add_argument('--target',choices=['pdf','epub'],required=True);args=p.parse_args()
+     report=verify_output(args.output,args.target);report.pop('text',None);report.pop('raw_text',None)
+     print(json.dumps(report,indent=2));raise SystemExit(bool(report['errors']))
+-
+--- a/tests/test_sidebar_breaks.py
++++ b/tests/test_sidebar_breaks.py
+@@ -0,0 +1,65 @@
++"""Real sidebar splits must respect paragraph endpoints without stretching."""
++import re
++import unittest
++
++import fitz
++
++from tests.test_layout_proof import compile_source, positions
++
++
++class SidebarParagraphBreakTests(unittest.TestCase):
++    def compile_paragraph(self, name, available, lines, first_available=None):
++        paragraph = r"\newline ".join(f"PARA-{i:02d}" for i in range(lines))
++        first_available = available if first_available is None else first_available
++        source = (
++            r"\documentclass{m20book}\makeatletter"
++            r"\newcount\sidebarTestRegion"
++            r"\renewcommand\mTwentyRemaining{"
++            r"\ifnum\sidebarTestRegion=0 "
++            f"\\mTwentyAvailable={first_available}bp "
++            r"\else "
++            f"\\mTwentyAvailable={available}bp "
++            r"\fi}"
++            r"\renewcommand\mTwentyAdvance{\advance\sidebarTestRegion1\newpage}"
++            r"\makeatother\begin{document}\m20bodyend"
++            # Neutralize inherited body policy: the galley needs its own policy.
++            r"\clubpenalty=0\widowpenalty=0\displaywidowpenalty=0"
++            r"\begin{m20sidebar}[id=paragraph-break]{Endpoint proof}"
++            r"\typeout{SIDEBAR-POLICY:\the\clubpenalty,\the\widowpenalty,\the\displaywidowpenalty}"
++            + paragraph
++            + r"\par\end{m20sidebar}"
++            r"\typeout{OUTSIDE-POLICY:\the\clubpenalty,\the\widowpenalty,\the\displaywidowpenalty}"
++            r"\end{document}"
++        )
++        _, path = compile_source(source, name)
++        with fitz.open(path.with_suffix(".pdf")) as pdf:
++            chunks = [re.findall(r"PARA-\d\d", p.get_text()) for p in pdf]
++        return path, [chunk for chunk in chunks if chunk]
++
++    def test_sidebar_galley_sets_local_endpoint_penalties(self):
++        path, _ = self.compile_paragraph("sidebar-local-penalties", 110, 4)
++        log = path.with_suffix(".log").read_text()
++        self.assertEqual(re.findall(r"SIDEBAR-POLICY:([^\n]+)", log),
++                         ["10000,10000,10000"])
++        self.assertEqual(re.findall(r"OUTSIDE-POLICY:([^\n]+)", log), ["0,0,0"])
++
++    def test_sidebar_avoids_single_initial_line_in_short_region(self):
++        path, chunks = self.compile_paragraph("sidebar-club", 126, 9, 84)
++        self.assertEqual([x for chunk in chunks for x in chunk],
++                         [f"PARA-{i:02d}" for i in range(9)])
++        self.assertTrue(all(len(chunk) >= 2 for chunk in chunks), chunks)
++        self.assertTrue(all(p["height"] <= 126 for p in positions(path)
++                            if p["kind"] == "sidebar"))
++
++    def test_sidebar_avoids_single_final_line(self):
++        path, chunks = self.compile_paragraph("sidebar-widow", 103, 4)
++        self.assertEqual([x for chunk in chunks for x in chunk],
++                         [f"PARA-{i:02d}" for i in range(4)])
++        self.assertGreaterEqual(len(chunks), 2, chunks)
++        self.assertTrue(all(len(chunk) >= 2 for chunk in chunks), chunks)
++        self.assertTrue(all(p["height"] <= 103 for p in positions(path)
++                            if p["kind"] == "sidebar"))
++
++
++if __name__ == "__main__":
++    unittest.main()
+--- a/tests/test_sidebar_keep.py
++++ b/tests/test_sidebar_keep.py
+@@ -0,0 +1,85 @@
++"""A short flow sidebar should move intact instead of creating continuations."""
++import re
++import unittest
++
++import fitz
++
++from tests.test_layout_proof import compile_source, positions
++
++
++class SidebarKeepTogetherTests(unittest.TestCase):
++    def compile_sidebar(self, name, lines=20, environment="m20sidebar", options=""):
++        paragraph = r"\newline ".join(f"KEEP-{i:03d}" for i in range(lines))
++        source = (
++            r"\documentclass{m20book}\makeatletter"
++            r"\newcount\sidebarTestRegion"
++            r"\renewcommand\mTwentyRemaining{"
++            r"\ifnum\sidebarTestRegion=0 \mTwentyAvailable=200bp "
++            r"\else\mTwentyAvailable=650bp\fi}"
++            r"\renewcommand\mTwentyAdvance{\advance\sidebarTestRegion1\newpage}"
++            r"\makeatother\begin{document}\m20bodyend"
++            r"\null\par\m20anchor{keep-before}"
++            + "\\begin{" + environment + "}[id=keep," + options + "]{Keep proof}"
++            + paragraph
++            + "\\par\\end{" + environment + "}\\end{document}"
++        )
++        _, path = compile_source(source, name)
++        with fitz.open(path.with_suffix(".pdf")) as pdf:
++            markers = [m for page in pdf for m in re.findall(r"KEEP-\d\d\d", page.get_text())]
++        self.assertEqual(markers, [f"KEEP-{i:03d}" for i in range(lines)])
++        return path, positions(path)
++
++    def test_short_flow_sidebar_moves_intact_to_next_region(self):
++        _, p = self.compile_sidebar("sidebar-keep-narrow")
++        frames = [row for row in p if row["id"] == "keep"]
++        anchor = next(row for row in p if row["id"] == "keep-before")
++        self.assertEqual(len(frames), 1, frames)
++        self.assertEqual(frames[0]["page"], anchor["page"] + 1)
++        self.assertLessEqual(frames[0]["height"], 650)
++
++    def test_short_wide_one_column_sidebar_keeps_requested_columns(self):
++        _, p = self.compile_sidebar("sidebar-keep-wide1", environment="m20sidebarwide",
++                                    options="columns=1,")
++        frames = [row for row in p if row["id"] == "keep"]
++        self.assertEqual(len(frames), 1, frames)
++        self.assertEqual(frames[0]["columns"], 1)
++
++    def test_short_wide_two_column_sidebar_moves_as_one_frame(self):
++        _, p = self.compile_sidebar("sidebar-keep-wide2", lines=40,
++                                    environment="m20sidebarwide", options="columns=2,")
++        frames = [row for row in p if row["id"] == "keep"]
++        self.assertEqual(len(frames), 1, frames)
++        self.assertEqual(frames[0]["columns"], 2)
++        self.assertLessEqual(frames[0]["height"], 650)
++
++    def test_explicit_here_placement_retains_its_anchor(self):
++        _, p = self.compile_sidebar("sidebar-keep-here", options="place=here,")
++        frames = [row for row in p if row["id"] == "keep"]
++        anchor = next(row for row in p if row["id"] == "keep-before")
++        self.assertGreaterEqual(len(frames), 2, frames)
++        self.assertEqual(frames[0]["page"], anchor["page"])
++
++    def test_sidebar_taller_than_whole_region_remains_breakable(self):
++        _, p = self.compile_sidebar("sidebar-keep-long", lines=80)
++        frames = [row for row in p if row["id"] == "keep"]
++        self.assertGreaterEqual(len(frames), 2, frames)
++        self.assertTrue(all(row["height"] <= 650 for row in frames))
++
++    def test_narrow_sidebar_moves_to_next_native_body_column(self):
++        preceding = r"\newline ".join(f"PRE-{i:02d}" for i in range(40))
++        paragraph = r"\newline ".join(f"KEEP-{i:03d}" for i in range(20))
++        source = (r"\documentclass{m20book}\begin{document}" + preceding
++                  + r"\par\m20anchor{native-before}"
++                  + r"\begin{m20sidebar}[id=native-keep]{Keep proof}"
++                  + paragraph + r"\par\end{m20sidebar}\end{document}")
++        _, path = compile_source(source, "sidebar-keep-native-column")
++        p = positions(path)
++        frames = [row for row in p if row["id"] == "native-keep"]
++        anchor = next(row for row in p if row["id"] == "native-before")
++        self.assertEqual(len(frames), 1, frames)
++        self.assertEqual(frames[0]["page"], anchor["page"])
++        self.assertGreater(frames[0]["x"], 300)
++
++
++if __name__ == "__main__":
++    unittest.main()
+--- a/tests/test_sidebar_page_frames.py
++++ b/tests/test_sidebar_page_frames.py
+@@ -0,0 +1,58 @@
++"""One continuous frame per physical page, including spanning table bands."""
++import collections
++import re
++import unittest
++
++import fitz
++
++from tests.test_layout_proof import compile_source, positions
++
++
++class SidebarPageFrameTests(unittest.TestCase):
++    def verify(self, path, ident, expected):
++        frames = [r for r in positions(path) if r["id"] == ident
++                  and r["kind"] in ("sidebar", "table-segment")]
++        self.assertTrue(frames)
++        counts = collections.Counter(r["page"] for r in frames)
++        self.assertTrue(all(n == 1 for n in counts.values()), frames)
++        self.assertTrue(all(r["height"] <= 657 for r in frames), frames)
++        with fitz.open(path.with_suffix(".pdf")) as pdf:
++            text = "\n".join(p.get_text() for p in pdf)
++        for marker in expected:
++            self.assertEqual(text.count(marker), 1, marker)
++        return frames
++
++    def test_text_table_text_share_one_frame_per_page(self):
++        before = r"\newline ".join(f"PRE-{i:03d}" for i in range(20))
++        after = r"\newline ".join(f"POST-{i:03d}" for i in range(140))
++        table = "HEAD-A & HEAD-B \\\\ " + "".join(
++            f"CELL-{i:03d} & Description {i} \\\\ " for i in range(7))
++        source = (r"\documentclass{m20book}\begin{document}"
++                  r"\begin{m20sidebarwide}[id=composite,columns=2]{Composite proof}"
++                  + before + r"\par\begin{m20table}[head-rows=1,id=composite-table]{ll}"
++                  + table + r"\end{m20table}" + after
++                  + r"\par\end{m20sidebarwide}\end{document}")
++        _, path = compile_source(source, "sidebar-composite-pages")
++        markers = ([f"PRE-{i:03d}" for i in range(20)]
++                   + [f"CELL-{i:03d}" for i in range(7)]
++                   + [f"POST-{i:03d}" for i in range(140)])
++        frames = self.verify(path, "composite", markers)
++        self.assertGreaterEqual(len(frames), 2)
++        self.assertTrue(all(r["columns"] == 2 for r in frames))
++        table_position = next(r for r in positions(path) if r["id"] == "composite-table")
++        frame = next(r for r in frames if r["page"] == table_position["page"])
++        self.assertGreaterEqual(table_position["y"], frame["y"])
++        self.assertLessEqual(table_position["y"], frame["y"] + frame["height"])
++
++    def test_long_narrow_sidebar_continues_on_distinct_pages(self):
++        body = r"\newline ".join(f"NARROW-{i:03d}" for i in range(120))
++        source = (r"\documentclass{m20book}\begin{document}"
++                  r"\begin{m20sidebar}[id=narrow-pages]{Narrow proof}" + body
++                  + r"\par\end{m20sidebar}\end{document}")
++        _, path = compile_source(source, "sidebar-narrow-pages")
++        frames = self.verify(path, "narrow-pages", [f"NARROW-{i:03d}" for i in range(120)])
++        self.assertGreaterEqual(len(frames), 2)
++
++
++if __name__ == "__main__":
++    unittest.main()
+--- a/tex/m20-fonts.sty
++++ b/tex/m20-fonts.sty
+@@ -13,11 +13,11 @@
+   \babelfont{rm}[Path=\mTwentyFontPath,Scale=.98,RawFeature={extend=1.020408163265306},BoldFont=GOUDOSB_0.TTF,ItalicFont=GOUDOSI_0.TTF,BoldItalicFont=NotoSerif-BoldItalic.ttf]{GOUDOS.TTF}%
+  \fi
+  \newfontfamily\mTwentyFirstFont{GOUDOS.TTF}[Path=\mTwentyFontPath,BoldFont=GOUDOSB_0.TTF,ItalicFont=GOUDOSI_0.TTF,BoldItalicFont=NotoSerif-BoldItalic.ttf]%
+- \newfontfamily\mTwentyHeadingFont{abbess-regular.ttf}[Path=\mTwentyFontPath]%
+- \newfontfamily\mTwentyHeadingNarrowFont{abbess-regular.ttf}[Path=\mTwentyFontPath,RawFeature={extend=.97}]%
++ \newfontfamily\mTwentyHeadingFont{abbess-regular.ttf}[Path=\mTwentyFontPath,BoldFont=GOUDOSB_0.TTF,ItalicFont=GOUDOSI_0.TTF,BoldItalicFont=NotoSerif-BoldItalic.ttf]%
++ \newfontfamily\mTwentyHeadingNarrowFont{abbess-regular.ttf}[Path=\mTwentyFontPath,RawFeature={extend=.97},BoldFont=GOUDOSB_0.TTF,ItalicFont=GOUDOSI_0.TTF,BoldItalicFont=NotoSerif-BoldItalic.ttf]%
+  \newfontfamily\mTwentySidebarFont{FuturaPTBook.otf}[Path=\mTwentyFontPath,BoldFont=NotoSans-Bold.ttf,ItalicFont=NotoSans-Italic.ttf,BoldItalicFont=NotoSans-BoldItalic.ttf]%
+  \newfontfamily\mTwentyScriptFont{DejaVuSans.ttf}[Path=\mTwentyFontPath,Renderer=HarfBuzz,BoldFont=DejaVuSans-Bold.ttf,ItalicFont=DejaVuSans-Oblique.ttf,BoldItalicFont=DejaVuSans-BoldOblique.ttf]%
+- \setmonofont{DejaVuSansMono.ttf}[Path=\mTwentyFontPath]%
++ \setmonofont{DejaVuSansMono.ttf}[Path=\mTwentyFontPath,BoldFont=GOUDOSB_0.TTF,ItalicFont=GOUDOSI_0.TTF,BoldItalicFont=NotoSerif-BoldItalic.ttf]%
+  \babelfont[greek,russian,hebrew,arabic]{rm}[Path=\mTwentyFontPath,Renderer=HarfBuzz,BoldFont=DejaVuSans-Bold.ttf,ItalicFont=DejaVuSans-Oblique.ttf,BoldItalicFont=DejaVuSans-BoldOblique.ttf]{DejaVuSans.ttf}%
+ }
+ \NewDocumentCommand\mTwentyScript{m}{{\mTwentyScriptFont #1}}
+@@ -30,4 +30,3 @@
+   \RequirePackage{unicode-math}\setmathfont{Latin Modern Math}%
+  \else\@ifpackageloaded{unicode-math}{\PackageError{m20}{M20_E_MATH_MODE}{Select math=unicode explicitly; unicode-math cannot silently replace legacy math.}}{}\fi
+ }
+-
+--- a/tex/m20-local-text-styles.sty
++++ b/tex/m20-local-text-styles.sty
+@@ -0,0 +1,85 @@
++\NeedsTeXFormat{LaTeX2e}
++\ProvidesPackage{m20-local-text-styles}[2026/09/30 source and reference matched lists and stat blocks]
++\ifdefined\mTwentyLocalListNextItem\expandafter\endinput\fi
++\RequirePackage{enumitem,luatexbase,xcolor}
++% Original M20 IDML Bullet: Goudy 10/12, hanging text at 18bp,
++% marker at 4.5bp, right inset 9bp, 4.5bp paragraph spacing and
++% 10 percent purple shading with 1.44bp vertical padding.
++% User's supplied enumeration reference confirms alternating shaded rows.
++\newcount\mTwentyLocalListRow
++\let\mTwentyLocalNativeItem\item
++\newattribute\mTwentyListShadeAttribute
++\newattribute\mTwentyListLeftAttribute
++\newattribute\mTwentyListWidthAttribute
++\mTwentyListShadeAttribute=-1
++\convertcolorspec{named}{m20purple}{cmyk}\mTwentyListInkSpec
++\AtBeginDocument{\pgfutil@addpdfresource@extgs{/M20ListShade << /ca .1 >>}}
++\directlua{
++ local shade=luatexbase.attributes.mTwentyListShadeAttribute
++ local left=luatexbase.attributes.mTwentyListLeftAttribute
++ local width=luatexbase.attributes.mTwentyListWidthAttribute
++ local hlist=node.id('hlist')
++ local sp_per_bp=65536*72.27/72
++ local ink=('\mTwentyListInkSpec'):gsub(',', ' ')
++ luatexbase.add_to_callback('post_linebreak_filter',function(head)
++  for line in node.traverse_id(hlist,head) do
++   if node.has_attribute(line,shade)==1 then
++    local inset=(node.has_attribute(line,left) or 0)/sp_per_bp
++    local rowwidth=(node.has_attribute(line,width) or line.width)/sp_per_bp
++    local bottom=-3
++    local height=12
++    local literal=node.new('whatsit','pdf_literal')
++    literal.mode=0
++    literal.data='q /M20ListShade gs '..ink..' k '..(-inset)..' '..bottom..' '..rowwidth..' '..height..' re f Q'
++    line.head=node.insert_before(line.head,line.head,literal)
++   end
++  end
++  return head
++ end,'m20-local-list-row-backgrounds')
++}
++\newcommand\mTwentyLocalListNextItem{%
++ \par\advance\mTwentyLocalListRow\@ne
++ \ifmTwentySidebarActive
++  \mTwentyListShadeAttribute=-1
++ \else
++  \ifodd\mTwentyLocalListRow\mTwentyListShadeAttribute=1\else\mTwentyListShadeAttribute=0\fi
++ \fi
++ \mTwentyListLeftAttribute=\number\leftmargin
++ \mTwentyListWidthAttribute=\number\dimexpr\linewidth+\leftmargin+\rightmargin\relax
++ \mTwentyLocalNativeItem}
++\newcommand\mTwentyLocalListBegin{%
++ \mTwentyLocalListRow=0\mTwentyListShadeAttribute=-1
++ \ifmTwentySidebarActive
++  \mTwentySidebarFont\fontsize{10bp}{10bp}\selectfont
++ \else\rmfamily\fontsize{10bp}{12bp}\selectfont\fi
++ \let\item\mTwentyLocalListNextItem}
++\newcommand\mTwentyLocalListEnd{\par\mTwentyListShadeAttribute=-1}
++\setlist{leftmargin=18bp,rightmargin=9bp,labelindent=4.5bp,
++ labelwidth=9bp,labelsep=4.5bp,itemindent=0bp,align=left,
++ topsep=4.5bp,itemsep=4.5bp,parsep=0bp,partopsep=0bp,
++ before=\mTwentyLocalListBegin,after=\mTwentyLocalListEnd}
++% Marker definitions and native enumerate counters are deliberately untouched.
++\setlist[description]{style=standard,font=\bfseries}
++% The supplied stat-block reference uses purple Futura, bold run-in keys,
++% compact separate rows, and a modest inset. This is different from the
++% template's Goudy Stat Dots rating paragraph, so it has its own semantic
++% environment. Wrappers contain the existing manuscript text unchanged.
++\NewDocumentEnvironment{m20statblock}{}{%
++ \par\begingroup\mTwentyListShadeAttribute=-1
++ \mTwentySidebarFont\fontsize{10bp}{10bp}\selectfont
++ \color{m20purple}
++ \begin{list}{}{\leftmargin=13.5bp\rightmargin=0bp
++  \itemindent=0bp\labelwidth=0bp\labelsep=0bp
++  \topsep=1.44bp\itemsep=1.44bp\parsep=0bp\partopsep=0bp
++  \listparindent=0bp}%
++}{\end{list}\endgroup\par}
++\ExplSyntaxOn
++\tl_new:N \l_mtw_stat_display_tl
++\cs_new_protected:Npn \mTwentyStatDisplay:n #1 {
++ \tl_set:Nn \l_mtw_stat_display_tl {#1}
++ \tl_replace_all:Nnn \l_mtw_stat_display_tl {|}{\par\noindent}
++ \mTwentyLocalNativeItem[]\tl_use:N \l_mtw_stat_display_tl
++}
++\NewDocumentCommand\mTwentyStatEntry{m}{\mTwentyStatDisplay:n{#1}}
++\ExplSyntaxOff
++\endinput
+--- a/tex/m20-pdf-layout.sty
++++ b/tex/m20-pdf-layout.sty
+@@ -6,7 +6,7 @@
+  \def\mTwentyBodyWidth{490.4496bp}\def\mTwentyBodyHeight{657bp}%
+  \def\mTwentyTop{63bp}\def\mTwentyInner{54bp}\def\mTwentyOuter{67.5504bp}%
+  \def\mTwentyColumnWidth{239.2248bp}\def\mTwentyGutter{12bp}}
+-\geometry{paperwidth=\mTwentyPageWidth,paperheight=\mTwentyPageHeight,inner=\mTwentyInner,outer=\mTwentyOuter,top=\mTwentyTop,textheight=\mTwentyBodyHeight,headheight=0bp,headsep=0bp,footskip=27bp}
++\geometry{paperwidth=\mTwentyPageWidth,paperheight=\mTwentyPageHeight,inner=\mTwentyInner,outer=\mTwentyOuter,top=\mTwentyTop,textheight=\mTwentyBodyHeight,headheight=0bp,headsep=0bp,footskip=16.81bp}
+ \setlength\columnsep{\mTwentyGutter}
+ \setlength\parindent{18bp}
+ \setlength\parskip{1.44bp plus .2bp}
+@@ -15,13 +15,18 @@
+ \setlength\postmulticols{0bp}
+ \newif\ifmTwentyBodyActive
+ \newif\ifmTwentyBlankPage
++\newif\ifmTwentyOpenerPage
++\newif\ifmTwentyInteriorTitlePage
++\newif\ifmTwentyHadChapter
++\newcount\mTwentyChapterArtCount
++\def\mTwentyChapterRunningTitle{}
+ \newif\ifmTwentyArtReverse
+ \renewcommand\mTwentyBodyBegin{\color{black}\ifmTwentyBodyActive\else\par\ifdim\pagetotal>\dimexpr\textheight-24bp\relax\clearpage\fi\global\mTwentyBodyActivetrue\begin{multicols}{2}\raggedcolumns\fi}
+-\renewcommand\mTwentyBodyEnd{\ifmTwentyBodyActive\par\end{multicols}\global\mTwentyBodyActivefalse\fi}
++\renewcommand\mTwentyBodyEnd{\ifmTwentyBodyActive\par\end{multicols}\global\mTwentyBodyActivefalse\fi\@nobreakfalse\@noskipsecfalse\everypar{}}
+ \newcommand\mTwentySuspendEnvironment[1]{\ifmTwentyBodyActive\endgroup\mTwentyBodyEnd\begingroup\def\@currenvir{#1}\fi}
+ \renewcommand\mTwentyNewPage{\mTwentyBodyEnd\clearpage\mTwentyBodyBegin}
+ \newwrite\mTwentyPositionStream
+-\AtBeginDocument{\mTwentyLoadFonts\fontsize{10bp}{12bp}\selectfont\immediate\openout\mTwentyPositionStream=\jobname.m20pos\relax\mTwentyBodyBegin}
++\AtBeginDocument{\mTwentyLoadFonts\fontsize{10bp}{12bp}\selectfont\clubpenalty=5000\widowpenalty=5000\displaywidowpenalty=5000\raggedbottom\immediate\openout\mTwentyPositionStream=\jobname.m20pos\relax\mTwentyBodyBegin}
+ \AtEndDocument{\mTwentyBodyEnd\clearpage\immediate\closeout\mTwentyPositionStream}
+ % Values are frozen now; page and position primitives are evaluated at shipout.
+ \newcommand\mTwentyPosition[8]{%
+@@ -29,28 +34,50 @@
+  \begingroup
+  \edef\mTwentyWrite{\write\mTwentyPositionStream{#1|\noexpand\the\noexpand\ReadonlyShipoutCounter|\noexpand\the\noexpand\lastxpos|\noexpand\the\noexpand\lastypos|\number\dimexpr#2\relax|\number\dimexpr#3\relax|#4|#5|#6|#7|\number\dimexpr#8+0bp\relax|\noexpand\thepage|\noexpand\number\noexpand\c@page}}%
+  \mTwentyWrite\endgroup}
+-\renewcommand\mTwentyAnchor[1]{\par\noindent\mTwentyPosition{#1}{\linewidth}{\linewidth}{1}{anchor}{0}{flow}{}\par}
++\renewcommand\mTwentyAnchor[1]{\mTwentyPosition{#1}{\linewidth}{\linewidth}{1}{anchor}{0}{flow}{}}
+ \renewcommand\@seccntformat[1]{}
+ \renewcommand\@startsection[6]{\if@noskipsec\leavevmode\fi\par\@tempskipa #4\relax\@afterindenttrue\ifdim\@tempskipa<\z@\@tempskipa-\@tempskipa\@afterindentfalse\fi\if@nobreak\everypar{}\else\addpenalty\@secpenalty\addvspace\@tempskipa\fi\@ifstar{\@ssect{#3}{#4}{#5}{#6}}{\@dblarg{\@sect{#1}{#2}{#3}{#4}{#5}{#6}}}}
+ \renewcommand\section{\@startsection{section}{1}{\z@}{7.2bp}{2.1528bp}{\centering\mTwentyHeadingFont\fontsize{24bp}{25bp}\selectfont}}
+ % Wrap the styled native section only after defining its style.
+ \let\mTwentyStyledSection\section
+-\RenewDocumentCommand\section{s o m}{\mTwentyBodyEnd\addvspace{13.5bp}\noindent\mTwentyPosition{span-heading}{\textwidth}{\textwidth}{2}{heading}{0}{flow}{}\IfBooleanTF{#1}{\mTwentyStyledSection*{#3}}{\IfNoValueTF{#2}{\mTwentyStyledSection{#3}}{\mTwentyStyledSection[#2]{#3}}}\vspace{1.8bp}\hrule height1.25bp\vspace{13.5bp}\mTwentyBodyBegin\@afterindentfalse\@afterheading}
+-\renewcommand\subsection{\@startsection{subsection}{2}{\z@}{7.2bp}{0bp}{\mTwentyHeadingNarrowFont\fontsize{18bp}{18bp}\selectfont}}
+-\renewcommand\subsubsection{\@startsection{subsubsection}{3}{\z@}{7.2bp}{0bp}{\mTwentyHeadingFont\fontsize{12bp}{14bp}\selectfont}}
++\RenewDocumentCommand\section{s o m}{\mTwentyBodyEnd\mTwentyRemaining\ifdim\mTwentyAvailable<120bp\relax\clearpage\fi\addvspace{13.5bp}\noindent\mTwentyPosition{span-heading}{\textwidth}{\textwidth}{2}{heading}{0}{flow}{}\IfBooleanTF{#1}{\mTwentyStyledSection*{#3}}{\IfNoValueTF{#2}{\mTwentyStyledSection{#3}}{\mTwentyStyledSection[#2]{#3}}}\vspace{1.8bp}\hrule height1.25bp\vspace{13.5bp}\mTwentyBodyBegin\@afterindentfalse\@afterheading}
++\newcommand\mTwentyKeepHeading[1]{\mTwentyRemaining\ifdim\mTwentyAvailable<#1\relax\ifmTwentyBodyActive\columnbreak\else\newpage\fi\fi}
++\renewcommand\subsection{\mTwentyKeepHeading{54bp}\@startsection{subsection}{2}{\z@}{7.2bp}{0.01bp}{\mTwentyHeadingNarrowFont\fontsize{18bp}{18bp}\selectfont}}
++\renewcommand\subsubsection{\mTwentyKeepHeading{42bp}\@startsection{subsubsection}{3}{\z@}{7.2bp}{0.01bp}{\mTwentyHeadingFont\fontsize{12bp}{14bp}\selectfont}}
++\newif\ifmTwentyNumberedOpener
+ \let\mTwentyOriginalChapter\chapter
+ \RenewDocumentCommand\chapter{s o m}{%
+  \mTwentyBodyEnd\clearpage
+- \ifodd\c@page\mTwentyBlankPagetrue\null\thispagestyle{empty}\newpage\fi
+- \mTwentyBlankPagetrue\null\thispagestyle{empty}\newpage
+- \IfBooleanTF{#1}{\mTwentyOriginalChapter*{#3}}{\IfNoValueTF{#2}{\mTwentyOriginalChapter{#3}}{\mTwentyOriginalChapter[#2]{#3}}}%
++ % Front Contents follows the original credits verso; actual chapters face blanks.
++ \def\mTwentyFrontOpening{0}%
++ \IfBooleanT{#1}{\if@mainmatter\else\def\mTwentyFrontOpening{1}\fi}%
++ \ifnum\mTwentyFrontOpening=1
++  \ifodd\c@page\else\mTwentyBlankPagetrue\null\thispagestyle{empty}\newpage\fi
++ \else
++  \ifodd\c@page\mTwentyBlankPagetrue\null\thispagestyle{empty}\newpage\fi
++  \mTwentyBlankPagetrue\null\thispagestyle{empty}\newpage
++ \fi
++ \IfBooleanTF{#1}{\gdef\mTwentyChapterRunningTitle{#3}}{\IfNoValueTF{#2}{\gdef\mTwentyChapterRunningTitle{#3}}{\gdef\mTwentyChapterRunningTitle{#2}}}
++ \global\mTwentyHadChaptertrue
++ \IfBooleanTF{#1}{\mTwentyNumberedOpenerfalse\mTwentyOriginalChapter*{#3}}{\mTwentyNumberedOpenertrue\IfNoValueTF{#2}{\mTwentyOriginalChapter{#3}}{\mTwentyOriginalChapter[#2]{#3}}}%
+  \mTwentyBodyBegin\@afterindentfalse\@afterheading}
+ \newbox\mTwentyChapterTitleBox
++\newdimen\mTwentyTitleHalfHeight
++\newdimen\mTwentyTitleTextWidth
++\newcommand\mTwentyMakeOpenerTitle[3]{%
++ \setbox\mTwentyChapterTitleBox=\vbox{\hsize=\mTwentyTitleTextWidth\parindent\z@\centering\mTwentyHeadingFont\fontsize{#1}{#2}\selectfont\hyphenpenalty=10000\exhyphenpenalty=10000
++  \begingroup\color{m20gold}\ifmTwentyNumberedOpener\if@mainmatter\ifnum\c@secnumdepth>\m@ne\@chapapp\space\thechapter:\par\fi\fi\fi #3\par\endgroup}%
++ \mTwentyTitleHalfHeight=\ht\mTwentyChapterTitleBox\advance\mTwentyTitleHalfHeight\dp\mTwentyChapterTitleBox\divide\mTwentyTitleHalfHeight2
++}
+ \def\@makechapterhead#1{%
+- \setbox\mTwentyChapterTitleBox=\vbox{\hsize=\textwidth\parindent\z@\centering\mTwentyHeadingFont\fontsize{\mTwentyChapterTitleSize}{\mTwentyChapterTitleLeading}\selectfont\color{m20gold}#1\par}%
+- \ifdim\dimexpr\ht\mTwentyChapterTitleBox+\dp\mTwentyChapterTitleBox\relax>\dimexpr\mTwentyOpenerBodyTop-\mTwentyTop-24bp\relax
+-  \PackageError{m20}{M20_E_CHAPTER_TITLE_TOO_TALL}{Add deliberate line breaks or an explicit chapter-title-size and chapter-title-leading override.}\fi
+- \vbox to\dimexpr\mTwentyOpenerBodyTop-\mTwentyTop-\topskip\relax{\vskip6bp\box\mTwentyChapterTitleBox\vfil}%
++ \global\mTwentyOpenerPagetrue
++ \mTwentyTitleTextWidth=\dimexpr\textwidth-40bp\relax
++ \mTwentyMakeOpenerTitle{\mTwentyChapterTitleSize}{\mTwentyChapterTitleLeading}{#1}%
++ \ifdim\mTwentyTitleHalfHeight>95bp\mTwentyMakeOpenerTitle{48bp}{45bp}{#1}\fi
++ \ifdim\mTwentyTitleHalfHeight>95bp\mTwentyMakeOpenerTitle{42bp}{39bp}{#1}\fi
++ \AddToHookNext{shipout/background}{\put(0,-\paperheight){\includegraphics[width=\paperwidth,height=\paperheight]{\mTwentyAssetPath chapter-opener.original-template.pdf}}}%
++ \AddToHookNext{shipout/foreground}{\begingroup\put(0,-202.325bp){\makebox[\paperwidth][l]{\hspace{\mTwentyInner}\makebox[\textwidth][c]{\raisebox{-\mTwentyTitleHalfHeight}[0pt][0pt]{\copy\mTwentyChapterTitleBox}}}}\endgroup}%
++ \vbox to\dimexpr\mTwentyOpenerBodyTop-\mTwentyTop-\topskip\relax{\null\vfil}%
+ }
+ \let\@makeschapterhead\@makechapterhead
+ \newif\ifmTwentyFirstRestore
+@@ -62,22 +89,52 @@
+   \fi
+  \else\clubpenalty\@clubpenalty\everypar{}\fi}}
+ \AddToHook{para/end}{\ifmTwentyFirstRestore\ifmTwentySidebarActive\else\mTwentyFirstRestorefalse\rmfamily\fi\fi}
+-\definecolor{m20gold}{RGB}{183,137,47}
+-\definecolor{m20purple}{RGB}{44,25,63}
++% Original sb 1/sb bullet gold text swatch; dark gold remains in authentic frame gradients.
++\definecolor{m20gold}{cmyk}{.1144,.1735,.6863,0}
++\definecolor{m20framedark}{cmyk}{.2888,.4368,.8328,.0635}
++\definecolor{m20purple}{cmyk}{.8549,1,.2161,.1239}
++% Original footer: baseline y=736.81bp; outer folio and inward-facing runner.
++\newcommand\mTwentyFooterText[1]{{\mTwentyHeadingFont\fontsize{10bp}{10bp}\selectfont\scalebox{.8}[1]{#1}}}
++\newcommand\mTwentyFooterRunner[1]{\begingroup\setbox\z@=\hbox{\mTwentyFooterText{#1}}\ifdim\wd\z@>390bp\resizebox{390bp}{!}{\box\z@}\else\box\z@\fi\endgroup}
+ \def\ps@mTwenty{\let\@oddhead\@empty\let\@evenhead\@empty
+- \def\@oddfoot{\hfil{\mTwentyHeadingFont\fontsize{9bp}{11bp}\selectfont\mTwentyRunningTitle}\hfil\thepage}%
+- \def\@evenfoot{\thepage\hfil{\mTwentyHeadingFont\fontsize{9bp}{11bp}\selectfont\mTwentyRunningTitle}\hfil}}
++ \def\@oddfoot{\hfil\mTwentyFooterRunner{\mTwentyChapterRunningTitle}\makebox[35.77bp][r]{\mTwentyFooterText{\thepage}}}%
++ \def\@evenfoot{\makebox[33.9bp][l]{\mTwentyFooterText{\thepage}}\mTwentyFooterRunner{\mTwentyRunningTitle}\hfil}}
+ \let\ps@plain\ps@mTwenty\pagestyle{mTwenty}
+ \AddToHook{shipout/background}{\ifmTwentyBlankPage\else
+- \IfFileExists{\mTwentyAssetPath page_border.png}{\put(0,-\paperheight){\makebox[\paperwidth][l]{\ifodd\c@page\includegraphics[width=\paperwidth,height=\paperheight]{\mTwentyAssetPath page_border.png}\else\reflectbox{\includegraphics[width=\paperwidth,height=\paperheight]{\mTwentyAssetPath page_border.png}}\fi}}}{}\fi}
+-\AddToHook{shipout/after}{\global\mTwentyBlankPagefalse\ifmTwentyArtReverse\global\let\mc@align@columns\LR@column@boxes\global\mTwentyArtReversefalse\fi}
++ \ifmTwentyInteriorTitlePage
++  \put(0,-\paperheight){\includegraphics{\mTwentyAssetPath interior-title.original-template.pdf}}%
++ \else\ifmTwentyOpenerPage
++  \put(0,-\paperheight){\includegraphics[width=\paperwidth,height=\paperheight]{\mTwentyAssetPath page_border.png}}%
++ \else
++  \put(0,-\paperheight){\includegraphics[page=\ifodd\c@page2\else1\fi]{\mTwentyAssetPath spread-border.original-template.pdf}}%
++ \fi\fi\fi}
++\AddToHook{shipout/after}{\global\mTwentyBlankPagefalse\global\mTwentyOpenerPagefalse\global\mTwentyInteriorTitlePagefalse\ifmTwentyArtReverse\global\let\mc@align@columns\LR@column@boxes\global\mTwentyArtReversefalse\fi}
++\newcommand\mTwentyInteriorTitle[2]{%
++ \hypersetup{pdfpagelayout=TwoPageRight,pdftitle={#1}}%
++ \mTwentyBodyEnd\clearpage\global\mTwentyInteriorTitlePagetrue\thispagestyle{empty}%
++ \AddToHookNext{shipout/foreground}{%
++  \put(0,-136.08bp){\makebox[\paperwidth][c]{\raisebox{-.5\height}[0pt][0pt]{\parbox{490bp}{\centering\mTwentyHeadingFont\fontsize{48bp}{48bp}\selectfont\color{m20gold}#1}}}}%
++  \put(0,-700bp){\makebox[\paperwidth][c]{\parbox{490bp}{\centering\mTwentyFirstFont\fontsize{14bp}{17bp}\selectfont\color{m20gold}#2}}}}
++ \null\newpage}
++\newcommand\mTwentyInteriorCredits[1]{%
++ \mTwentyBodyEnd\clearpage\thispagestyle{mTwenty}%
++ \begingroup\mTwentyFirstFont\fontsize{10bp}{12bp}\selectfont\parindent=0bp\parskip=1.44bp
++ \renewcommand\section[1]{\par\phantomsection\addcontentsline{toc}{section}{##1}{\mTwentyFirstFont\bfseries\fontsize{11bp}{13bp}\selectfont\color{m20purple}##1\par}\vskip7.2bp}%
++ \noindent\begin{minipage}[t]{\mTwentyColumnWidth}#1\end{minipage}\par\endgroup\newpage}
+ \newdimen\mTwentyArtWidth
+ \newdimen\mTwentyArtHeight
+ \newcommand\mTwentyArtBox{%
+  \begin{tikzpicture}[baseline=0bp]
+   \path[use as bounding box] (0,0) rectangle (\mTwentyArtWidth,\mTwentyArtHeight);
+-  \draw[line width=2bp,m20gold] (1bp,1bp) rectangle (\dimexpr\mTwentyArtWidth-1bp,\dimexpr\mTwentyArtHeight-1bp);
+-  \ifx\mTwentyArtImage\@empty\else
++  \def\mTwentyVertical{vertical}%
++  \ifx\mTwentyArtKind\mTwentyVertical
++   \node[inner sep=0bp,anchor=north west] at (-2.5bp,\dimexpr\mTwentyArtHeight+2.5399bp) {\includegraphics[width=\dimexpr\mTwentyArtWidth+14.0507bp,height=\dimexpr\mTwentyArtHeight+14.0798bp]{\mTwentyAssetPath art-vertical.original-template.pdf}};
++  \else
++   \node[inner sep=0bp,anchor=north west] at (-2.5bp,\mTwentyArtHeight) {\includegraphics[width=\dimexpr\mTwentyArtWidth+13.86bp,height=\mTwentyArtHeight]{\mTwentyAssetPath art-horizontal.original-template.pdf}};
++  \fi
++  \ifx\mTwentyArtImage\@empty
++   \node[inner sep=0bp,text width=\dimexpr\mTwentyArtWidth-20bp,align=center,text=\ifx\mTwentyArtKind\mTwentyVertical black\else white\fi] at (.5\mTwentyArtWidth,.5\mTwentyArtHeight) {\mTwentyFirstFont\fontsize{20bp}{24bp}\selectfont Place illustration here\par{\fontsize{11bp}{14bp}\selectfont (recommended full colour)}};
++  \else
+    \node[inner sep=0bp] at (.5\mTwentyArtWidth,.5\mTwentyArtHeight) {\includegraphics[width=\dimexpr\mTwentyArtWidth-14bp\relax,height=\dimexpr\mTwentyArtHeight-40bp\relax,keepaspectratio]{\mTwentyArtImage}};
+    \node[inner sep=0bp,anchor=south,text width=\dimexpr\mTwentyArtWidth-14bp\relax,align=center] at (.5\mTwentyArtWidth,7bp) {\fontsize{8bp}{10bp}\selectfont\mTwentyArtCaption\space\mTwentyArtCredit};
+   \fi
+@@ -88,7 +145,7 @@
+  \mTwentyBodyEnd\par
+  \def\mTwentyVertical{vertical}\def\mTwentyHere{here}\def\mTwentyNextPage{next-page}\def\mTwentyBottom{bottom}\def\mTwentyOuterPosition{outer}%
+  \ifx\mTwentyArtPlace\mTwentyNextPage\clearpage\fi
+- \mTwentyArtWidth=\textwidth\mTwentyArtHeight=.5\textheight
++ \mTwentyArtWidth=\textwidth\mTwentyArtHeight=341.28bp
+  \ifx\mTwentyArtKind\mTwentyVertical\mTwentyArtWidth=\mTwentyColumnWidth\mTwentyArtHeight=\textheight\fi
+  \mTwentyRemaining\advance\mTwentyAvailable4bp
+  \ifdim\mTwentyAvailable<\mTwentyArtHeight
+@@ -105,11 +162,11 @@
+  \else
+   \begingroup\parskip=0bp
+   \ifx\mTwentyArtPosition\mTwentyBottom
+-   \mTwentyRemaining\advance\mTwentyAvailable4bp
++   \mTwentyRemaining\advance\mTwentyAvailable-6bp
+    \noindent\vbox to\mTwentyAvailable{\vfil\hbox{\mTwentyArtBox}}\par
+   \else\noindent\mTwentyArtBox\par\fi
+   \endgroup\mTwentyBodyBegin
+  \fi
+ }
++\InputIfFileExists{tex/m20-local-text-styles.sty}{}{}
+ \endinput
+-
+--- a/tex/m20-pdf-sidebars.sty
++++ b/tex/m20-pdf-sidebars.sty
+@@ -4,16 +4,25 @@
+ \newbox\mTwentyLeft
+ \newbox\mTwentyRight
+ \newbox\mTwentyFrameContent
++\newbox\mTwentySidebarPageContent
+ \newdimen\mTwentyOuterWidth
+ \newdimen\mTwentyUsableWidth
+ \newdimen\mTwentyTextWidth
+ \newdimen\mTwentyAvailable
+ \newdimen\mTwentySplitHeight
++\newdimen\mTwentyFullSplitHeight
++\newdimen\mTwentyCurrentCapacity
+ \newdimen\mTwentyFrameHeight
+ \newcount\mTwentySegment
++\newcount\mTwentySidebarPageSegment
++\newdimen\mTwentySidebarBeforeGap
++\newdimen\mTwentySidebarAfterGap
++\mTwentySidebarBeforeGap=4bp
++\mTwentySidebarAfterGap=6bp
+ \newtoks\mTwentyNotes
+ \newbox\mTwentyAtomicSidebar
+ \newbox\mTwentyPendingGalley
++\newbox\mTwentySidebarTitleMeasure
+ \def\mTwentyFrameKind{sidebar}
+ \newif\ifmTwentyNarrow
+ \newif\ifmTwentyMoreContent
+@@ -34,6 +43,13 @@
+  \advance\mTwentyAvailable-4bp
+ }
+ \newcommand\mTwentyAdvance{\ifmTwentyNarrow\ifmTwentyBodyActive\columnbreak\else\newpage\fi\else\newpage\fi}
++\newcommand\mTwentySidebarAdvance{%
++ \ifvoid\mTwentySidebarPageContent
++  \mTwentySidebarRegionAdvance
++ \else
++  % A continuation of this sidebar always starts on another physical page.
++  \mTwentyShipFrame\clearpage
++ \fi}
+ \newcommand\mTwentyPlacement{%
+  \def\mTwentyNextPage{next-page}\def\mTwentyHere{here}%
+  \ifx\mTwentySidebarPlace\mTwentyNextPage
+@@ -46,26 +62,38 @@
+   \else\mTwentyAdvance\mTwentyRemaining\fi
+  \fi}
+ \newcommand\mTwentyFrame{%
++ % Text columns and spanning tables are natural-height bands in one page
++ % frame. Global storage survives the contained-table formatting group.
++ \global\setbox\mTwentySidebarPageContent=\vbox{%
++  \hsize=\mTwentyUsableWidth\linewidth=\hsize
++  \ifvoid\mTwentySidebarPageContent\else\unvbox\mTwentySidebarPageContent\vskip4bp\fi
++  \ifnum\mTwentySegment>1\relax\ifvoid\mTwentyTableHeader\else\copy\mTwentyTableHeader\vskip4bp\fi\fi
++  \nointerlineskip\hbox{\box\mTwentyLeft\ifnum\mTwentySidebarColumns=2\hskip12bp\box\mTwentyRight\fi}}%
++}
++\newcommand\mTwentyShipFrame{%
++ \ifvoid\mTwentySidebarPageContent\else
++ \global\advance\mTwentySidebarPageSegment1
+  \setbox\mTwentyFrameContent=\vbox{%
+   \hsize=\mTwentyUsableWidth\linewidth=\hsize
+   \vskip7.2bp
+-  {\centering\mTwentyHeadingNarrowFont\fontsize{18bp}{18bp}\selectfont\color{m20gold}\mTwentySidebarTitle\ifnum\mTwentySegment>1\space(continued)\fi\par}%
++  {\centering\mTwentyHeadingNarrowFont\fontsize{18bp}{18bp}\selectfont\color{m20gold}\mTwentySidebarTitle\ifnum\mTwentySidebarPageSegment>1\space(continued)\fi\par}%
+   \vskip5bp
+-  \ifnum\mTwentySegment>1\relax\ifvoid\mTwentyTableHeader\else\copy\mTwentyTableHeader\vskip4bp\fi\fi
+-  \nointerlineskip\hbox{\box\mTwentyLeft\ifnum\mTwentySidebarColumns=2\hskip12bp\box\mTwentyRight\fi}%
++  \unvbox\mTwentySidebarPageContent
+   \vskip10bp}
++ \global\setbox\mTwentySidebarPageContent=\box\voidb@x
+  \mTwentyFrameHeight=\ht\mTwentyFrameContent\advance\mTwentyFrameHeight\dp\mTwentyFrameContent\advance\mTwentyFrameHeight14bp
+- \par\noindent
++ \par\addvspace{\mTwentySidebarBeforeGap}\noindent
+  \begin{tikzpicture}[baseline=0bp]
+   \path[use as bounding box] (0,0) rectangle (\mTwentyOuterWidth,\mTwentyFrameHeight);
+   \fill[m20purple] (0,0) rectangle (\mTwentyOuterWidth,\mTwentyFrameHeight);
+-  \IfFileExists{\mTwentyAssetPath sidebar_texture.png}{\node[inner sep=0bp,anchor=south west,opacity=.5] at (0,0) {\includegraphics[width=\mTwentyOuterWidth,height=\mTwentyFrameHeight]{\mTwentyAssetPath sidebar_texture.png}};}{}%
++  \IfFileExists{\mTwentyAssetPath sidebar-background.original-template.pdf}{\node[inner sep=0bp,anchor=south west] at (0,0) {\includegraphics[width=\mTwentyOuterWidth,height=\mTwentyFrameHeight]{\mTwentyAssetPath sidebar-background.original-template.pdf}};}{}%
+   \draw[line width=7bp,m20gold] (3.5bp,3.5bp) rectangle (\dimexpr\mTwentyOuterWidth-3.5bp,\dimexpr\mTwentyFrameHeight-3.5bp);
+   \draw[line width=.7bp,black!75] (7bp,7bp) rectangle (\dimexpr\mTwentyOuterWidth-7bp,\dimexpr\mTwentyFrameHeight-7bp);
+   \node[inner sep=0bp,anchor=north west,text=white] (m20content) at (25bp,\dimexpr\mTwentyFrameHeight-7bp) {\box\mTwentyFrameContent};
+-  \node[inner sep=0bp,anchor=north west] at (0,\mTwentyFrameHeight) {\mTwentyPosition{\mTwentySidebarID}{\mTwentyOuterWidth}{\mTwentyUsableWidth}{\mTwentySidebarColumns}{\mTwentyFrameKind}{\number\mTwentySegment}{\mTwentySidebarPlace}{\mTwentyFrameHeight}};
++  \node[inner sep=0bp,anchor=north west] at (0,\mTwentyFrameHeight) {\mTwentyPosition{\mTwentySidebarID}{\mTwentyOuterWidth}{\mTwentyUsableWidth}{\mTwentySidebarFrameColumns}{sidebar}{\number\mTwentySidebarPageSegment}{\mTwentySidebarPlace}{\mTwentyFrameHeight}};
+  \end{tikzpicture}\par
+- \vskip2.52bp\relax
++ \vskip\mTwentySidebarAfterGap\relax
++ \fi
+ }
+ \newcommand\mTwentyTypesetText[1]{%
+  \setbox\mTwentyGalley=\vbox{%
+@@ -75,6 +103,10 @@
+   % stack push in the galley would cross pages and turn later body text white.
+   \mTwentySidebarFont\fontsize{10bp}{10bp}\selectfont
+   \parindent=0bp\parskip=2.52bp\relax
++  % These endpoint penalties become nodes before the galley is split. Native
++  % \vsplit honors them; a short region advances at the first legal block.
++  % Keep the assignments local, with natural-height (unstretched) frame boxes.
++  \clubpenalty=10000\widowpenalty=10000\displaywidowpenalty=10000
+   \emergencystretch=12bp\tolerance=2000
+   \let\footnote\mTwentyLocalNote
+   \let\mTwentyNote\mTwentyLocalNote
+@@ -84,7 +116,10 @@
+ }
+ \newcommand\mTwentySetSplitHeight{%
+  \mTwentyRemaining
+- \mTwentySplitHeight=\mTwentyAvailable\advance\mTwentySplitHeight-70bp
++ \setbox\mTwentySidebarTitleMeasure=\vbox{\hsize=\mTwentyUsableWidth\parindent=0bp\centering\mTwentyHeadingNarrowFont\fontsize{18bp}{18bp}\selectfont\mTwentySidebarTitle\ifnum\mTwentySidebarPageSegment>0\space(continued)\fi\par}%
++ \mTwentySplitHeight=\mTwentyAvailable\advance\mTwentySplitHeight-\ht\mTwentySidebarTitleMeasure\advance\mTwentySplitHeight-\dp\mTwentySidebarTitleMeasure\advance\mTwentySplitHeight-53bp
++ \advance\mTwentySplitHeight-\mTwentySidebarBeforeGap\advance\mTwentySplitHeight-\mTwentySidebarAfterGap
++ \ifvoid\mTwentySidebarPageContent\else\advance\mTwentySplitHeight-\ht\mTwentySidebarPageContent\advance\mTwentySplitHeight-\dp\mTwentySidebarPageContent\advance\mTwentySplitHeight-4bp\fi
+  \ifnum\mTwentySegment>0\relax\ifvoid\mTwentyTableHeader\else\advance\mTwentySplitHeight-\ht\mTwentyTableHeader\advance\mTwentySplitHeight-\dp\mTwentyTableHeader\advance\mTwentySplitHeight-4bp\fi\fi
+ }
+ \newcommand\mTwentyPaginateChunks{%
+@@ -92,9 +127,29 @@
+  \mTwentyPaginateGalley
+  \ifx\mTwentyManualMode\@empty\else
+   \def\mTwentyPageMode{page}%
+-  \ifx\mTwentyManualMode\mTwentyPageMode\clearpage\else\mTwentyAdvance\fi
++  \ifx\mTwentyManualMode\mTwentyPageMode\mTwentyShipFrame\clearpage\else\mTwentyAdvance\fi
+   \setbox\mTwentyGalley=\box\mTwentyPendingGalley
+   \expandafter\mTwentyPaginateChunks
++ \fi
++}
++\newcommand\mTwentyKeepGalleyTogether{%
++ % Measure the already-typeset galley only. Writes, labels and notes are not
++ % executed twice. A short flow block starts in a fresh region when needed;
++ % a block taller than a whole region continues through the native splitter.
++ \def\mTwentyHere{here}%
++ \ifvoid\mTwentySidebarPageContent
++ \ifx\mTwentySidebarPlace\mTwentyHere\else
++  \mTwentyFullSplitHeight=\dimexpr\textheight-4bp-\ht\mTwentySidebarTitleMeasure-\dp\mTwentySidebarTitleMeasure-53bp-\mTwentySidebarBeforeGap-\mTwentySidebarAfterGap\relax
++  \ifnum\mTwentySegment>0\relax\ifvoid\mTwentyTableHeader\else\advance\mTwentyFullSplitHeight-\ht\mTwentyTableHeader\advance\mTwentyFullSplitHeight-\dp\mTwentyTableHeader\advance\mTwentyFullSplitHeight-4bp\fi\fi
++  \mTwentyCurrentCapacity=\mTwentySplitHeight
++  \ifnum\mTwentySidebarColumns=2\multiply\mTwentyFullSplitHeight2\multiply\mTwentyCurrentCapacity2\fi
++  \@tempdima=\dimexpr\ht\mTwentyGalley+\dp\mTwentyGalley\relax
++  \ifdim\@tempdima>\mTwentyCurrentCapacity
++   \ifdim\@tempdima>\mTwentyFullSplitHeight\else
++    \mTwentyAdvance\mTwentySetSplitHeight
++   \fi
++  \fi
++ \fi
+  \fi
+ }
+ \newcommand\mTwentyPaginateGalley{%
+@@ -103,11 +158,13 @@
+  \ifdim\dimexpr\ht\mTwentyGalley+\dp\mTwentyGalley\relax<.1bp\relax\mTwentyMoreContentfalse\fi
+  \@whilesw\ifmTwentyMoreContent\fi{%
+   \mTwentySetSplitHeight
++  \mTwentyKeepGalleyTogether
+   \ifdim\mTwentySplitHeight<12bp
+-   \ifnum\mTwentySegment=0\relax\def\mTwentyHere{here}\ifx\mTwentySidebarPlace\mTwentyHere\PackageError{m20}{M20_E_PLACEMENT_UNAVAILABLE}{The required first segment does not fit at this anchor.}\fi\fi
++   \ifnum\mTwentySidebarPageSegment=0\relax\ifvoid\mTwentySidebarPageContent\ifnum\mTwentySegment=0\relax\def\mTwentyHere{here}\ifx\mTwentySidebarPlace\mTwentyHere\PackageError{m20}{M20_E_PLACEMENT_UNAVAILABLE}{The required first segment does not fit at this anchor.}\fi\fi\fi\fi
+    \mTwentyAdvance\mTwentySetSplitHeight
+   \fi
+-  \directlua{m20tables.check_first(\number\mTwentyGalley,\number\mTwentySplitHeight,"\mTwentySidebarPlace",\number\mTwentySegment,\number\dimexpr\textheight-74bp\relax)}
++  \@tempcnta=\mTwentySegment\advance\@tempcnta\mTwentySidebarPageSegment\ifvoid\mTwentySidebarPageContent\else\advance\@tempcnta1\fi
++  \directlua{m20tables.check_first(\number\mTwentyGalley,\number\mTwentySplitHeight,"\mTwentySidebarPlace",\number\@tempcnta,\number\dimexpr\textheight-84bp\relax)}
+   \ifnum\mTwentySidebarColumns=2
+    \@tempdima=\ht\mTwentyGalley\advance\@tempdima\dp\mTwentyGalley
+    \@tempdimb=2\mTwentySplitHeight
+@@ -173,13 +230,14 @@
+  \if\relax\detokenize\expandafter{\the\mTwentyNotes}\relax\else
+   \mTwentyTypesetText{\the\mTwentyNotes}
+  \fi
++ \mTwentyShipFrame
+ }
+ \cs_new_protected:Npn \mTwentyComposeOrAtomic:n #1 {
+  \bool_if:NTF \l_mtw_breakable_bool {\mTwentyComposeSidebar:n {#1}} {
+   \setbox\mTwentyAtomicSidebar=\vbox{
+    \hsize=\mTwentyOuterWidth
+    \renewcommand\mTwentyRemaining{\mTwentyAvailable=\dimexpr\textheight-4bp\relax}
+-   \renewcommand\mTwentyAdvance{\par}
++   \renewcommand\mTwentyAdvance{\mTwentyShipFrame\par}
+    \mTwentyComposeSidebar:n {#1}
+   }
+   \dim_compare:nNnT {\ht\mTwentyAtomicSidebar+\dp\mTwentyAtomicSidebar} > {\textheight-4bp} {
+@@ -197,15 +255,19 @@
+ \ExplSyntaxOff
+ \newcommand\mTwentySidebarPDF[3]{%
+  \global\mTwentyNotes={}%
++ \global\setbox\mTwentySidebarPageContent=\box\voidb@x
++ \global\mTwentySidebarPageSegment=0
+  \def\mTwentySidebarTitle{#2}%
+  \def\mTwentyNarrowName{narrow}\def\mTwentyKind{#1}%
+  \ifx\mTwentyKind\mTwentyNarrowName\mTwentyNarrowtrue\mTwentyOuterWidth=\mTwentyColumnWidth\else\mTwentyNarrowfalse\mTwentyOuterWidth=\textwidth\fi
+  \mTwentyUsableWidth=\mTwentyOuterWidth\advance\mTwentyUsableWidth-50bp
+  \mTwentyTextWidth=\mTwentyUsableWidth
+  \ifnum\mTwentySidebarColumns=2\advance\mTwentyTextWidth-12bp\divide\mTwentyTextWidth2\fi
++ \edef\mTwentySidebarFrameColumns{\mTwentySidebarColumns}%
++ \let\mTwentySidebarRegionAdvance\mTwentyAdvance
++ \let\mTwentyAdvance\mTwentySidebarAdvance
+  \mTwentySegment=0
+  \mTwentyPlacement
+  \csname mTwentyComposeOrAtomic:n\endcsname{#3}%
+ }
+ \endinput
+-
+--- a/tex/m20-pdf-tables.sty
++++ b/tex/m20-pdf-tables.sty
+@@ -1,6 +1,25 @@
+ \NeedsTeXFormat{LaTeX2e}
+ \ProvidesPackage{m20-pdf-tables}[2026/09/30 ordered fixed-width row blocks]
+-\RequirePackage{array}
++\RequirePackage{array,colortbl}
++% The layout's earlier begin-document hook has already opened a multicols
++% group when colortbl initializes @tabarray. Keep that initialization after
++% the columns close, otherwise nested native tables restore undefined colors.
++\AddToHook{begindocument/end}{\global\let\@tabarray\@tabarray}
++% The supplied M20 table reference uses Futura, bold headers, no rules and
++ % pale-purple alternating body bands. Sidebar tables instead alternate
++% gold/white text on their existing dark frame, as in the sidebar reference.
++% Exact pale-band pixel from the user-supplied table screenshot. The sidebar
++% text continues to use the template's existing CMYK m20gold/m20purple colors.
++\definecolor{m20tableband}{RGB}{237,232,241}
++\newcommand\mTwentyTableCellStyle{%
++ \mTwentySidebarFont\fontsize{10bp}{10bp}\selectfont
++ \ifnum\rownum>\mTwentyTableHeadingRows\relax
++  \ifmTwentySidebarActive
++   \ifodd\numexpr\rownum-\mTwentyTableHeadingRows\relax\color{m20gold}\else\color{white}\fi
++  \else\color{black}\fi
++ \else
++  \bfseries\ifmTwentySidebarActive\color{white}\else\color{black}\fi
++ \fi}
+ \newdimen\mTwentyTableWidth
+ \newdimen\mTwentyCellWidth
+ \newdimen\mTwentyTableOffset
+@@ -14,6 +33,49 @@
+ \newbox\mTwentyRowChunk
+ \newbox\mTwentyTableHeader
+ \newbox\mTwentyLocalTableHeader
++\newbox\mTwentyTableNotesBox
++\newbox\mTwentyTableFloatBox
++\newbox\mTwentyTableLeadBox
++\newif\ifmTwentyTableLeadActive
++% Short full-width alignments are genuine native top/bottom floats. Permit
++% several compact tables on a page, and stack float-only pages at their top.
++\setcounter{topnumber}{6}
++\setcounter{bottomnumber}{6}
++\setcounter{totalnumber}{12}
++\renewcommand\topfraction{.9}
++\renewcommand\bottomfraction{.8}
++\renewcommand\textfraction{.08}
++\renewcommand\floatpagefraction{.5}
++\setlength\floatsep{10bp plus2bp minus2bp}
++\setlength\textfloatsep{10bp plus2bp minus2bp}
++\setlength\@fptop{0bp}
++\setlength\@fpsep{10bp}
++\setlength\@fpbot{0bp plus1fil}
++% A bounded, render-only association: existing title/lead tokens and their
++% table are boxed once and move together. Labels, destinations and anchors
++% remain in that box, rather than in an unrelated preceding prose column.
++\NewDocumentEnvironment{m20tablelead}{+b}{%
++ \begingroup
++ \ifmTwentySidebarActive\PackageError{m20}{M20_E_TABLE_LEAD_CONTEXT}{A table lead float must be outside a sidebar.}\fi
++ \setbox\mTwentyTableLeadBox=\vbox{%
++  \mTwentyTableLeadActivetrue
++  \hsize=\textwidth\linewidth=\hsize\parindent=18bp\parskip=3bp
++  \rmfamily\fontsize{10bp}{12bp}\selectfont\color{black}%
++  \let\mTwentyBodyBegin\relax\let\mTwentyBodyEnd\relax
++  \let\mTwentyKeepHeading\@gobble
++  \@nobreakfalse\@noskipsecfalse\everypar{}%
++  % Explicit existing table titles use the supplied screenshot's purple
++  % bold Goudy caption treatment while retaining native heading semantics.
++  \def\subsection{\@startsection{subsection}{2}{\z@}{0bp}{3bp}{\centering\mTwentyFirstFont\bfseries\fontsize{11bp}{13bp}\selectfont\color{m20purple}}}%
++  #1\par}%
++ \ifdim\dimexpr\ht\mTwentyTableLeadBox+\dp\mTwentyTableLeadBox\relax>\dimexpr\textheight-60bp\relax
++  \PackageError{m20}{M20_E_TABLE_LEAD_TOO_TALL}{The bounded title/lead/table group must fit one page. Leave multipage tables in owner pagination.}%
++ \fi
++ \begin{table}[tbp]\noindent\box\mTwentyTableLeadBox\par\end{table}%
++ \endgroup
++}{}
++\AddToHook{env/m20tablelead/before}{\mTwentyBodyEnd}
++\AddToHook{env/m20tablelead/after}{\mTwentyBodyBegin}
+ \newif\ifmTwentyTableActive
+ \newdimen\mTwentyOriginalColumnWidth
+ \directlua{m20tables = dofile(kpse.find_file("tex/m20-table-nodes.lua", "tex"))}
+@@ -49,6 +111,7 @@
+ \tl_new:N \l_mtw_table_id_tl
+ \fp_new:N \l_mtw_table_scale_fp
+ \int_new:N \l_mtw_table_head_int
++\bool_new:N \l_mtw_table_float_bool
+ \seq_new:N \l_mtw_rows_seq
+ \seq_new:N \l_mtw_columns_seq
+ \tl_new:N \l_mtw_column_spec_tl
+@@ -74,6 +137,8 @@
+  \int_compare:nNnT {\l_mtw_table_head_int} < {0}{\PackageError{m20}{M20_E_TABLE_HEADERS}{head-rows~cannot~be~negative}}
+  \fp_compare:nNnT {\l_mtw_table_scale_fp} > {1}{\PackageError{m20}{M20_E_TABLE_SCALE}{Scale~must~be~in~0..1}}
+  \fp_compare:nNnF {\l_mtw_table_scale_fp} > {0}{\PackageError{m20}{M20_E_TABLE_SCALE}{Scale~must~be~in~0..1}}
++ % Four-point horizontal cell inset is the original IDML table default.
++ \tabcolsep=4bp
+  \str_case:VnF \l_mtw_table_width_tl {
+   {container}{\ifmTwentySidebarActive\mTwentyTableWidth=\mTwentyUsableWidth\else\mTwentyTableWidth=\linewidth\fi}
+   {column}{\ifmTwentySidebarActive\mTwentyTableWidth=\mTwentyOriginalColumnWidth\else\mTwentyTableWidth=\mTwentyColumnWidth\fi}
+@@ -102,6 +167,11 @@
+  \str_case:Vn \l_mtw_table_align_tl {{center}{\mTwentyTableOffset=\dimexpr\linewidth-\mTwentyTableWidth\relax\divide\mTwentyTableOffset2}{right}{\mTwentyTableOffset=\dimexpr\linewidth-\mTwentyTableWidth\relax}}
+ 
+  \tl_set:Nn \l_mtw_column_spec_tl {#2}
++ % The converted manuscript's empty edge directives remove cell padding and
++ % make shaded panels overhang the body. Retain the native column widths but
++ % restore the four-point inset on the two outer edges.
++ \regex_replace_once:nnN {\A@\{\}} {} \l_mtw_column_spec_tl
++ \regex_replace_once:nnN {@\{\}\Z} {} \l_mtw_column_spec_tl
+  \regex_match:nnT {\A[lcr|\s]+\Z}{#2} {
+   \tl_clear:N \l_mtw_column_spec_tl
+   \tl_map_inline:nn {#2}{\str_case:nn {##1}{
+@@ -111,6 +181,21 @@
+    {|}{\tl_put_right:Nn \l_mtw_column_spec_tl {|}}
+   }}
+  }
++ \edef\mTwentyTableHeadingRows{\int_use:N\l_mtw_table_head_int}
++ \mTwentySidebarFont\fontsize{10bp}{10bp}\selectfont
++ % Compact symmetric row breathing room matches the supplied visual target.
++ \setbox\strutbox=\hbox{\vrule width0bp height\dimexpr\ht\strutbox+2bp\relax depth\dimexpr\dp\strutbox+2bp\relax}
++ \let\mTwentyTableOriginalStartPbox\@startpbox
++ % Start the cell paragraph before its color declaration. A leading vertical
++ % color whatsit changes a vtop's reference point and adds a spurious strut.
++ \def\@startpbox##1{\mTwentyTableOriginalStartPbox{##1}\leavevmode\mTwentyTableCellStyle}
++ \ifmTwentySidebarActive
++  \rowcolors{1}{}{}
++ \else
++  \int_if_odd:nTF {\l_mtw_table_head_int}
++   {\rowcolors{\int_eval:n{\l_mtw_table_head_int+1}}{white}{m20tableband}}
++   {\rowcolors{\int_eval:n{\l_mtw_table_head_int+1}}{m20tableband}{white}}
++ \fi
+  \setbox\mTwentyNativeTable=\hbox{\exp_args:NnV \begin{tabular}\l_mtw_column_spec_tl #3\end{tabular}}
+  \ifdim\wd\mTwentyNativeTable>\dimexpr\mTwentyTableWidth+.5bp\relax
+   \PackageError{m20}{M20_E_TABLE_TOO_WIDE}{Explicit~native~columns~exceed~the~chosen~width.~Reduce~their~dimensions~or~use~l/c/r~columns.}\fi
+@@ -121,11 +206,44 @@
+  \str_case:Vn \l_mtw_table_align_tl {{center}{\mTwentyTableOffset=\dimexpr\linewidth-\mTwentyTableWidth\relax\divide\mTwentyTableOffset2}{right}{\mTwentyTableOffset=\dimexpr\linewidth-\mTwentyTableWidth\relax}}
+  \directlua{m20tables.extract(\number\mTwentyNativeTable,\number\mTwentyRowStream,\number\mTwentyLocalTableHeader,\int_use:N\l_mtw_table_head_int,\number\dimexpr\textheight-90bp\relax,\number\mTwentyTableOffset)}
+  \global\setbox\mTwentyTableHeader=\box\mTwentyLocalTableHeader
+- \par\noindent\hspace*{\mTwentyTableOffset}
+- \mTwentyPosition{\tl_use:N \l_mtw_table_id_tl}{\mTwentyTableWidth}{\mTwentyTableWidth}{1}{table}{0}{flow}{}
+- \par\ifmTwentySidebarActive\unvbox\mTwentyRowStream\else\mTwentyTablePassage\fi\par\the\mTwentyTableNotes\par
++ % Notes are typeset exactly once. Copies in an unused candidate float remain
++ % unshipped; the owner stream ships the original notes when the table is long.
++ \setbox\mTwentyTableNotesBox=\vbox{\hsize=\linewidth\the\mTwentyTableNotes\par}
++ \bool_set_false:N \l_mtw_table_float_bool
++ \ifmTwentySidebarActive\else\ifmTwentyTableLeadActive\else
++  \ifdim\mTwentyTableWidth>\dimexpr\textwidth-1bp\relax
++   \setbox\mTwentyTableFloatBox=\vbox{\hsize=\linewidth\parskip=0bp
++    \noindent\hspace*{\mTwentyTableOffset}
++    \mTwentyPosition{\tl_use:N \l_mtw_table_id_tl}{\mTwentyTableWidth}{\mTwentyTableWidth}{1}{table}{0}{float}{}
++    \copy\mTwentyNativeTable\par
++    \ifdim\dimexpr\ht\mTwentyTableNotesBox+\dp\mTwentyTableNotesBox\relax>0bp
++     \vskip4bp\copy\mTwentyTableNotesBox
++    \fi}
++   \ifdim\dimexpr\ht\mTwentyTableFloatBox+\dp\mTwentyTableFloatBox\relax<\dimexpr\textheight-60bp\relax
++    \begin{table}[tbp]\noindent\box\mTwentyTableFloatBox\par\end{table}
++    \bool_set_true:N \l_mtw_table_float_bool
++    \global\setbox\mTwentyTableHeader=\box\voidb@x
++   \fi
++  \fi
++ \fi\fi
++ \bool_if:NF \l_mtw_table_float_bool {
++  % Multipage alignments keep owner pagination with repeated page-top headers.
++  % Sidebar tables remain within their existing ordered frame stream.
++  \def\mTwentyTablePlacement{flow}
++  \ifmTwentyTableLeadActive\def\mTwentyTablePlacement{float}\else\ifmTwentySidebarActive\else
++   \ifdim\mTwentyTableWidth>\dimexpr\textwidth-1bp\relax
++    \def\mTwentyTablePlacement{top}
++    \par\ifdim\pagetotal>0bp\newpage\fi
++   \fi
++  \fi\fi
++  \par\noindent\hspace*{\mTwentyTableOffset}
++  \mTwentyPosition{\tl_use:N \l_mtw_table_id_tl}{\mTwentyTableWidth}{\mTwentyTableWidth}{1}{table}{0}{\mTwentyTablePlacement}{}
++  \par\ifmTwentyTableLeadActive
++   \unvbox\mTwentyRowStream\global\setbox\mTwentyTableHeader=\box\voidb@x
++  \else\ifmTwentySidebarActive\unvbox\mTwentyRowStream\else\mTwentyTablePassage\fi\fi
++  \par\unvbox\mTwentyTableNotesBox\par
++ }
+  \group_end:
+ }
+ \ExplSyntaxOff
+ \endinput
+-

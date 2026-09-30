@@ -1,0 +1,32 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{m20-fonts}[2026/09/30 genuine faces, explicit languages and math]
+\RequirePackage{fontspec}
+\ifmTwentyEpub\else\pdfextension mapfile{+cm.map}\fi
+\RequirePackage[bidi=basic,english]{babel}
+\babelprovide[import]{greek}
+\babelprovide[import]{russian}
+\babelprovide[import]{hebrew}
+\babelprovide[import]{arabic}
+\newcommand\mTwentyLoadFonts{%
+ \setmainfont{GOUDOS.TTF}[Path=\mTwentyFontPath,Scale=.98,RawFeature={extend=1.020408163265306},BoldFont=GOUDOSB_0.TTF,ItalicFont=GOUDOSI_0.TTF,BoldItalicFont=NotoSerif-BoldItalic.ttf]%
+ \ifmTwentyEpub\else
+  \babelfont{rm}[Path=\mTwentyFontPath,Scale=.98,RawFeature={extend=1.020408163265306},BoldFont=GOUDOSB_0.TTF,ItalicFont=GOUDOSI_0.TTF,BoldItalicFont=NotoSerif-BoldItalic.ttf]{GOUDOS.TTF}%
+ \fi
+ \newfontfamily\mTwentyFirstFont{GOUDOS.TTF}[Path=\mTwentyFontPath,BoldFont=GOUDOSB_0.TTF,ItalicFont=GOUDOSI_0.TTF,BoldItalicFont=NotoSerif-BoldItalic.ttf]%
+ \newfontfamily\mTwentyHeadingFont{abbess-regular.ttf}[Path=\mTwentyFontPath,BoldFont=GOUDOSB_0.TTF,ItalicFont=GOUDOSI_0.TTF,BoldItalicFont=NotoSerif-BoldItalic.ttf]%
+ \newfontfamily\mTwentyHeadingNarrowFont{abbess-regular.ttf}[Path=\mTwentyFontPath,RawFeature={extend=.97},BoldFont=GOUDOSB_0.TTF,ItalicFont=GOUDOSI_0.TTF,BoldItalicFont=NotoSerif-BoldItalic.ttf]%
+ \newfontfamily\mTwentySidebarFont{FuturaPTBook.otf}[Path=\mTwentyFontPath,BoldFont=NotoSans-Bold.ttf,ItalicFont=NotoSans-Italic.ttf,BoldItalicFont=NotoSans-BoldItalic.ttf]%
+ \newfontfamily\mTwentyScriptFont{DejaVuSans.ttf}[Path=\mTwentyFontPath,Renderer=HarfBuzz,BoldFont=DejaVuSans-Bold.ttf,ItalicFont=DejaVuSans-Oblique.ttf,BoldItalicFont=DejaVuSans-BoldOblique.ttf]%
+ \setmonofont{DejaVuSansMono.ttf}[Path=\mTwentyFontPath,BoldFont=GOUDOSB_0.TTF,ItalicFont=GOUDOSI_0.TTF,BoldItalicFont=NotoSerif-BoldItalic.ttf]%
+ \babelfont[greek,russian,hebrew,arabic]{rm}[Path=\mTwentyFontPath,Renderer=HarfBuzz,BoldFont=DejaVuSans-Bold.ttf,ItalicFont=DejaVuSans-Oblique.ttf,BoldItalicFont=DejaVuSans-BoldOblique.ttf]{DejaVuSans.ttf}%
+}
+\NewDocumentCommand\mTwentyScript{m}{{\mTwentyScriptFont #1}}
+\ExplSyntaxOn
+\cs_new_protected:cpn {mTwentyPublicscript}{\mTwentyScript}
+\ExplSyntaxOff
+\AddToHook{begindocument/before}{%
+ \def\mTwentyUnicode{unicode}%
+ \ifx\mTwentyMath\mTwentyUnicode
+  \RequirePackage{unicode-math}\setmathfont{Latin Modern Math}%
+ \else\@ifpackageloaded{unicode-math}{\PackageError{m20}{M20_E_MATH_MODE}{Select math=unicode explicitly; unicode-math cannot silently replace legacy math.}}{}\fi
+}
