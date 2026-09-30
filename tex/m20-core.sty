@@ -38,6 +38,8 @@
  unknown .code:n = \PackageError{m20}{M20_E_UNKNOWN_SETUP:~\l_keys_key_str}{Unknown~setup~key}
 }
 \NewDocumentCommand\mTwentySetup{m}{\keys_set:nn {m20/setup}{#1}}
+\NewDocumentCommand\mTwentyDiagramAlt{m}{}
+\cs_new_protected:cpn {mTwentyPublicdiagramalt}{\mTwentyDiagramAlt}
 \tl_new:N \l_mtw_id_tl
 \tl_new:N \l_mtw_place_tl
 \int_new:N \l_mtw_columns_int
@@ -78,6 +80,7 @@
  \exp_args:NV \mTwentyRegisterID:n \l_mtw_id_tl
  \edef\mTwentySidebarPlace{\tl_use:N \l_mtw_place_tl}
  \edef\mTwentySidebarColumns{\int_use:N \l_mtw_columns_int}
+ \bool_if:NTF \l_mtw_breakable_bool {\def\mTwentySidebarBreakable{true}}{\def\mTwentySidebarBreakable{false}}
  \ifmTwentyEpub
    \mTwentyAsideBegin{\mTwentySidebarID}{#3}#4\mTwentyAsideEnd
  \else
@@ -102,7 +105,9 @@
 \cs_new_protected:Npn \m 20 {\tl_clear:N \l_mtw_command_tl \mTwentyScanCommand:}
 \cs_new_protected:Npn \mTwentyScanCommand: {
  \peek_catcode:NTF a {\mTwentyTakeCommand:n}
-  {\use:c {mTwentyPublic\tl_use:N \l_mtw_command_tl}}
+  {\cs_if_exist:cTF {mTwentyPublic\tl_use:N \l_mtw_command_tl}
+    {\use:c {mTwentyPublic\tl_use:N \l_mtw_command_tl}}
+    {\PackageError{m20}{M20_E_UNKNOWN_COMMAND:~m20\tl_use:N\l_mtw_command_tl}{Check~the~public~command~spelling.}}}
 }
 \cs_new_protected:Npn \mTwentyTakeCommand:n #1 {
  \tl_put_right:Nn \l_mtw_command_tl {#1}\mTwentyScanCommand:
@@ -112,6 +117,8 @@
 \providecommand\mTwentyAsideEnd{\par\medskip}
 \NewDocumentCommand\mTwentySidebarBreak{O{page}}{%
  \ifmTwentySidebarActive
+  \def\mTwentyBreakableTrue{true}\ifx\mTwentySidebarBreakable\mTwentyBreakableTrue\else
+   \PackageError{m20}{M20_E_ATOMIC_SIDEBAR_BREAK}{Remove the manual break or choose breakable=true.}\fi
   \def\mTwentyBreakMode{#1}\def\mTwentyPageMode{page}\def\mTwentyColumnMode{column}%
   \ifx\mTwentyBreakMode\mTwentyPageMode\else\ifx\mTwentyBreakMode\mTwentyColumnMode\else
    \PackageError{m20}{M20_E_BREAK_MODE}{Choose page or column.}\fi\fi

@@ -49,6 +49,8 @@ def aux_state(work, name):
 
 def build_pdf(source, work, env, max_runs=8):
     name, driver = wrapper(source, work, 'pdf')
+    # An old index is not an input manuscript. Recreate its source on each build.
+    (work/(name+'.idx')).unlink(missing_ok=True)
     previous = None
     indexed = None
     for run in range(1, max_runs+1):
@@ -60,6 +62,9 @@ def build_pdf(source, work, env, max_runs=8):
             execute(['makeindex','-o',name+'.ind','-t',name+'.ilg',idx.name],
                     work, env, work/f'index-{run}.stdout')
             indexed = sha(idx)
+        elif not idx.exists() or not idx.stat().st_size:
+            for suffix in ('.ind','.ilg'):
+                (work/(name+suffix)).unlink(missing_ok=True)
         state = aux_state(work, name)
         if state == previous:
             text = (work/(name+'.log')).read_text(errors='replace')
@@ -73,7 +78,7 @@ def build_pdf(source, work, env, max_runs=8):
         previous = state
     raise BuildError('M20_E_NONCONVERGING',f'Auxiliary files did not settle after {max_runs} passes')
 
-def check_epub_content(source):
+def check_epub_content(source,enforce=True):
     supported = json.loads((ROOT/'epub/supported-content.json').read_text())
     seen = set()
     declared = set()
@@ -101,8 +106,8 @@ def check_epub_content(source):
             visit(candidate)
     visit(source)
     unknown=(definitions | (environments-set(supported['environments'])))-declared
-    if unknown: raise BuildError('M20_E_EPUB_UNMAPPED_CONTENT','Declare safe semantic expansion with \\m20epubsafe{...} or supply an adapter: '+', '.join(sorted(unknown)))
-    return sorted(str(p.relative_to(source.parent)) if p.is_relative_to(source.parent) else p.name for p in seen)
+    if unknown and enforce: raise BuildError('M20_E_EPUB_UNMAPPED_CONTENT','Declare safe semantic expansion with \\m20epubsafe{...} or supply an adapter: '+', '.join(sorted(unknown)))
+    return [{'path':str(p),'sha256':sha(p)} for p in sorted(seen)]
 
 def build_epub(source, work, env):
     check_epub_content(source)
@@ -120,13 +125,15 @@ def build_epub(source, work, env):
     return output
 
 def build(args):
-    out = workspace_path(args.out)
-    out.mkdir(parents=True,exist_ok=True)
     report = {'schema_version':1,'status':'building','target':args.target,'diagnostics':[], 'targets':{}}
+    out = ROOT/'build/failed-build'
     try:
+        out = workspace_path(args.out)
+        out.mkdir(parents=True,exist_ok=True)
         source = Path(args.source).resolve()
         if not source.is_file(): raise BuildError('M20_E_SOURCE_MISSING',f'Manuscript missing: {args.source}')
         report['source'] = {'path':str(source),'sha256':sha(source)}
+        report['sources'] = check_epub_content(source,enforce=False)
         report['profile_sha256'] = sha(ROOT/'profiles/m20.json')
         runtime = preflight(ROOT/'.runtime',prepare=args.prepare)
         report['engines'] = runtime['engines']
@@ -152,14 +159,15 @@ def build(args):
                     entry['verification'] = verify_output(output,target)
                     if entry['verification']['errors']:
                         raise BuildError('M20_E_VERIFICATION',str(entry['verification']['errors']))
-            except (BuildError,OSError) as exc:
+            except (RuntimeError,OSError,ValueError,subprocess.SubprocessError) as exc:
                 entry['status'] = 'failed'
                 report['diagnostics'].append({'code':getattr(exc,'code','M20_E_BUILD'),'target':target,'severity':'error','message':str(exc)})
         report['status'] = 'passed' if all(t['status']=='passed' for t in report['targets'].values()) else 'failed'
-    except (BuildError,OSError,ValueError) as exc:
+    except (RuntimeError,OSError,ValueError,subprocess.SubprocessError) as exc:
         report['status']='failed'
         report['diagnostics'].append({'code':getattr(exc,'code','M20_E_BUILD'),'severity':'error','message':str(exc)})
     finally:
+        out.mkdir(parents=True,exist_ok=True)
         (out/'build-report.json').write_text(json.dumps(report,indent=2)+'\n')
     return report
 
@@ -173,7 +181,10 @@ def main():
     p.add_argument('--max-runs',type=int,default=8)
     args=p.parse_args()
     report=build(args)
-    print(json.dumps({k:report[k] for k in ['status','targets','diagnostics']},indent=2))
+    summary={k:report[k] for k in ['status','targets','diagnostics']}
+    summary['targets']={k:{a:b for a,b in v.items() if a!='verification'} |
+        ({'verification':{a:b for a,b in v['verification'].items() if a not in ('text','raw_text','positions')}} if 'verification' in v else {}) for k,v in report['targets'].items()}
+    print(json.dumps(summary,indent=2))
     return 0 if report['status']=='passed' else 1
 
 if __name__=='__main__': sys.exit(main())

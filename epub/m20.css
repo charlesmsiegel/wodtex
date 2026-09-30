@@ -2,5 +2,6 @@
 .m20-sidebar { border: 1px solid currentColor; padding: .6em; margin: 1em 0; }
 .m20-sidebar h2 { margin-top: 0; }
 img, svg { max-width: 100%; height: auto; }
+img.m20-native-diagram { background: white; }
 table { border-collapse: collapse; max-width: 100%; }
 th, td { border: 1px solid currentColor; padding: .3em; }

@@ -18,6 +18,9 @@
 \newdimen\mTwentyOriginalColumnWidth
 \directlua{m20tables = dofile(kpse.find_file("tex/m20-table-nodes.lua", "tex"))}
 \newcount\mTwentyTableColumns
+\newcount\mTwentyTableRules
+\newcount\mTwentyTableDoubleRules
+\newif\ifmTwentyPreviousRule
 \newcommand\mTwentyTableSplitHeight{%
  \mTwentyRemaining\mTwentySplitHeight=\mTwentyAvailable
  \ifnum\mTwentySegment>0\advance\mTwentySplitHeight-\ht\mTwentyTableHeader\advance\mTwentySplitHeight-\dp\mTwentyTableHeader\fi
@@ -76,10 +79,15 @@
   {column}{\ifmTwentySidebarActive\mTwentyTableWidth=\mTwentyOriginalColumnWidth\else\mTwentyTableWidth=\mTwentyColumnWidth\fi}
  }{\mTwentyTableWidth=\l_mtw_table_width_tl\relax}
  \mTwentyTableWidth=\fp_to_decimal:N \l_mtw_table_scale_fp\mTwentyTableWidth
+ \ifdim\mTwentyTableWidth>\linewidth\PackageError{m20}{M20_E_TABLE_TOO_WIDE}{Choose~a~width~within~the~owner's~usable~region.}\fi
+ \ifdim\mTwentyTableWidth<1bp\PackageError{m20}{M20_E_TABLE_WIDTH}{Choose~a~positive~usable~table~width.}\fi
  \mTwentyTableColumns=0
  \tl_map_inline:nn {#2} {\str_case:nn {##1} {{l}{\advance\mTwentyTableColumns1}{c}{\advance\mTwentyTableColumns1}{r}{\advance\mTwentyTableColumns1}{p}{\advance\mTwentyTableColumns1}}}
  \ifnum\mTwentyTableColumns<1 \PackageError{m20}{M20_E_TABLE_COLUMN_SPEC}{Use~native~l/c/r/p~column~specification}\fi
- \mTwentyCellWidth=\mTwentyTableWidth\divide\mTwentyCellWidth\mTwentyTableColumns
+ \mTwentyTableRules=0
+ \mTwentyTableDoubleRules=0\mTwentyPreviousRulefalse
+ \tl_map_inline:nn {#2}{\str_if_eq:nnTF {##1}{|}{\advance\mTwentyTableRules1\ifmTwentyPreviousRule\advance\mTwentyTableDoubleRules1\fi\mTwentyPreviousRuletrue}{\mTwentyPreviousRulefalse}}
+ \mTwentyCellWidth=\mTwentyTableWidth\advance\mTwentyCellWidth-\mTwentyTableRules\arrayrulewidth\advance\mTwentyCellWidth-\mTwentyTableDoubleRules\doublerulesep\divide\mTwentyCellWidth\mTwentyTableColumns
  \advance\mTwentyCellWidth-2\tabcolsep
 
  \ifmTwentyTableActive
@@ -94,15 +102,23 @@
  \str_case:Vn \l_mtw_table_align_tl {{center}{\mTwentyTableOffset=\dimexpr\linewidth-\mTwentyTableWidth\relax\divide\mTwentyTableOffset2}{right}{\mTwentyTableOffset=\dimexpr\linewidth-\mTwentyTableWidth\relax}}
 
  \tl_set:Nn \l_mtw_column_spec_tl {#2}
- \regex_match:nnT {\A[lcr]+\Z}{#2} {
+ \regex_match:nnT {\A[lcr|\s]+\Z}{#2} {
   \tl_clear:N \l_mtw_column_spec_tl
   \tl_map_inline:nn {#2}{\str_case:nn {##1}{
    {l}{\tl_put_right:Nn \l_mtw_column_spec_tl {>{\raggedright\arraybackslash}p{\mTwentyCellWidth}}}
    {c}{\tl_put_right:Nn \l_mtw_column_spec_tl {>{\centering\arraybackslash}p{\mTwentyCellWidth}}}
    {r}{\tl_put_right:Nn \l_mtw_column_spec_tl {>{\raggedleft\arraybackslash}p{\mTwentyCellWidth}}}
+   {|}{\tl_put_right:Nn \l_mtw_column_spec_tl {|}}
   }}
  }
  \setbox\mTwentyNativeTable=\hbox{\exp_args:NnV \begin{tabular}\l_mtw_column_spec_tl #3\end{tabular}}
+ \ifdim\wd\mTwentyNativeTable>\dimexpr\mTwentyTableWidth+.5bp\relax
+  \PackageError{m20}{M20_E_TABLE_TOO_WIDE}{Explicit~native~columns~exceed~the~chosen~width.~Reduce~their~dimensions~or~use~l/c/r~columns.}\fi
+ % Explicit native widths take precedence within the selected maximum. Record
+ % and align the actual box rather than pretending it fills that maximum.
+ \mTwentyTableWidth=\wd\mTwentyNativeTable
+ \mTwentyTableOffset=0bp
+ \str_case:Vn \l_mtw_table_align_tl {{center}{\mTwentyTableOffset=\dimexpr\linewidth-\mTwentyTableWidth\relax\divide\mTwentyTableOffset2}{right}{\mTwentyTableOffset=\dimexpr\linewidth-\mTwentyTableWidth\relax}}
  \directlua{m20tables.extract(\number\mTwentyNativeTable,\number\mTwentyRowStream,\number\mTwentyLocalTableHeader,\int_use:N\l_mtw_table_head_int,\number\dimexpr\textheight-90bp\relax,\number\mTwentyTableOffset)}
  \global\setbox\mTwentyTableHeader=\box\mTwentyLocalTableHeader
  \par\noindent\hspace*{\mTwentyTableOffset}

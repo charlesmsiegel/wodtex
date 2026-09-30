@@ -8,13 +8,16 @@ def document(body):
 
 class TableTests(unittest.TestCase):
     def test_long_spanning_table_is_framed_and_conserved(self):
-        rows = 'Heading A & Heading B \\\\ '+''.join(f'CELL-{i:03d} & Descriptive text in row {i}. \\\\ ' for i in range(85))
+        rows = r'Heading A\label{repeated-head}\index{header@Header}\m20note{HEADER-NOTE} & Heading B \\ '+''.join(f'CELL-{i:03d} & Descriptive text in row {i}. \\\\ ' for i in range(85))
         _,path = compile_source(document(r'\begin{m20sidebarwide}[columns=2,id=table-flow]{Table flow}Before the table.\begin{m20table}[head-rows=1,id=long-table]{ll}'+rows+r'\end{m20table}After the table.\end{m20sidebarwide}'),'long-table')
         with fitz.open(path.with_suffix('.pdf')) as pdf:
             text='\n'.join(p.get_text() for p in pdf)
             spans=[s for p in pdf for b in p.get_text('dict',flags=fitz.TEXTFLAGS_DICT & ~fitz.TEXT_PRESERVE_IMAGES)['blocks'] if 'lines' in b for l in b['lines'] for s in l['spans']]
         for i in range(85): self.assertEqual(text.count(f'CELL-{i:03d}'),1)
         self.assertGreaterEqual(text.count('Heading A'),2)
+        self.assertEqual(text.count('HEADER-NOTE'),1)
+        self.assertEqual(path.with_suffix('.aux').read_text().count(r'\newlabel{repeated-head}'),1)
+        self.assertEqual(path.with_suffix('.idx').read_text().count(r'\indexentry{header@Header|hyperpage}'),1)
         self.assertTrue(all(s['color']==0xffffff for s in spans if 'CELL-' in s['text']))
 
     def test_native_nested_cells_and_multicolumn_are_conserved(self):
@@ -23,6 +26,22 @@ class TableTests(unittest.TestCase):
         text=subprocess.check_output(['pdftotext',str(path.with_suffix('.pdf')),'-'],text=True)
         for marker in ['SPANNED-CELL','INNER-A','INNER-B','INNER-C','INNER-D']:
             self.assertEqual(text.count(marker),1)
+
+    def test_native_rules_obey_selected_width_and_explicit_widths_are_checked(self):
+        _,path=compile_source(document(r'\begin{m20table}[id=ruled,width=column,scale=.8]{l|r}LEFT & RIGHT \\ \end{m20table}'),'ruled-width')
+        table=next(p for p in positions(path) if p['id']=='ruled')
+        self.assertAlmostEqual(table['width'],239.2248*.8,places=2)
+        _,path=compile_source(document(r'\begin{m20table}[id=double-ruled,width=column,scale=.8]{l||r}LEFT & RIGHT \\ \end{m20table}'),'double-ruled-width')
+        table=next(p for p in positions(path) if p['id']=='double-ruled')
+        self.assertAlmostEqual(table['width'],239.2248*.8,places=2)
+        p,_=compile_source(document(r'\begin{m20table}[width=100bp]{p{200bp}}TOO WIDE \\ \end{m20table}'),'explicit-wide',False)
+        self.assertNotEqual(p.returncode,0)
+        self.assertIn('M20_E_TABLE_TOO_WIDE',p.stdout)
+
+    def test_atomic_sidebar_cannot_request_manual_break(self):
+        p,_=compile_source(document(r'\begin{m20sidebar}[breakable=false]{Atomic}Before\m20sidebarbreak After\end{m20sidebar}'),'atomic-break',False)
+        self.assertNotEqual(p.returncode,0)
+        self.assertIn('M20_E_ATOMIC_SIDEBAR_BREAK',p.stdout)
 
     def test_overheight_row_errors(self):
         p,_=compile_source(document(r'\begin{m20table}{ll}A & \rule{1bp}{750bp} \\ \end{m20table}'),'row-overheight',False)

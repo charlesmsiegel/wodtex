@@ -1,28 +1,62 @@
 # wodtex
 
-Reusable native-LaTeX authoring framework for World of Darkness books, with separate PDF and reflowable EPUB output adapters and extensible visual profiles.
+Native LaTeX authoring for M20 books, with LuaLaTeX PDF and reflowable EPUB 3
+from the same editable manuscript. The implementation follows the approved
+specification in [docs/design](docs/design).
 
-## Implementation status
+## Build a book
 
-This development branch is an in-progress checkpoint, not a finished release. The approved M20 specification and all eight implementation tasks are in `docs/design/`. Runtime and layout code, tests, dependency pins, and measured profile work are being committed as they are implemented.
+Use Python 3.12+, a TeX Live/LuaLaTeX installation, Java 17+, Node.js 18+,
+makeindex and Poppler. The tested environment is Linux x86-64; preparation
+supplies a pinned dvisvgm binary there. Other platforms need their own dvisvgm
+and compatible TeX paths.
 
-The first real LuaLaTeX font/runtime smoke PDF has been compiled and visually inspected. It embeds genuine supplied Abbess, Goudy Old Style, and Futura faces with explicitly declared genuine Noto fallbacks. The measured 98% vertical body-glyph scale preserves horizontal width. The two-column/sidebar composition proof and actual EPUB conversion are still in progress. Full acceptance, complete installation/usage documentation, and the full Graveyards of Hope book outputs are pending.
+```sh
+python3 -m pip install -r requirements.txt
+python3 scripts/preflight.py --prepare
+python3 scripts/prepare_assets.py --template-zip /path/to/Mage_Templates.zip
+python3 scripts/build.py --target all --source examples/book.tex --out build/book --verify
+```
 
-## Architecture
+Instead of the ZIP, pass `--idml "/path/to/M20 Template Interior.idml"` with
+the original `Document fonts` and `Links` directories beside it. Licensed
+fonts/art, private manuscripts, caches and build outputs are excluded from Git.
+Dependencies come from official sources with SHA256 pins and install locally;
+original input files remain intact.
 
-- One editable native-LaTeX manuscript with standard book commands, references, mathematics, and indexing
-- Semantic core separated from PDF placement/decorative rendering and EPUB semantic conversion
-- M20 as the first measured visual profile; other profiles can be added behind the same semantic interface
-- All three sidebar layouts, mandatory placement, breakable tables, paired chapter versos, meaningful-art semantics, and reflowable EPUB conservation are required acceptance gates
+Edit [examples/book.tex](examples/book.tex). Use `--target pdf` or `--target epub`
+for one format. Outputs and `build-report.json` are under the selected `build`
+directory. Failed builds return nonzero with target-specific diagnostics.
 
-## Licensed inputs
+## Implemented
 
-Original InDesign templates, proprietary fonts/art, and private book manuscripts are not redistributed in this repository. They remain private user-supplied inputs in ignored directories. The importer/preparation commands and measured profile manifest are being implemented so licensed users can reproduce the build with their own files.
+- Native two-column PDF body and spanning headings; all three sidebar layouts
+  with long continuations, mandatory placement and atomic-content diagnostics.
+- Breakable native tables, repeated headings, nested tabular cells, local notes,
+  fixed art reservations, fresh chapter versos, contents, references and index.
+- Semantic EPUB asides, tables or labeled records, meaningful art with metadata,
+  notes/backlinks, native MathML with vector SVG alternatives and live navigation.
+- Pinned preparation, bounded build convergence, output verification, stress
+  fixtures, and a deterministic source archive with a fresh-unpack build test.
 
-## Intended build interface
+The multilingual auto-selection regression is deferred at the user's request.
+Use `\foreignlanguage{arabic}{\m20script{مرحبا}}` and the equivalent recipe for
+other supported scripts. The regression remains an expected-failure test;
+missing glyphs still fail a build. Exact InDesign decoration calibration and
+physical e-reader validation remain open and are recorded in
+[Validation.txt](docs/Validation.txt).
 
-Once implementation is complete:
+## Check and package
 
-`python3 scripts/build.py --target all --source examples/specimen.tex --out build/specimen --verify`
+```sh
+python3 scripts/build.py --target all --source examples/specimen.tex --out build/specimen --verify
+python3 -m unittest discover -s tests -t . -v
+python3 scripts/package.py --out build/packages/wodtex-m20.zip
+```
 
-The current checkpoint may not yet support this complete command. Do not treat partial tests or the runtime smoke as proof that layout fidelity, EPUB readability, or full-book content preservation is finished.
+The archive contains source, examples, tests, dependency pins and documentation;
+supply your licensed inputs after unpacking. Set `WODTEX_TEMPLATE_ZIP` for the
+fresh-setup integration test when the ZIP is outside the default local location.
+
+See [setup](docs/README.txt), [command recipes](docs/Command-Reference.txt),
+[supported content](docs/Supported-Content.txt), and [validation limits](docs/Validation.txt).

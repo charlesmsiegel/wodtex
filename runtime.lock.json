@@ -1,6 +1,9 @@
 {
   "schema_version": 1,
   "pdf_engine": "lualatex",
+  "binary_dependencies": [
+    {"name":"dvisvgm","platform":"x86_64-linux","version":"3.6","archive":"dvisvgm.x86_64-linux.tar.xz","url":"https://mirror.ox.ac.uk/sites/ctan.org/systems/texlive/tlnet/archive/dvisvgm.x86_64-linux.tar.xz","sha256":"d06f6ab32aec34a40f0be0252ee8e6fb1afa8f4a5105fce0e566885b88306612","license":"GPL; original official TeX Live archive retained"}
+  ],
   "dependencies": [
     {
       "name": "luaotfload",

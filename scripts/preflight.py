@@ -11,6 +11,7 @@ import subprocess
 import tarfile
 import urllib.request
 import zipfile
+import platform
 
 ROOT = Path(__file__).resolve().parents[1]
 DIST = Path('/usr/share/texlive/texmf-dist')
@@ -40,7 +41,12 @@ def runtime_environment(cache_dir):
                openin_any='a', openout_any='p', shell_escape='f', MKTEXFMT='0', MKTEXPK='0', MKTEXTFM='0', MKTEXMF='0',
                TEX4HTENV=str(ROOT / '.runtime/texmf/texmf-dist/tex4ht/base/unix/tex4ht.env'), TEX4HTFONTSET=str(ROOT / '.runtime/texmf/texmf-dist/tex4ht/ht-fonts'),
                SOURCE_DATE_EPOCH='1790784000', FORCE_SOURCE_DATE='1', TZ='UTC')
-    env['PATH'] = str(ROOT / '.runtime/bin') + os.pathsep + env.get('PATH','')
+    # The standalone TeX Live SVG binary cannot infer Debian's configured
+    # font-map/type1 locations from its own install prefix.
+    env['TEXFONTMAPS']=str(ROOT/'.runtime/texmf/fonts/map')+'//:'+str(SECONDARY/'fonts/map')+'//:'+str(DIST/'fonts/map')+'//:/var/lib/texmf/fonts/map//:'
+    env['T1FONTS']=str(SECONDARY/'fonts/type1')+'//:'+str(DIST/'fonts/type1')+'//:'
+    binaries=ROOT/'.runtime/texmf/bin'/('x86_64-linux' if platform.system()=='Linux' and platform.machine()=='x86_64' else 'native')
+    env['PATH'] = str(ROOT / '.runtime/bin') + os.pathsep + str(binaries) + os.pathsep + env.get('PATH','')
     return env
 
 def run(command, cwd, env, log, timeout=240):
@@ -57,6 +63,13 @@ def prepare_dependencies(cache):
     sources = runtime / 'sources'; sources.mkdir(exist_ok=True)
     texmf = runtime / 'texmf'; texmf.mkdir(exist_ok=True)
     fontdir = runtime / 'fonts'; fontdir.mkdir(exist_ok=True)
+    for item in lock.get('binary_dependencies',[]):
+        if item['platform']!='x86_64-linux' or platform.system()!='Linux' or platform.machine()!='x86_64':continue
+        archive=downloads/item['archive']
+        if not archive.exists():
+            with urllib.request.urlopen(item['url'],timeout=60) as response:archive.write_bytes(response.read())
+        if digest(archive)!=item['sha256']:raise RuntimeError('M20_E_DEPENDENCY_HASH: '+item['name'])
+        with tarfile.open(archive) as z:z.extractall(texmf,filter='data')
     for item in lock.get('node_packages', []):
         archive=downloads/item['archive']
         if not archive.exists():
@@ -163,6 +176,18 @@ def tool_info(name, env, args=('--version',)):
     except (OSError, subprocess.TimeoutExpired) as exc:
         return {'available': False, 'path': path, 'version': None, 'error': str(exc)}
 
+def index_info(env,cache):
+    path=shutil.which('makeindex',path=env['PATH'])
+    if not path:return {'available':False,'path':None,'version':None}
+    work=cache/'index-probe';work.mkdir(parents=True,exist_ok=True)
+    (work/'probe.idx').write_text('')
+    try:
+        p=subprocess.run([path,'-o','probe.ind','-t','probe.ilg','probe.idx'],cwd=work,env=env,text=True,capture_output=True,timeout=30)
+        lines=(p.stdout+p.stderr).strip().splitlines()
+        return {'available':p.returncode==0,'path':path,'version':lines[0] if lines else '', 'exit_code':p.returncode}
+    except (OSError,subprocess.TimeoutExpired) as exc:
+        return {'available':False,'path':path,'version':None,'error':str(exc)}
+
 def evaluate_availability(engines, packages):
     diagnostics = []
     for name in PDF_PACKAGES:
@@ -186,14 +211,14 @@ def preflight(cache_dir, prepare=False):
         packages[name] = p.stdout.strip() or None
     result = evaluate_availability(engines, packages)
     result.update(engines=engines, packages=packages, environment=env,
-                  index={'makeindex':tool_info('makeindex',env,args=('--help',))},
-                  converters={name:tool_info(name,env,args=('--version',)) for name in ('tex4ebook','make4ht','epubcheck')},
+                  index={'makeindex':index_info(env,cache)},
+                  converters={name:tool_info(name,env,args=('--version',)) for name in ('tex4ebook','make4ht','epubcheck','dvisvgm','node')},
                   fonts=json.loads((ROOT / 'profiles/m20.json').read_text())['fonts'] if (ROOT / 'profiles/m20.json').exists() else [],
                   formats={name:str(cache / 'formats' / (name+'.fmt')) for name in ('lualatex','dvilualatex')})
     result['pdf_ready'] = result['pdf_ready'] and (cache / 'formats/lualatex.fmt').exists()
     if not (cache / 'formats/lualatex.fmt').exists():
         result['diagnostics'].append({'code':'M20_E_FORMAT_MISSING','severity':'error','target':'pdf','message':'Run preflight with prepare=True to generate workspace LuaLaTeX format'})
-    result['epub_ready'] = all(result['converters'][name]['available'] for name in ('tex4ebook','make4ht','epubcheck')) and bool(packages['tex4ht.sty']) and (cache / 'formats/dvilualatex.fmt').exists()
+    result['epub_ready'] = all(result['converters'][name]['available'] for name in ('tex4ebook','make4ht','epubcheck','dvisvgm','node')) and bool(packages['tex4ht.sty']) and (cache / 'formats/dvilualatex.fmt').exists()
     return result
 
 if __name__ == '__main__':

@@ -7,6 +7,10 @@
 \renewcommand\mTwentyAsideEnd{\ifvmode\IgnorePar\fi\EndP\HCode{</aside>}\par}
 \renewcommand\mTwentySidebarBreak[1][]{\par}
 \providecommand\columnbreak{\par}
+% DVI-to-SVG needs a mapped vector font. TU OpenType names from fontspec are
+% not resolved by dvisvgm; use genuine mapped Latin Modern for diagram labels.
+\AddToHook{env/tikzpicture/begin}{\fontencoding{T1}\fontfamily{lmr}\selectfont}
+\renewcommand\mTwentyDiagramAlt[1]{\ifvmode\IgnorePar\fi\EndP\HCode{<span class="m20-diagram-alt">}#1\HCode{</span>}\par}
 \renewcommand\mTwentyArtEpub{%
  \def\mTwentyMeaningful{meaningful}%
  \ifx\mTwentyArtRole\mTwentyMeaningful

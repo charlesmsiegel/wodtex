@@ -6,6 +6,38 @@ from pathlib import Path
 from lxml import etree
 from PIL import Image,ImageDraw
 from tests.support import ROOT
+import importlib.util
+
+class NoteOwnershipTests(unittest.TestCase):
+    def module(self):
+        spec=importlib.util.spec_from_file_location('noteadapter',ROOT/'scripts/epub_postprocess.py')
+        m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
+        return m
+
+    def test_generated_note_ids_avoid_authored_ids(self):
+        m=self.module()
+        root=etree.fromstring(b'''<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops"><body><aside class="m20-sidebar" id="m20-note-ref-1"><a epub:type="noteref" href="#note">1</a></aside><aside epub:type="footnote" id="note">NOTE</aside></body></html>''')
+        m.adapt_notes({'OEBPS/chapter.xhtml':root})
+        ids=root.xpath('//@id')
+        self.assertEqual(len(ids),len(set(ids)))
+
+    def test_records_with_rowspan_are_diagnosed(self):
+        m=self.module()
+        wrapper=etree.fromstring(b'''<div xmlns="http://www.w3.org/1999/xhtml" id="rows" data-mode="records" data-head-rows="1"><table><tr><td>Group</td><td>Value</td></tr><tr><td rowspan="2">A</td><td>1</td></tr><tr><td>2</td></tr></table></div>''')
+        with self.assertRaisesRegex(ValueError,'M20_E_TABLE_RECORDS_ROWSPAN'):
+            m.adapt_table(wrapper)
+
+    def test_table_notes_stay_at_table_end_before_resumed_prose(self):
+        spec=importlib.util.spec_from_file_location('noteadapter',ROOT/'scripts/epub_postprocess.py')
+        m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
+        root=etree.fromstring(b'''<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops"><body>
+<aside class="m20-sidebar" id="aside"><div class="m20-table" id="table"><table><tr><td>CELL<a epub:type="noteref" href="#note">1</a></td></tr></table></div><p>RESUMED</p></aside>
+<section class="footnotes"><aside epub:type="footnote" id="note">TABLE-NOTE</aside></section>
+</body></html>''')
+        m.adapt_notes({'OEBPS/chapter.xhtml':root})
+        note=root.xpath('//*[@id="note"]')[0]
+        self.assertEqual(note.getparent().get('id'),'table')
+        self.assertEqual(len(root.xpath('//*[@epub:type="backlink"]',namespaces={'epub':m.EPUB})),1)
 
 class EpubTests(unittest.TestCase):
     @classmethod

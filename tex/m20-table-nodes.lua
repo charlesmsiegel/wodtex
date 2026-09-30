@@ -64,6 +64,7 @@ function M.extract(source, destination, header, count, maximum, offset)
       output,tail = node.insert_after(output,tail,penalty)
     end
   end
+  if count>rownumber then tex.error('M20_E_TABLE_HEADERS',{'head-rows exceeds the number of native rows.'});return end
   tex.box[destination] = node.vpack(output)
   tex.box[header] = headings and node.vpack(headings) or nil
 end

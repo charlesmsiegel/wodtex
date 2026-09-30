@@ -49,6 +49,8 @@ def adapt_table(wrapper):
         if cell.get('style'): cell.set('style',re.sub(r'(?:white-space|width|font-size)\s*:[^;]+;?','',cell.get('style')))
     if wrapper.get('data-mode')=='records':
         if not count: raise ValueError('M20_E_TABLE_HEADERS: records require explicit head-rows')
+        if any(int(c.get('rowspan','1'))>1 for row in rows for c in cells(row)):
+            raise ValueError('M20_E_TABLE_RECORDS_ROWSPAN: use epub=table to preserve shared rowspan cells')
         records=element('div',**{'class':'m20-records'})
         header=element('div',**{'class':'m20-record-headings'})
         for row in rows[:count]:
@@ -121,11 +123,17 @@ def adapt_math(roots):
 def adapt_notes(roots):
     references={}
     for name,root in roots.items():
+        used_ids={e.get('id') for e in root.iter() if e.get('id')}
         for index,ref in enumerate(root.xpath('//*[local-name()="a" and @epub:type="noteref"]',namespaces={'epub':EPUB})):
             href=ref.get('href');file,_,fragment=href.partition('#')
             target=posixpath.normpath(posixpath.join(posixpath.dirname(name),file)) if file else name
-            ident=ref.get('id') or 'm20-note-ref-'+str(index+1);ref.set('id',ident)
-            owner=next((p for p in ref.iterancestors() if 'm20-sidebar' in p.get('class','').split()),root.find('{'+X+'}body'))
+            ident=ref.get('id')
+            if not ident:
+                counter=index+1
+                while 'm20-note-ref-'+str(counter) in used_ids:counter+=1
+                ident='m20-note-ref-'+str(counter)
+            used_ids.add(ident);ref.set('id',ident)
+            owner=next((p for p in ref.iterancestors() if {'m20-table','m20-sidebar'} & set(p.get('class','').split())),root.find('{'+X+'}body'))
             references.setdefault((target,fragment),[]).append((name,ident,owner))
     for name,root in roots.items():
         body=root.find('{'+X+'}body')
@@ -148,6 +156,12 @@ def adapt_epub(path,source_dir=None):
     image_resources={};old_image_targets=set()
     for name,root in roots.items():
         for wrapper in root.xpath('//*[contains(concat(" ",@class," ")," m20-table ")]'): adapt_table(wrapper)
+        for alt in root.xpath('//*[contains(concat(" ",@class," ")," m20-diagram-alt ")]'):
+            images=alt.xpath('following::*[local-name()="img"][1]')
+            if not images or not images[0].get('src','').lower().endswith('.svg'):
+                raise ValueError('M20_E_DIAGRAM_IMAGE: diagramalt must precede a native SVG diagram')
+            images[0].set('alt',text(alt));images[0].set('class','m20-native-diagram')
+            alt.getparent().remove(alt)
         for figure in root.xpath('//*[contains(concat(" ",@class," ")," m20-art ")]'):
             alt=figure.xpath('.//*[contains(concat(" ",@class," ")," m20-art-alt ")]')
             images=figure.xpath('.//*[local-name()="img"]')
@@ -185,6 +199,8 @@ def adapt_epub(path,source_dir=None):
     for name,data in list(items.items()):
         if name.endswith('.css'):
             css=re.sub(r'(?:font-size|font-family|line-height|background-color|color)\s*:[^;}]+;?','',data.decode())
+            css=re.sub(r'[^{}]*~[^{}]*\{[^}]*\}','',css)
+            css+='\n.m20-table {max-width:100%; overflow-x:auto;} .m20-table table {max-width:100%;} .m20-table table table {font-size:.8em;} td,th {overflow-wrap:anywhere;} img.m20-native-diagram {background:white;}\n'
             css+='\n.m20-math-native {display:none;}\n.m20-math-svg {max-width:100%; color:inherit;}\n@supports (math-style: normal) {.m20-math-native {display:inline;} .m20-math-svg {display:none;}}\n.m20-record dt {font-weight:bold;} .m20-record dd {margin-bottom:.5em;}\n'
             items[name]=css.encode()
         if name.endswith('.opf'):

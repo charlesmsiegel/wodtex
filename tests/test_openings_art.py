@@ -3,6 +3,20 @@ import fitz
 from tests.test_layout_proof import compile_source, positions
 
 class OpeningArtTests(unittest.TestCase):
+    def test_meaningful_art_options_survive_leaving_active_body(self):
+        source=r'''\documentclass{m20book}\begin{document}BEFORE
+\m20artreserve[image=examples/content/diagram.png,alt={Three panels},caption={ACTIVECAPTION},credit={ACTIVECREDIT},place=next-page]{active-art}
+AFTER\end{document}'''
+        p,path=compile_source(source,'active-art')
+        self.assertNotIn('Undefined control sequence',p.stdout)
+        with fitz.open(path.with_suffix('.pdf')) as pdf:
+            text=''.join(p.get_text() for p in pdf)
+            self.assertIn('ACTIVECAPTION',text)
+            self.assertIn('ACTIVECREDIT',text)
+            self.assertIn('AFTER',text)
+            art=next(r for r in positions(path) if r['id']=='active-art')
+            self.assertGreaterEqual(len(pdf[art['page']-1].get_images()),2)
+
     def test_chapter_has_fresh_blank_verso_after_either_parity(self):
         for pages in [1,2]:
             ending=''.join(r'\m20newpage ENDING' for _ in range(pages-1))

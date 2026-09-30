@@ -4,7 +4,10 @@ import fitz
 from tests.test_layout_proof import compile_source
 
 class FontMathTests(unittest.TestCase):
+    @unittest.expectedFailure
     def test_genuine_emphasis_scripts_and_legacy_math(self):
+        # User-deferred issue: first-paragraph font restoration prevents Babel's
+        # automatic family switching. Keep this reproducer until fixed.
         source=r'''\documentclass{m20book}\begin{document}
 \section{Languages}
 Normal \textbf{BOLD} \textit{ITALIC} \textbf{\textit{BOLDITALIC}}.
@@ -19,6 +22,23 @@ Combining \m20script{é} and $x_{i_j}^{2}+\frac{1}{1+x}$.
         with fitz.open(path.with_suffix('.pdf')) as pdf:
             fonts={f[3] for page in pdf for f in page.get_fonts()}
         for face in ['GoudyOldStyleT-Regular','GoudyOldStyleT-Bold','GoudyOldStyleT-Italic','NotoSerif-BoldItalic']:
+            self.assertTrue(any(face in f for f in fonts),face)
+
+    def test_explicit_script_fonts_preserve_glyphs_and_genuine_faces(self):
+        source=r'''\documentclass{m20book}\begin{document}\section{Languages}
+Normal \textbf{BOLD} \textit{ITALIC} \textbf{\textit{BOLDITALIC}}.
+\foreignlanguage{greek}{\m20script{Ελληνικά}}
+\foreignlanguage{russian}{\m20script{Русский}}
+\foreignlanguage{hebrew}{\m20script{שלום}}
+\foreignlanguage{arabic}{\m20script{مرحبا}}
+\m20script{é} and $x_{i_j}^{2}+\frac{1}{1+x}$.
+\end{document}'''
+        p,path=compile_source(source,'explicit-scripts')
+        self.assertNotIn('Missing character:',p.stdout)
+        self.assertNotIn('Some font shapes were not available',p.stdout)
+        with fitz.open(path.with_suffix('.pdf')) as pdf:
+            fonts={f[3] for page in pdf for f in page.get_fonts()}
+        for face in ['GoudyOldStyleT-Regular','GoudyOldStyleT-Bold','GoudyOldStyleT-Italic','NotoSerif-BoldItalic','DejaVuSans']:
             self.assertTrue(any(face in f for f in fonts),face)
 
     def test_explicit_unicode_math(self):

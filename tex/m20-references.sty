@@ -2,10 +2,21 @@
 \ProvidesPackage{m20-references}[2026/09/30 native linked book navigation]
 \RequirePackage[unicode,hidelinks,bookmarksopen]{hyperref}
 \ifmTwentyEpub\else
+ % book's matter flag must survive the live multicols body group.
+ \let\mTwentyNativeFrontmatter\frontmatter
+ \let\mTwentyNativeMainmatter\mainmatter
+ \let\mTwentyNativeBackmatter\backmatter
+ \renewcommand\frontmatter{\mTwentyBodyEnd\mTwentyNativeFrontmatter\mTwentyBodyBegin}
+ \renewcommand\mainmatter{\mTwentyBodyEnd\mTwentyNativeMainmatter\mTwentyBodyBegin}
+ \renewcommand\backmatter{\mTwentyBodyEnd\mTwentyNativeBackmatter\mTwentyBodyBegin}
  \let\mTwentyNativeContents\tableofcontents
  \renewcommand\tableofcontents{\mTwentyBodyEnd\mTwentyNativeContents\mTwentyBodyBegin}
  \AddToHook{env/theindex/before}{\mTwentyBodyEnd}
  \AddToHook{env/theindex/after}{\mTwentyBodyBegin}
+ \AddToHook{env/figure/before}{\ifmTwentySidebarActive\PackageError{m20}{M20_E_UNSUPPORTED_NESTING}{Use an inline diagram or art reservation inside a sidebar.}\else\mTwentyBodyEnd\fi}
+ \AddToHook{env/figure/after}{\mTwentyBodyBegin}
+ \AddToHook{env/table/before}{\ifmTwentySidebarActive\PackageError{m20}{M20_E_UNSUPPORTED_NESTING}{Use m20table inside a sidebar.}\else\mTwentyBodyEnd\fi}
+ \AddToHook{env/table/after}{\mTwentyBodyBegin}
  % book's index switches document-level columns; keep one output routine.
  \renewenvironment{theindex}{%
    \mTwentyBodyEnd\chapter*{\indexname}\mTwentyBodyEnd

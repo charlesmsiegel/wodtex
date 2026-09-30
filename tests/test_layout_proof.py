@@ -48,6 +48,11 @@ def positions(path):
 
 
 class LayoutProofTests(unittest.TestCase):
+    def test_unknown_public_command_errors(self):
+        p,_=compile_source(r'\documentclass{m20book}\begin{document}\m20not{Lost note}\end{document}','unknown-public',False)
+        self.assertNotEqual(p.returncode,0)
+        self.assertIn('M20_E_UNKNOWN_COMMAND',p.stdout)
+
     @classmethod
     def setUpClass(cls):
         cls.compile_error = None

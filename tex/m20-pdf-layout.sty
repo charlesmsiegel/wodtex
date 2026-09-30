@@ -27,7 +27,7 @@
 \newcommand\mTwentyPosition[8]{%
  \savepos
  \begingroup
- \edef\mTwentyWrite{\write\mTwentyPositionStream{#1|\noexpand\thepage|\noexpand\the\noexpand\lastxpos|\noexpand\the\noexpand\lastypos|\number\dimexpr#2\relax|\number\dimexpr#3\relax|#4|#5|#6|#7|\number\dimexpr#8+0bp\relax}}%
+ \edef\mTwentyWrite{\write\mTwentyPositionStream{#1|\noexpand\the\noexpand\ReadonlyShipoutCounter|\noexpand\the\noexpand\lastxpos|\noexpand\the\noexpand\lastypos|\number\dimexpr#2\relax|\number\dimexpr#3\relax|#4|#5|#6|#7|\number\dimexpr#8+0bp\relax|\noexpand\thepage|\noexpand\number\noexpand\c@page}}%
  \mTwentyWrite\endgroup}
 \renewcommand\mTwentyAnchor[1]{\par\noindent\mTwentyPosition{#1}{\linewidth}{\linewidth}{1}{anchor}{0}{flow}{}\par}
 \renewcommand\@seccntformat[1]{}
