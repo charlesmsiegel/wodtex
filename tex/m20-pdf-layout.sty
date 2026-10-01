@@ -1,6 +1,7 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesPackage{m20-pdf-layout}[2026/09/30 isolated live body regions]
 \RequirePackage{fontspec,geometry,multicol,xcolor,tikz}
+\RequirePackage{tex/m20-art-image}
 \InputIfFileExists{profiles/m20.tex}{}{%
  \def\mTwentyPageWidth{612bp}\def\mTwentyPageHeight{792bp}%
  \def\mTwentyBodyWidth{490.4496bp}\def\mTwentyBodyHeight{657bp}%
@@ -83,8 +84,7 @@
   \path[use as bounding box] (0,0) rectangle (\mTwentyArtWidth,\mTwentyArtHeight);
   \draw[line width=2bp,m20gold] (1bp,1bp) rectangle (\dimexpr\mTwentyArtWidth-1bp,\dimexpr\mTwentyArtHeight-1bp);
   \ifx\mTwentyArtImage\@empty\else
-   \node[inner sep=0bp] at (.5\mTwentyArtWidth,.5\mTwentyArtHeight) {\includegraphics[width=\dimexpr\mTwentyArtWidth-14bp\relax,height=\dimexpr\mTwentyArtHeight-40bp\relax,keepaspectratio]{\mTwentyArtImage}};
-   \node[inner sep=0bp,anchor=south,text width=\dimexpr\mTwentyArtWidth-14bp\relax,align=center] at (.5\mTwentyArtWidth,7bp) {\fontsize{8bp}{10bp}\selectfont\mTwentyArtCaption\space\mTwentyArtCredit};
+   \mTwentyArtImageContents
   \fi
   \node[inner sep=0bp,outer sep=0bp,minimum size=0bp,anchor=north west] at (0,\mTwentyArtHeight) {\mTwentyPosition{\mTwentyArtID}{\mTwentyArtWidth}{\mTwentyArtWidth}{1}{art}{0}{\mTwentyArtPlace}{\mTwentyArtHeight}};
  \end{tikzpicture}%

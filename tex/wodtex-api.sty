@@ -21,7 +21,7 @@
 \NewDocumentCommand\makecredits{}{\wodtexDispatch{makecredits}}
 \NewDocumentCommand\sidebarbreak{O{page}}{\wodtexDispatch{sidebarbreak}{#1}}
 \NewDocumentCommand\statentry{m}{\wodtexDispatch{statentry}{#1}}
-\NewDocumentCommand\artreserve{O{}m}{\wodtexDispatch{artreserve}{#1}{#2}}
+\NewDocumentCommand\artreserve{O{}g}{\wodtexDispatch{artreserve}{#1}{#2}}
 \NewDocumentEnvironment{sidebar}{O{}m+b}{\wodtexSelectElement\wodtexDispatch{sidebar}{#1}{#2}{#3}}{}
 \NewDocumentEnvironment{sidebarwide}{O{}m+b}{\wodtexSelectElement\wodtexDispatch{sidebarwide}{#1}{#2}{#3}}{}
 \NewDocumentEnvironment{booktable}{O{}m+b}{\wodtexSelectElement\wodtexDispatch{booktable}{#1}{#2}{#3}}{}

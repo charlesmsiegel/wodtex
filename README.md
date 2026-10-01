@@ -539,7 +539,10 @@ alternating bands. Standard native `\item` syntax and counters remain intact.
  caption={Scene caption},credit={Artist credit}]{scene-one}
 ```
 
-`\m20artreserve[KEYS]{ID}` accepts:
+`\artreserve[KEYS]{ID}` and `\m20artreserve[KEYS]{ID}` accept the same optional keys.
+The braced ID is also optional; omitted IDs are generated uniquely.
+If the next token is a braced group, it is the explicit ID, preserving the existing syntax.
+Separate following grouped prose with a blank paragraph line or supply an explicit ID.
 
 - `kind`: `horizontal` (default) or `vertical`
 - `place`: `flow` (default), `here` or `next-page`
@@ -548,10 +551,38 @@ alternating bands. Standard native `\item` syntax and counters remain intact.
 - `image`: image path; default empty, giving a labeled placeholder
 - `role`: `decorative` by default for an empty placeholder; an actual image
   defaults to `meaningful`
-- `alt`: required for meaningful images
+- `alt`: optional descriptive text for accessible meaningful images
 - `caption`, `credit`: optional image-caption/credit text; default empty
 
-Meaningful art requires an existing image and nonempty alternative text.
+Images stretch independently to the available interior width and height, including intentional aspect-ratio distortion.
+The frame size and host page geometry remain unchanged.
+Images fill the interior bounded by the template frame insets, including the horizontal lower border/shadow allowance.
+A caption or credit reserves the existing text band below the image.
+When both are omitted, the image fills the full frame interior without a blank caption strip.
+Generic `artreserve` and explicit `m20artreserve` share this behavior.
+
+The default image call needs only a path and uses the horizontal box.
+Use `kind=vertical` to select the vertical box.
+All other keys and the braced ID are optional.
+
+```tex
+\artreserve[image={art/scene.jpg}]
+\artreserve[kind=vertical,image={art/scene.jpg}]{scene-one}
+```
+
+`alt` is invisible descriptive text, independent of the optional visible `caption` and `credit`.
+A meaningful image without `alt` compiles with an accessibility warning; no descriptive text is invented.
+Actual images remain meaningful by default, and omitted alt text is empty in EPUB output.
+Strict EPUB accessibility verification may reject that empty description, so supply `alt` for accessible meaningful content.
+Use `role=decorative` for purely decorative images, which do not need a description.
+Caption-free examples can still provide alt text or an explicit decorative role:
+
+```tex
+\artreserve[image={art/scene.jpg},alt={Description of the scene}]{scene-one}
+\artreserve[image={art/ornament.jpg},role=decorative]{ornament-one}
+```
+
+The image path must exist.
 Art reservations cannot be nested in sidebars. Horizontal reservations are
 half-page native edge floats, never a second stacked top float or an arbitrary
 middle-page box. `here` retains edge-float behavior rather than promising an

@@ -22,7 +22,7 @@
  \begin{m20tablelead}#1\end{m20tablelead}\endgroup}
 \newcommand\wodtexMageStatblock[1]{\begin{m20statblock}#1\end{m20statblock}}
 \newcommand\wodtexMageBreak[1]{\mTwentySidebarBreak[#1]}
-\newcommand\wodtexMageArt[2]{\mTwentyArtReserve[#1]{#2}}
+\newcommand\wodtexMageArt[2]{\IfNoValueTF{#2}{\mTwentyArtReserve[#1]}{\mTwentyArtReserve[#1]{#2}}}
 \newcommand\wodtexMageTitle{%
  \mTwentyInteriorTitle{\@title}{\wodtexSubtitleText\par\smallskip\emph{\wodtexDescriptionText}}}
 \newcommand\wodtexMageCredits{\mTwentyInteriorCredits{}}
