@@ -25,8 +25,6 @@
 % book's frontmatter flag must be assigned outside the active multicol group.
 \let\mTwentyNativeFrontMatter\frontmatter
 \renewcommand\frontmatter{\mTwentyBodyEnd\mTwentyNativeFrontMatter}
-\let\mTwentyNativeMainMatter\mainmatter
-\renewcommand\mainmatter{\mTwentyBodyEnd\mTwentyNativeMainMatter}
 \renewcommand\cleardoublepage{%
  \mTwentyBodyEnd\clearpage
  \if@twoside\ifodd\c@page\else
@@ -96,14 +94,17 @@
 \RenewDocumentCommand\chapter{s o m}{%
  \mTwentyBodyEnd\clearpage
  \IfBooleanTF{#1}{\gdef\mTwentyChapterRunningTitle{#3}}{\IfNoValueTF{#2}{\gdef\mTwentyChapterRunningTitle{#3}}{\gdef\mTwentyChapterRunningTitle{#2}}}
+ \mTwentyCheckMainMatterFacing
  % Contents follows Credits; chapter-facing illustration leaves remain blank-free art.
  \def\mTwentyFrontOpening{0}%
  \IfBooleanT{#1}{\if@mainmatter\else\def\mTwentyFrontOpening{1}\fi}%
  \ifnum\mTwentyFrontOpening=1
   \ifodd\c@page\else\null\thispagestyle{mTwenty}\newpage\fi
  \else
-  \ifodd\c@page\null\thispagestyle{mTwenty}\newpage\fi
-  \mTwentyChapterFacingIllustration
+  \ifnum\mTwentyNeedChapterFacing=1
+   \ifodd\c@page\null\thispagestyle{mTwenty}\newpage\fi
+   \mTwentyChapterFacingIllustration
+  \fi
  \fi
  \global\mTwentyHadChaptertrue
  \IfBooleanTF{#1}{\mTwentyNumberedOpenerfalse\mTwentyOriginalChapter*{#3}}{\mTwentyNumberedOpenertrue\IfNoValueTF{#2}{\mTwentyOriginalChapter{#3}}{\mTwentyOriginalChapter[#2]{#3}}}%
@@ -161,7 +162,8 @@
  \fi\fi\fi}
 \AddToHook{shipout/after}{\global\mTwentyBlankPagefalse\global\mTwentyOpenerPagefalse\global\mTwentyContentsOpeningPagefalse\global\mTwentyInteriorTitlePagefalse\global\mTwentyArtColumnActivefalse\ifmTwentyArtReverse\global\let\mc@align@columns\LR@column@boxes\global\mTwentyArtReversefalse\fi}
 \newcommand\mTwentyInteriorTitle[2]{%
- \hypersetup{pdfpagelayout=TwoPageRight,pdftitle={#1}}%
+ \hypersetup{pdfpagelayout=TwoPageRight}%
+ \ifx\@pdftitle\@empty\hypersetup{pdftitle={#1}}\fi%
  \mTwentyBodyEnd\clearpage\global\mTwentyInteriorTitlePagetrue\thispagestyle{empty}%
  \AddToHookNext{shipout/foreground}{%
   \put(0,-136.08bp){\makebox[\paperwidth][c]{\raisebox{-.5\height}[0pt][0pt]{\parbox{490bp}{\centering\mTwentyHeadingControls\mTwentyHeadingFont\fontsize{48bp}{48bp}\selectfont\color{m20gold}#1}}}}%

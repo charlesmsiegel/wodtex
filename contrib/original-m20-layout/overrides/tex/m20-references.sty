@@ -1,14 +1,39 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesPackage{m20-references}[2026/09/30 native linked book navigation]
-\RequirePackage[unicode,hidelinks,bookmarksopen]{hyperref}
+\RequirePackage[unicode,hidelinks,bookmarksopen,pdfusetitle]{hyperref}
 \ifmTwentyEpub\else
+ % Native title owns defaults; explicit running-title remains authoritative.
+ \let\mTwentyUnsetNativeTitle\@title
+ \AddToHook{begindocument/before}{%
+  \ifmTwentyRunningTitleExplicit\else
+   \ifx\@title\mTwentyUnsetNativeTitle\else\global\let\mTwentyRunningTitle\@title\fi
+  \fi}
+ \newif\ifmTwentyMainMatterFacingReady
+ \newcount\mTwentyMainMatterFacingShipout
+ % Main matter begins with its facing verso, before Arabic numbering resets.
+ % Reuse this leaf for the next chapter only if no content shipped meanwhile.
+ \newcommand\mTwentyBeginMainMatter{%
+  \mTwentyBodyEnd\clearpage
+  \ifodd\c@page\null\thispagestyle{mTwenty}\newpage\fi
+  \mTwentyChapterFacingIllustration
+  \global\mTwentyMainMatterFacingReadytrue
+  \global\mTwentyMainMatterFacingShipout=\ReadonlyShipoutCounter\relax
+  \@mainmattertrue\pagenumbering{arabic}}
+ \newcommand\mTwentyCheckMainMatterFacing{%
+  \def\mTwentyNeedChapterFacing{1}%
+  \ifmTwentyMainMatterFacingReady
+   \global\mTwentyMainMatterFacingReadyfalse
+   \ifnum\mTwentyMainMatterFacingShipout=\ReadonlyShipoutCounter\relax
+    \def\mTwentyNeedChapterFacing{0}%
+   \fi
+  \fi}
  % book's matter flag must survive the live multicols body group.
  \let\mTwentyNativeFrontmatter\frontmatter
  \let\mTwentyNativeMainmatter\mainmatter
  \let\mTwentyNativeBackmatter\backmatter
- \renewcommand\frontmatter{\mTwentyBodyEnd\mTwentyNativeFrontmatter\mTwentyBodyBegin}
- \renewcommand\mainmatter{\mTwentyBodyEnd\mTwentyNativeMainmatter\mTwentyBodyBegin}
- \renewcommand\backmatter{\mTwentyBodyEnd\mTwentyNativeBackmatter\mTwentyBodyBegin}
+ \renewcommand\frontmatter{\mTwentyBodyEnd\global\mTwentyMainMatterFacingReadyfalse\mTwentyNativeFrontmatter\mTwentyBodyBegin}
+ \renewcommand\mainmatter{\mTwentyBeginMainMatter\mTwentyBodyBegin}
+ \renewcommand\backmatter{\mTwentyBodyEnd\global\mTwentyMainMatterFacingReadyfalse\mTwentyNativeBackmatter\mTwentyBodyBegin}
  \let\mTwentyNativeContents\tableofcontents
  \renewcommand\tableofcontents{\mTwentyBodyEnd\clearpage\global\mTwentyContentsOpeningPagetrue\mTwentyNativeContents\mTwentyBodyBegin}
  \AddToHook{env/theindex/before}{\mTwentyBodyEnd}

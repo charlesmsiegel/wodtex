@@ -1,6 +1,6 @@
 {
   "schema": "wodtex-opt-in-source-patch-v1",
-  "base_commit": "fc6827560f3e31d47f514e8df5d4d640566c32b5",
+  "base_commit": "e437dcfe421986e8ffae7a4a2cd2ea6fa2061011",
   "local_correction_base": "4c2f12d017ef5a0d93a7a6f524ef8085efdac644",
   "files": [
     {
@@ -105,8 +105,8 @@
     },
     {
       "path": "tex/m20-core.sty",
-      "base_sha256": "7d9c0da3316a27d913bb05e591ccaf75f3554a5ae3b7d79f52363b15cda99885",
-      "sha256": "8e8bfd043f46b0165811261b2348299bd9c47861b622d49fccb03ccdaa038392"
+      "base_sha256": "55427f5530352ee3a7c685cedba92377d909cc6dab3cad12956792eb12933398",
+      "sha256": "4399eba2f7ce6305440a44a7dec94e661068abc35ed5c67586423372285cb39d"
     },
     {
       "path": "tex/m20-fonts.sty",
@@ -120,8 +120,8 @@
     },
     {
       "path": "tex/m20-pdf-layout.sty",
-      "base_sha256": "4773dad3be907b3eb08c18b1729131e00422420217e9d3202f9d09043184cb22",
-      "sha256": "6a576923347374f248403ed01f2e4c5031dc92ee2512d46c3fb071585028665b"
+      "base_sha256": "dae08731e24390eb2d596551e147198162ddc0a1360cdc036ab9c437d2340440",
+      "sha256": "9f3d8658a99861fd9faac4abe06b5cf965fe404064eaf643fc387468ddfed0b4"
     },
     {
       "path": "tex/m20-pdf-sidebars.sty",
@@ -135,8 +135,8 @@
     },
     {
       "path": "tex/m20-references.sty",
-      "base_sha256": "3c7ecec009cb34f8af29ed4e1d97a89de527e59db38f18f853739e9ae001b1ab",
-      "sha256": "9caf33840f2908ef22d276779e2b788589f498de565e0906fb3aa2f2d859dcc1"
+      "base_sha256": "c59c4f265b5ff16d811a835347793fb25878bf2bb218276a30df67ed19508a2a",
+      "sha256": "c69884b79e87c599f237cca3338b839ae8b6b62caa09f63decf5f78e703dd82c"
     }
   ]
 }

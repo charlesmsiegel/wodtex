@@ -7,7 +7,7 @@
  \def\mTwentyPageWidth{612.0bp}
  \def\mTwentyPageHeight{792.0bp}
  \def\mTwentyBodyWidth{490.4496bp}
---- a/scripts/extract_frontmatter_reference.py
+--- /dev/null
 +++ b/scripts/extract_frontmatter_reference.py
 @@ -0,0 +1,40 @@
 +#!/usr/bin/env python3
@@ -50,7 +50,7 @@
 +outputs.append({'file':str(fn),'sha256':hashlib.sha256(fn.read_bytes()).hexdigest(),'source_page':4,'elements':'exact original CMYK pink background; dynamic shared-font label; no folio or decorative border'})
 +(a.out/'frontmatter-reference.provenance.json').write_text(json.dumps({'source_sha256':sha,'outputs':outputs},indent=2)+'\n')
 +print(json.dumps(outputs,indent=2))
---- a/scripts/extract_sidebar_frame.py
+--- /dev/null
 +++ b/scripts/extract_sidebar_frame.py
 @@ -0,0 +1,64 @@
 +#!/usr/bin/env python3
@@ -141,7 +141,7 @@
          unit=65536*1.00375
          records.append(dict(id=p[0],page=int(p[1]),x=int(p[2])/unit,y=792-int(p[3])/unit,
                              width=int(p[4])/unit,usable=int(p[5])/unit,columns=int(p[6]),
---- a/tests/test_art_edges.py
+--- /dev/null
 +++ b/tests/test_art_edges.py
 @@ -0,0 +1,35 @@
 +"""PDF-local art reservations must use page edges and preserve text flow."""
@@ -193,7 +193,7 @@
  
      def test_explicit_script_fonts_preserve_glyphs_and_genuine_faces(self):
          source=r'''\documentclass{m20book}\begin{document}\section{Languages}
---- a/tests/test_frontmatter_reference.py
+--- /dev/null
 +++ b/tests/test_frontmatter_reference.py
 @@ -0,0 +1,98 @@
 +"""Real-page proofs for the opt-in reference-matched front matter."""
@@ -294,7 +294,7 @@
 +                self.assertEqual(' '.join(d[i-1].get_text().split()),'Place illustration here (recomended full colour)')
 +                font_spans=[s for b in d[i-1].get_text('dict')['blocks'] for l in b.get('lines',[]) for s in l['spans']]
 +                self.assertTrue(all('Goudy' in s['font'] for s in font_spans))
---- a/tests/test_horizontal_art_float_edges.py
+--- /dev/null
 +++ b/tests/test_horizontal_art_float_edges.py
 @@ -0,0 +1,101 @@
 +"""Real shipout/pixel regressions for horizontal art's float and column boundaries."""
@@ -427,7 +427,7 @@
 +                    face['file'] = 'configured-heading.ttf'
 +            module.write_profile_tex(profile, path)
 +            self.assertIn(r'\def\mTwentyHeadingFontFile{configured-heading.ttf}', path.read_text())
---- a/tests/test_sidebar_breaks.py
+--- /dev/null
 +++ b/tests/test_sidebar_breaks.py
 @@ -0,0 +1,66 @@
 +"""Real sidebar splits must respect paragraph endpoints without stretching."""
@@ -496,7 +496,7 @@
 +
 +if __name__ == "__main__":
 +    unittest.main()
---- a/tests/test_sidebar_frame_paint.py
+--- /dev/null
 +++ b/tests/test_sidebar_frame_paint.py
 @@ -0,0 +1,41 @@
 +"""Real pixels for the authoritative double-rule sidebar frame; no source mocks."""
@@ -540,7 +540,7 @@
 +
 +if __name__ == '__main__':
 +    unittest.main()
---- a/tests/test_sidebar_keep.py
+--- /dev/null
 +++ b/tests/test_sidebar_keep.py
 @@ -0,0 +1,85 @@
 +"""A short flow sidebar should move intact instead of creating continuations."""
@@ -628,7 +628,7 @@
 +
 +if __name__ == "__main__":
 +    unittest.main()
---- a/tests/test_sidebar_page_frames.py
+--- /dev/null
 +++ b/tests/test_sidebar_page_frames.py
 @@ -0,0 +1,58 @@
 +"""One continuous frame per physical page, including spanning table bands."""
@@ -689,7 +689,7 @@
 +
 +if __name__ == "__main__":
 +    unittest.main()
---- a/tests/test_stat_font_height.py
+--- /dev/null
 +++ b/tests/test_stat_font_height.py
 @@ -0,0 +1,122 @@
 +"""Real PDF ink proofs for the global stat-block emphasis role."""
@@ -814,7 +814,7 @@
 +                matches = [span for span in all_spans if marker in span['text']]
 +                self.assertTrue(matches, marker)
 +                self.assertTrue(all(span['font'] == face for span in matches), (marker, matches))
---- a/tests/test_table_lead_flow.py
+--- /dev/null
 +++ b/tests/test_table_lead_flow.py
 @@ -0,0 +1,27 @@
 +"""A table caption must remain in its wide float without balancing prose."""
@@ -844,7 +844,7 @@
 +            self.assertGreater(page.get_text().count('continuous narrative'), 3)
 +
 +if __name__ == '__main__': unittest.main()
---- a/tests/test_top_art_sidebar_capacity.py
+--- /dev/null
 +++ b/tests/test_top_art_sidebar_capacity.py
 @@ -0,0 +1,64 @@
 +"""Settled native top floats reduce the outside-body sidebar split capacity."""
@@ -954,10 +954,10 @@
   \tl_set:Nn \l_mtw_art_place_tl {flow}
 --- a/tex/m20-core.sty
 +++ b/tex/m20-core.sty
-@@ -11,9 +11,27 @@
- \let\mTwentyAssetPath\mTwentyBuildAssetPath
+@@ -12,9 +12,27 @@
  \let\mTwentyFontPath\mTwentyBuildFontPath
  \def\mTwentyRunningTitle{}
+ \newif\ifmTwentyRunningTitleExplicit
 +
 +% Credit metadata belongs in the document header; no person is inferred.
 +\def\mTwentyWrittenByText{}
@@ -982,7 +982,7 @@
  \providecommand\mTwentyBodyBegin{}
  \providecommand\mTwentyBodyEnd{}
  \providecommand\mTwentyNewPage{\clearpage}
-@@ -35,6 +53,7 @@
+@@ -36,6 +54,7 @@
   math / unicode .code:n = \def\mTwentyMath{unicode},
   chapter-title-size .code:n = \gdef\mTwentyChapterTitleSize{#1},
   chapter-title-leading .code:n = \gdef\mTwentyChapterTitleLeading{#1},
@@ -1050,7 +1050,7 @@
   \babelfont[greek,russian,hebrew,arabic]{rm}[Path=\mTwentyFontPath,Renderer=HarfBuzz,BoldFont=DejaVuSans-Bold.ttf,ItalicFont=DejaVuSans-Oblique.ttf,BoldItalicFont=DejaVuSans-BoldOblique.ttf]{DejaVuSans.ttf}%
  }
  \NewDocumentCommand\mTwentyScript{m}{{\mTwentyScriptFont #1}}
---- a/tex/m20-local-text-styles.sty
+--- /dev/null
 +++ b/tex/m20-local-text-styles.sty
 @@ -0,0 +1,85 @@
 +\NeedsTeXFormat{LaTeX2e}
@@ -1140,7 +1140,7 @@
 +\endinput
 --- a/tex/m20-pdf-layout.sty
 +++ b/tex/m20-pdf-layout.sty
-@@ -1,27 +1,60 @@
+@@ -1,27 +1,58 @@
  \NeedsTeXFormat{LaTeX2e}
  \ProvidesPackage{m20-pdf-layout}[2026/09/30 isolated live body regions]
  \RequirePackage{fontspec,geometry,multicol,xcolor,tikz}
@@ -1171,8 +1171,6 @@
 +% book's frontmatter flag must be assigned outside the active multicol group.
 +\let\mTwentyNativeFrontMatter\frontmatter
 +\renewcommand\frontmatter{\mTwentyBodyEnd\mTwentyNativeFrontMatter}
-+\let\mTwentyNativeMainMatter\mainmatter
-+\renewcommand\mainmatter{\mTwentyBodyEnd\mTwentyNativeMainMatter}
 +\renewcommand\cleardoublepage{%
 + \mTwentyBodyEnd\clearpage
 + \if@twoside\ifodd\c@page\else
@@ -1207,7 +1205,7 @@
  \AtEndDocument{\mTwentyBodyEnd\clearpage\immediate\closeout\mTwentyPositionStream}
  % Values are frozen now; page and position primitives are evaluated at shipout.
  \newcommand\mTwentyPosition[8]{%
-@@ -29,28 +62,69 @@
+@@ -29,33 +60,72 @@
   \begingroup
   \edef\mTwentyWrite{\write\mTwentyPositionStream{#1|\noexpand\the\noexpand\ReadonlyShipoutCounter|\noexpand\the\noexpand\lastxpos|\noexpand\the\noexpand\lastypos|\number\dimexpr#2\relax|\number\dimexpr#3\relax|#4|#5|#6|#7|\number\dimexpr#8+0bp\relax|\noexpand\thepage|\noexpand\number\noexpand\c@page}}%
   \mTwentyWrite\endgroup}
@@ -1226,6 +1224,8 @@
 -\RenewDocumentCommand\section{s o m}{\mTwentyBodyEnd\addvspace{13.5bp}\noindent\mTwentyPosition{span-heading}{\textwidth}{\textwidth}{2}{heading}{0}{flow}{}\IfBooleanTF{#1}{\mTwentyStyledSection*{#3}}{\IfNoValueTF{#2}{\mTwentyStyledSection{#3}}{\mTwentyStyledSection[#2]{#3}}}\vspace{1.8bp}\hrule height1.25bp\vspace{13.5bp}\mTwentyBodyBegin\@afterindentfalse\@afterheading}
 -\renewcommand\subsection{\@startsection{subsection}{2}{\z@}{7.2bp}{0bp}{\mTwentyHeadingNarrowFont\fontsize{18bp}{18bp}\selectfont}}
 -\renewcommand\subsubsection{\@startsection{subsubsection}{3}{\z@}{7.2bp}{0bp}{\mTwentyHeadingFont\fontsize{12bp}{14bp}\selectfont}}
+-\newcommand\mTwentyChapterFacingIllustration{%
+- \mTwentyBlankPagetrue\null\thispagestyle{empty}\newpage}
 +\newcommand\mTwentySectionBody[3]{%
 + \IfBooleanTF{#1}{\mTwentyStyledSection*{#3}}{\IfNoValueTF{#2}{\mTwentyStyledSection{#3}}{\mTwentyStyledSection[#2]{#3}}}%
 +}
@@ -1249,19 +1249,23 @@
  \let\mTwentyOriginalChapter\chapter
  \RenewDocumentCommand\chapter{s o m}{%
   \mTwentyBodyEnd\clearpage
-- \ifodd\c@page\mTwentyBlankPagetrue\null\thispagestyle{empty}\newpage\fi
-- \mTwentyBlankPagetrue\null\thispagestyle{empty}\newpage
-- \IfBooleanTF{#1}{\mTwentyOriginalChapter*{#3}}{\IfNoValueTF{#2}{\mTwentyOriginalChapter{#3}}{\mTwentyOriginalChapter[#2]{#3}}}%
 + \IfBooleanTF{#1}{\gdef\mTwentyChapterRunningTitle{#3}}{\IfNoValueTF{#2}{\gdef\mTwentyChapterRunningTitle{#3}}{\gdef\mTwentyChapterRunningTitle{#2}}}
+  \mTwentyCheckMainMatterFacing
+- \ifnum\mTwentyNeedChapterFacing=1
+-  \ifodd\c@page\mTwentyBlankPagetrue\null\thispagestyle{empty}\newpage\fi
+-  \mTwentyChapterFacingIllustration
 + % Contents follows Credits; chapter-facing illustration leaves remain blank-free art.
 + \def\mTwentyFrontOpening{0}%
 + \IfBooleanT{#1}{\if@mainmatter\else\def\mTwentyFrontOpening{1}\fi}%
 + \ifnum\mTwentyFrontOpening=1
 +  \ifodd\c@page\else\null\thispagestyle{mTwenty}\newpage\fi
 + \else
-+  \ifodd\c@page\null\thispagestyle{mTwenty}\newpage\fi
-+  \mTwentyChapterFacingIllustration
-+ \fi
++  \ifnum\mTwentyNeedChapterFacing=1
++   \ifodd\c@page\null\thispagestyle{mTwenty}\newpage\fi
++   \mTwentyChapterFacingIllustration
++  \fi
+  \fi
+- \IfBooleanTF{#1}{\mTwentyOriginalChapter*{#3}}{\IfNoValueTF{#2}{\mTwentyOriginalChapter{#3}}{\mTwentyOriginalChapter[#2]{#3}}}%
 + \global\mTwentyHadChaptertrue
 + \IfBooleanTF{#1}{\mTwentyNumberedOpenerfalse\mTwentyOriginalChapter*{#3}}{\mTwentyNumberedOpenertrue\IfNoValueTF{#2}{\mTwentyOriginalChapter{#3}}{\mTwentyOriginalChapter[#2]{#3}}}%
   \mTwentyBodyBegin\@afterindentfalse\@afterheading}
@@ -1289,7 +1293,7 @@
  }
  \let\@makeschapterhead\@makechapterhead
  \newif\ifmTwentyFirstRestore
-@@ -62,22 +136,122 @@
+@@ -67,22 +137,123 @@
    \fi
   \else\clubpenalty\@clubpenalty\everypar{}\fi}}
  \AddToHook{para/end}{\ifmTwentyFirstRestore\ifmTwentySidebarActive\else\mTwentyFirstRestorefalse\rmfamily\fi\fi}
@@ -1324,7 +1328,8 @@
 + \fi\fi\fi}
 +\AddToHook{shipout/after}{\global\mTwentyBlankPagefalse\global\mTwentyOpenerPagefalse\global\mTwentyContentsOpeningPagefalse\global\mTwentyInteriorTitlePagefalse\global\mTwentyArtColumnActivefalse\ifmTwentyArtReverse\global\let\mc@align@columns\LR@column@boxes\global\mTwentyArtReversefalse\fi}
 +\newcommand\mTwentyInteriorTitle[2]{%
-+ \hypersetup{pdfpagelayout=TwoPageRight,pdftitle={#1}}%
++ \hypersetup{pdfpagelayout=TwoPageRight}%
++ \ifx\@pdftitle\@empty\hypersetup{pdftitle={#1}}\fi%
 + \mTwentyBodyEnd\clearpage\global\mTwentyInteriorTitlePagetrue\thispagestyle{empty}%
 + \AddToHookNext{shipout/foreground}{%
 +  \put(0,-136.08bp){\makebox[\paperwidth][c]{\raisebox{-.5\height}[0pt][0pt]{\parbox{490bp}{\centering\mTwentyHeadingControls\mTwentyHeadingFont\fontsize{48bp}{48bp}\selectfont\color{m20gold}#1}}}}%
@@ -1420,7 +1425,7 @@
     \node[inner sep=0bp] at (.5\mTwentyArtWidth,.5\mTwentyArtHeight) {\includegraphics[width=\dimexpr\mTwentyArtWidth-14bp\relax,height=\dimexpr\mTwentyArtHeight-40bp\relax,keepaspectratio]{\mTwentyArtImage}};
     \node[inner sep=0bp,anchor=south,text width=\dimexpr\mTwentyArtWidth-14bp\relax,align=center] at (.5\mTwentyArtWidth,7bp) {\fontsize{8bp}{10bp}\selectfont\mTwentyArtCaption\space\mTwentyArtCredit};
    \fi
-@@ -85,30 +259,32 @@
+@@ -90,30 +261,32 @@
   \end{tikzpicture}%
  }
  \newcommand\mTwentyArtPDF{%
@@ -1927,9 +1932,9 @@
  \ExplSyntaxOff
 --- a/tex/m20-references.sty
 +++ b/tex/m20-references.sty
-@@ -10,7 +10,7 @@
-  \renewcommand\mainmatter{\mTwentyBodyEnd\mTwentyNativeMainmatter\mTwentyBodyBegin}
-  \renewcommand\backmatter{\mTwentyBodyEnd\mTwentyNativeBackmatter\mTwentyBodyBegin}
+@@ -35,7 +35,7 @@
+  \renewcommand\mainmatter{\mTwentyBeginMainMatter\mTwentyBodyBegin}
+  \renewcommand\backmatter{\mTwentyBodyEnd\global\mTwentyMainMatterFacingReadyfalse\mTwentyNativeBackmatter\mTwentyBodyBegin}
   \let\mTwentyNativeContents\tableofcontents
 - \renewcommand\tableofcontents{\mTwentyBodyEnd\mTwentyNativeContents\mTwentyBodyBegin}
 + \renewcommand\tableofcontents{\mTwentyBodyEnd\clearpage\global\mTwentyContentsOpeningPagetrue\mTwentyNativeContents\mTwentyBodyBegin}

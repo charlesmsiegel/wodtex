@@ -2,7 +2,10 @@
 
 Native LaTeX authoring for M20 books, with LuaLaTeX PDF and reflowable EPUB 3
 from the same editable manuscript. The implementation follows the approved
-specification in [docs/design](docs/design).
+specification in [docs/design](docs/design). Planned generic/class-selected
+commands and explicit crossover style overrides are documented in the
+[Crossover Style Architecture guide](docs/design/Crossover-Style-Architecture.md);
+WoD/MSC renderers and mixed-style dispatch are not implemented yet.
 
 ## Install and update (Windows / Git Bash)
 
@@ -49,7 +52,8 @@ separate book folder:
 
 ```tex
 \documentclass{m20book}
-\m20setup{running-title={My Book}}
+\title{My Book}
+\author{Author}
 \begin{document}
 \chapter{Beginning}\label{ch:beginning}
 Your text here. See page \pageref{ch:beginning}.
@@ -63,6 +67,13 @@ kpsewhich wodtex-local.tex
 lualatex -interaction=nonstopmode -halt-on-error book.tex
 lualatex -interaction=nonstopmode -halt-on-error book.tex
 ```
+
+Native `\title{...}` supplies the default running title and PDF title. Explicit
+`\m20setup{running-title={...}}` and `\hypersetup{pdftitle={...}}` remain overrides.
+`profile=m20` is already the class default. A short TOC goes directly to its
+required facing illustration and recto chapter opener; a longer TOC receives
+only the single parity spacer when necessary. The first main chapter is Arabic
+page 1.
 
 Run LuaLaTeX again when references/contents request it. For an index, run
 `makeindex book` and LuaLaTeX again. Enable MiKTeX's missing-package installation
@@ -288,8 +299,9 @@ Place setup and metadata after `\documentclass{m20book}` and before
 
 ```tex
 \documentclass{m20book}
-\m20setup{profile=m20,running-title={My Book},chapter-body-gap=6bp}
-\title{My Book}
+\m20setup{chapter-body-gap=6bp}
+\newcommand{\booktitle}{My Book}
+\title{\booktitle}
 \author{Author}
 \m20writtenby{[Writer Name]}
 \m20developedby{[Developer Name]}
@@ -300,7 +312,7 @@ Place setup and metadata after `\documentclass{m20book}` and before
 
 \begin{document}
 \frontmatter
-\mTwentyInteriorTitle{My Book}{Subtitle or author line}
+\mTwentyInteriorTitle{\booktitle}{Subtitle or author line}
 \mTwentyInteriorCredits{\input{frontmatter/credits.tex}}
 \tableofcontents
 \mainmatter
