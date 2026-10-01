@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Install/update wodtex in a private user TEXMF tree; never copy licensed inputs."""
+"""Install/update wodtex in a private user TEXMF tree using bundled or explicit rendering paths."""
 import argparse
 import hashlib
 import json
@@ -70,6 +70,53 @@ def tex_path(path):
     return value.rstrip('/') + '/'
 
 
+CORRECTED_FONTS = (
+    'GOUDOS.TTF', 'GOUDOSB_0.TTF', 'GOUDOSI_0.TTF', 'abbess-regular.ttf',
+    'DejaVuSans.ttf', 'DejaVuSans-Bold.ttf', 'DejaVuSans-Oblique.ttf',
+    'DejaVuSans-BoldOblique.ttf', 'DejaVuSansMono.ttf',
+)
+CORRECTED_ASSETS = (
+    'page_border.png', 'chapter-opener.original-template.pdf',
+    'spread-border.original-template.pdf', 'interior-title.original-template.pdf',
+    'credits-legal.original-template.pdf', 'art-fullpage.original-template.pdf',
+    'art-horizontal.original-template.pdf', 'art-vertical.original-template.pdf',
+    'sidebar-background.original-template.pdf', 'sidebar-texture.reference-template.pdf',
+) + tuple('sidebar-shadow-' + row + '-' + column + '.reference-template.pdf'
+          for row in ('top', 'middle', 'bottom') for column in ('left', 'middle', 'right'))
+
+
+def verify_bundle():
+    """Verify checked rendering inputs before a fresh default installation."""
+    manifest_path = ROOT / 'bundle-manifest.json'
+    if not manifest_path.is_file():
+        raise ValueError('Bundled rendering inputs missing; use the full private repository checkout or supply both --font-dir and --asset-dir')
+    manifest = json.loads(manifest_path.read_text())
+    if manifest.get('schema_version') != 1 or manifest.get('layout') != 'corrected':
+        raise ValueError('Unsupported rendering bundle manifest')
+    files = manifest.get('files', {})
+    required = {'fonts/' + name for name in CORRECTED_FONTS}
+    required.update('assets/' + name for name in CORRECTED_ASSETS)
+    required.update(('template-source/M20 Template Interior.pdf', 'fonts/NOTICES.txt'))
+    if not required.issubset(files):
+        raise ValueError('Rendering bundle manifest is missing required files: ' + ', '.join(sorted(required - set(files))))
+    for name, sha in files.items():
+        relative = Path(name)
+        if relative.is_absolute() or '..' in relative.parts or not relative.parts or relative.parts[0] not in ('fonts', 'assets', 'template-source'):
+            raise ValueError('Unsafe rendering bundle path: ' + name)
+        for index in range(1, len(relative.parts) + 1):
+            if (ROOT.joinpath(*relative.parts[:index])).is_symlink():
+                raise ValueError('Rendering bundle refuses symlinks: ' + name)
+        path = ROOT / relative
+        if not path.is_file():
+            raise ValueError('Bundled rendering input missing: ' + name + '; restore it with git or supply explicit font/art directories')
+        data = path.read_bytes()
+        if path.suffix in ('.txt', '.md', '.json'):
+            data = canonical_text(data)
+        if digest(data) != sha:
+            raise ValueError('Bundled rendering input checksum mismatch: ' + name + '; restore it with git or supply explicit font/art directories')
+    return ROOT / 'fonts', ROOT / 'assets'
+
+
 def install(tree, layout, font_dir=None, asset_dir=None, configure=False):
     tree = tree.expanduser().resolve()
     target = tree / 'tex/latex/wodtex'
@@ -80,10 +127,12 @@ def install(tree, layout, font_dir=None, asset_dir=None, configure=False):
             raise ValueError('Refusing symlink in installation: ' + str(path))
     if (font_dir is None) != (asset_dir is None):
         raise ValueError('Supply both --font-dir and --asset-dir')
-    if not config.exists() and font_dir is None:
-        raise ValueError('First install requires --font-dir and --asset-dir')
     if config.exists() and font_dir is not None and not configure:
         raise ValueError('Configuration exists; use --configure to explicitly replace it')
+    if font_dir is None and (not config.exists() or configure):
+        if layout != 'corrected':
+            raise ValueError('Bundled fonts support the corrected layout; --layout base requires explicit --font-dir and --asset-dir')
+        font_dir, asset_dir = verify_bundle()
     config_data = None
     if font_dir is not None:
         config_data = ('% Private local paths; preserved by wodtex updates.\n'

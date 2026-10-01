@@ -1,4 +1,4 @@
-"""Native install tests use public substitute fixtures, never licensed artwork."""
+"""Test native installs using synthetic fixtures and the authorized rendering bundle."""
 import importlib.util
 import json
 import os
@@ -66,8 +66,9 @@ class InstallTests(unittest.TestCase):
             self.install()
 
     def test_first_install_and_reconfigure_are_explicit(self):
-        with self.assertRaisesRegex(ValueError, 'First install'):
-            self.install()
+        with patch.object(installer, 'ROOT', self.base):
+            with self.assertRaisesRegex(ValueError, 'Bundled rendering inputs missing'):
+                self.install()
         _, _, config = self.first()
         with self.assertRaisesRegex(ValueError, 'Configuration exists'):
             self.first()
@@ -75,6 +76,48 @@ class InstallTests(unittest.TestCase):
         alternate.mkdir()
         self.install(font_dir=alternate, asset_dir=self.assets, configure=True)
         self.assertIn(alternate.as_posix(), config.read_text())
+
+    def test_default_bundle_config_and_repeat_update_are_deterministic(self):
+        installer.verify_bundle()
+        _, target, config = self.install()
+        before = config.read_bytes()
+        self.assertIn((ROOT / 'fonts').as_posix(), config.read_text())
+        self.assertIn((ROOT / 'assets').as_posix(), config.read_text())
+        managed = {path.name: path.read_bytes() for path in target.iterdir()}
+        self.install()
+        self.assertEqual(before, config.read_bytes())
+        self.assertEqual(managed, {path.name: path.read_bytes() for path in target.iterdir()})
+        # Existing custom configuration is preserved even if bundle inputs are
+        # absent: an update must not silently migrate the user's chosen paths.
+        config.write_text('% custom configuration\n')
+        with patch.object(installer, 'verify_bundle', side_effect=AssertionError('should not read bundle')):
+            self.install()
+        self.assertEqual('% custom configuration\n', config.read_text())
+        self.install(configure=True)
+        self.assertEqual(before, config.read_bytes())
+
+    def test_bundle_missing_or_changed_input_fails_before_installation(self):
+        source = self.base / 'bundle-source'
+        source.mkdir()
+        for name in ('fonts', 'assets', 'template-source'):
+            shutil.copytree(ROOT / name, source / name)
+        shutil.copy2(ROOT / 'bundle-manifest.json', source / 'bundle-manifest.json')
+        changed = source / 'fonts/GOUDOS.TTF'
+        with patch.object(installer, 'ROOT', source):
+            data = changed.read_bytes()
+            changed.write_bytes(data + b'changed')
+            with self.assertRaisesRegex(ValueError, 'checksum mismatch: fonts/GOUDOS.TTF'):
+                self.install()
+            self.assertFalse(self.tree.exists())
+            changed.unlink()
+            with self.assertRaisesRegex(ValueError, 'input missing: fonts/GOUDOS.TTF'):
+                self.install()
+            self.assertFalse(self.tree.exists())
+            changed.write_bytes(data)
+            for path in source.rglob('*'):
+                if path.is_file() and path.suffix in ('.txt', '.md', '.json'):
+                    path.write_bytes(path.read_bytes().replace(b'\n', b'\r\n'))
+            installer.verify_bundle()
 
     def test_rejects_tex_path_injection(self):
         bad = self.base / 'font%bad'
@@ -183,6 +226,71 @@ class InstallTests(unittest.TestCase):
             self.assertEqual(expected, installer.payload('corrected'))
         subprocess.run([sys.executable, str(unpacked / 'scripts/install.py'), '--tree', str(self.tree), '--font-dir', str(self.fonts), '--asset-dir', str(self.assets)], check=True, stdout=subprocess.DEVNULL)
         self.assertTrue((self.tree / 'tex/latex/wodtex/m20book.cls').is_file())
+
+    @unittest.skipUnless(shutil.which('lualatex') and shutil.which('pdftotext') and shutil.which('bash'), 'LuaLaTeX, Poppler and Bash required')
+    def test_default_bundled_real_fonts_art_compile_from_unrelated_directory(self):
+        work = self.base / 'clean external book'
+        work.mkdir()
+        shutil.copy2(ROOT / 'examples/content/diagram.png', work / 'illustration.png')
+        (work / 'book.tex').write_text(r'''\documentclass{m20book}
+\m20setup{running-title={Bundled Installation Smoke}}
+\title{Bundled Installation Smoke}
+\author{Wodtex installation test}
+\begin{document}
+\chapter{Bundled Rendering}\label{ch:bundled}
+BUNDLED-BODY. Genuine \textbf{bold} and \textit{italic} font faces.
+\section{A Short Section}
+\begin{m20sidebarwide}[id=bundled-sidebar,columns=1]{Bundled Sidebar}
+BUNDLED-SIDEBAR. The original background and square shadow frame are loaded from the installed configuration.
+\end{m20sidebarwide}
+\begin{m20table}[id=bundled-table,head-rows=1,width=column]{lr}
+BUNDLED-TABLE & Value \\ Ordinary row & 42 \\
+\end{m20table}
+\m20artreserve[kind=horizontal,position=bottom,place=next-page,image=illustration.png,alt={Public diagram},caption={BUNDLED-ART}]{bundled-art}
+BUNDLED-REFERENCE: page \pageref{ch:bundled}. END-BUNDLED.
+\end{document}
+''')
+        env = dict(os.environ, TEXMFHOME=str(self.tree))
+        # --tree only isolates this test. No font/art arguments or extraction.
+        for iteration in range(2):
+            result = subprocess.run(['bash', str(ROOT / 'install.sh'), '--tree', str(self.tree)], cwd=work, env=env, capture_output=True, text=True)
+            self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+            config = self.tree / 'tex/latex/wodtex-local/wodtex-local.tex'
+            if iteration == 0:
+                config.write_text(config.read_text() + '% preserved customization\n')
+                before = config.read_bytes()
+            else:
+                self.assertEqual(before, config.read_bytes())
+            for _ in range(2):
+                result = subprocess.run(['lualatex', '-recorder', '-interaction=nonstopmode', '-halt-on-error', 'book.tex'], cwd=work, env=env, capture_output=True, text=True)
+                self.assertEqual(0, result.returncode, result.stdout[-7000:])
+            text = subprocess.check_output(['pdftotext', 'book.pdf', '-'], cwd=work, text=True)
+            for token in ('BUNDLED-BODY', 'BUNDLED-SIDEBAR', 'BUNDLED-TABLE', 'BUNDLED-ART', 'END-BUNDLED'):
+                self.assertIn(token, text)
+            log = (work / 'book.log').read_text()
+            self.assertNotIn('undefined references', log)
+            self.assertNotIn('Missing character:', log)
+            resources = (work / 'book.fls').read_text()
+            for name in ('chapter-opener.original-template.pdf', 'spread-border.original-template.pdf', 'art-horizontal.original-template.pdf', 'sidebar-texture.reference-template.pdf'):
+                self.assertIn(str(ROOT / 'assets' / name), resources)
+            self.assertIn(str(config), resources)
+            import fitz
+            doc = fitz.open(work / 'book.pdf')
+            spans = [span for page in doc for block in page.get_text('dict')['blocks'] if 'lines' in block for line in block['lines'] for span in line['spans']]
+            fonts = {span['font'] for span in spans}
+            self.assertIn('Abbess', fonts)
+            self.assertIn('GoudyOldStyleT-Regular', fonts)
+            self.assertIn('GoudyOldStyleT-Bold', fonts)
+            self.assertIn('GoudyOldStyleT-Italic', fonts)
+            self.assertRegex(text.replace('\n', ' '), r'BUNDLED-REFERENCE: page [1-9][0-9]*\.')
+            if iteration == 1:
+                evidence = ROOT / 'build/native-bundled-smoke'
+                evidence.mkdir(parents=True, exist_ok=True)
+                for name in ('book.pdf', 'book.log', 'book.fls', 'book.tex'):
+                    shutil.copy2(work / name, evidence / name)
+                for index, page in enumerate(doc):
+                    page.get_pixmap(matrix=fitz.Matrix(.8, .8)).save(evidence / ('page-' + str(index + 1) + '.png'))
+            doc.close()
 
     @unittest.skipUnless(shutil.which('lualatex') and shutil.which('pdftotext'), 'LuaLaTeX and Poppler required')
     def test_outside_repository_native_compile_before_and_after_update(self):

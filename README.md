@@ -4,95 +4,48 @@ Native LaTeX authoring for M20 books, with LuaLaTeX PDF and reflowable EPUB 3
 from the same editable manuscript. The implementation follows the approved
 specification in [docs/design](docs/design).
 
-## Per-user native LuaLaTeX installation (Windows / Git Bash)
+## Install and update (Windows / Git Bash)
 
-For an already configured installation, update from your checkout on `main`:
+From your checkout on `main`, first install and repeat updates use the same commands:
 
 ```sh
 git pull --ff-only origin main
 bash install.sh
 ```
 
-`install.sh` is a thin launcher for `scripts/install.py`. It finds Python 3.9+
-using `python`, `py -3`, then `python3`; native Windows Python automatically
-selects MiKTeX user-root registration and FNDB refresh. It resolves the checkout
-relative to the script, quotes paths and forwards all arguments unchanged. It
-installs no Python/TeX dependencies and makes no administrator changes. On
-Unix it leaves TeX distribution selection to you; pass `--miktex` for MiKTeX.
-First installation currently requires the private font/art paths described
-below; fonts/PDFs and prepared decorations are not yet bundled in this checkout.
-
-The same committed source inputs produce the same normalized managed TeX/Lua
-payload bytes and hash manifest on repeated installs. Private configuration is
-preserved; its absolute paths depend on your machine. PDF bytes are not promised
-to be reproducible across TeX engines, package versions, fonts or build dates.
-
-This workflow installs the reviewed **corrected M20 PDF layout** by default.
-Use `\documentclass{m20book}` and ordinary `lualatex book.tex` from your book's
-folder afterward. It does not apply patches to your checkout, copy licensed
-inputs, or require the pinned Linux builder. Python 3.9+ and MiKTeX with
-LuaLaTeX and its required packages must already be installed and on `PATH`.
-MiKTeX 24.1 / LuaHBTeX 1.17.1 is the intended Windows target; Windows execution
-has not been tested here. Linux portability is tested separately below.
-
-Clone once, or update an existing clean checkout on `main`:
+For a new checkout:
 
 ```sh
 git clone https://github.com/charlesmsiegel/wodtex.git
 cd wodtex
-git switch main
-git pull --ff-only origin main
-python --version
-lualatex --version
-initexmf --version
-miktex --version
+bash install.sh
 ```
 
-Use `python` in Git Bash with Windows Python; `py -3` can replace it if needed.
-Supply Windows paths such as `C:/Users/YourName/...` to Python, especially
-inside quotes. Keep licensed inputs in a permanent private directory outside
-the checkout. Reuse your already prepared `fonts` and `assets` directories if
-available. Otherwise, prepare them once:
+Python 3.9+, MiKTeX and LuaLaTeX must already be installed and on `PATH`.
+The launcher tries `python`, `py -3`, then `python3`, checks the Python version,
+and automatically registers a MiKTeX user tree when using Windows Python.
+It forwards arguments safely and installs no Python/TeX dependencies or global
+settings. MiKTeX 24.1 / LuaHBTeX 1.17.1 is the intended Windows target; actual
+Windows execution has not been tested here. Linux native compilation is tested.
 
-1. Copy your licensed `GOUDOS.TTF`, `GOUDOSB_0.TTF`, `GOUDOSI_0.TTF`, and
-   `abbess-regular.ttf` from the template's `Document fonts` into your private
-   fonts directory. Also supply the public `DejaVuSans.ttf`,
-   `DejaVuSans-Bold.ttf`, `DejaVuSans-Oblique.ttf`,
-   `DejaVuSans-BoldOblique.ttf`, and `DejaVuSansMono.ttf` there for script/mono
-   roles (available from the [DejaVu project](https://dejavu-fonts.github.io/)).
-   Preserve these exact filenames. These requirements describe the corrected
-   M20 layout; the legacy base renderer has additional font requirements.
-2. Extract private decorations using the original eight-page M20 reference
-   PDF. These cross-platform Python extractors need PyMuPDF, not the pinned
-   build runtime. They check the original PDF SHA256 listed below. Replace
-   the example paths, and run all four commands:
+The private repository now includes the user-authorized, original eight-page
+M20 reference PDF in `template-source/`, nine required unmodified font files
+in `fonts/`, and prepared corrected-layout decorations in `assets/`. All
+required original and public faces are present. Ordinary installation requires
+no font/art flags, archive download, PDF extraction, PyMuPDF, or pinned Linux
+runtime. See [input provenance](template-source/README.md) and
+[font notices](fonts/NOTICES.txt). The repository owner asserts permission for
+this private STV workflow; licensing has not been independently verified.
+Unused InDesign/PSD material and private manuscripts are not included.
 
-```sh
-python -m pip install PyMuPDF==1.26.6
-python contrib/original-m20-layout/overrides/scripts/extract_template_art.py "C:/Private/M20-Template-Interior.pdf" --out "C:/Private/wodtex/assets"
-python contrib/original-m20-layout/overrides/scripts/extract_spread_and_page_types.py "C:/Private/M20-Template-Interior.pdf" --out "C:/Private/wodtex/assets"
-python contrib/original-m20-layout/overrides/scripts/extract_frontmatter_reference.py "C:/Private/M20-Template-Interior.pdf" --out "C:/Private/wodtex/assets"
-python contrib/original-m20-layout/overrides/scripts/extract_sidebar_frame.py "C:/Private/M20-Template-Interior.pdf" --out "C:/Private/wodtex/assets"
-```
+A fresh default installation verifies `bundle-manifest.json` hashes before
+writing and points the local configuration to the checkout's `fonts/` and
+`assets/` directories. Missing/changed inputs fail with the affected filename.
+Keep the checkout in place. A moved checkout can be relinked explicitly with
+`bash install.sh --configure` from its new location.
 
-Install and register the user tree (no administrator shell):
-
-```sh
-bash install.sh --font-dir "C:/Private/wodtex/fonts" --asset-dir "C:/Private/wodtex/assets"
-```
-
-On Windows the default tree is `%LOCALAPPDATA%/wodtex/texmf` (falling back to
-`%USERPROFILE%/wodtex/texmf`). The installer prints the actual paths. `--tree
-"C:/Private/wodtex-texmf"` selects another root; supply the same `--tree` on
-updates. The installer runs the officially documented
-[`initexmf --register-root=DIR`](https://docs.miktex.org/manual/initexmf.html)
-and [`miktex fndb refresh`](https://docs.miktex.org/manual/miktex-fndb.html),
-both in default user mode. It checks both executables before writing. If
-registration/refresh fails, it reports failure; installed files remain, so
-correct the MiKTeX error and repeat the update command below. No `--admin`
-option, global root replacement, or shell environment search-path hack is used.
-
-Create `book.tex` in a separate book folder:
+The corrected M20 PDF layout is installed by default. Create `book.tex` in a
+separate book folder:
 
 ```tex
 \documentclass{m20book}
@@ -111,67 +64,84 @@ lualatex -interaction=nonstopmode -halt-on-error book.tex
 lualatex -interaction=nonstopmode -halt-on-error book.tex
 ```
 
-Run LuaLaTeX again when references/contents request it; use `makeindex book`
-then LuaLaTeX again for an index. Enable MiKTeX's missing-package installation
+Run LuaLaTeX again when references/contents request it. For an index, run
+`makeindex book` and LuaLaTeX again. Enable MiKTeX's missing-package installation
 or install requested public packages through MiKTeX Console. The two
-`kpsewhich` commands should point to the new tree. An old `m20book.cls` or
-`tex/` directory alongside the manuscript can shadow installed resources;
-remove that obsolete local copy after backing up edits.
+`kpsewhich` commands should point to the user tree. An obsolete local
+`m20book.cls` or `tex/` directory beside the manuscript can shadow installed
+resources; back up edits and remove that obsolete copy.
 
-### Repeatable updates and private configuration
+### Configuration and advanced installation
 
-From your wodtex checkout, on `main`:
-
-```sh
-git pull --ff-only origin main
-bash install.sh
-```
-
-No font/art flags are needed on updates. The single private config is
-`TREE/tex/latex/wodtex-local/wodtex-local.tex`; it defines absolute font/art
-paths with trailing slashes, and updates preserve its bytes. You may edit
-that file directly (use forward slashes), or explicitly change both paths:
+Updates preserve the existing local config **byte for byte**, including custom
+font/art locations. Existing installations are not silently switched to bundled
+paths. To explicitly switch an existing config to the checkout's bundled paths:
 
 ```sh
-python scripts/install.py --miktex --configure --font-dir "C:/NewPrivate/fonts" --asset-dir "C:/NewPrivate/assets"
+bash install.sh --configure
 ```
 
-Per-document `\m20setup{font-path={.../},asset-path={.../}}` still overrides
-these defaults. Path characters `{ } % # ~ ^ & $`, backslashes and newlines
-are rejected when generating config; ordinary spaces and drive letters work.
+To use other prepared directories, supply both paths on a fresh installation,
+or add `--configure` to explicitly replace an existing config:
 
-Only the dedicated managed directory `TREE/tex/latex/wodtex` is replaced.
-A staged replacement and hash manifest prevent accidental loss of local
-managed-file edits: changed, added, missing, unowned, or symlinked resources
-are refused. Back up/reconcile such edits before reinstalling; keep private
-changes in the local config or manuscript. Existing unrelated tree contents
-are preserved. The tree stores public class/packages/Lua and every tracked
-`profiles/*.tex` under unique `wodtex-profile-*.tex` names. Updates collect new
-profile resources automatically; they do not author new WoD/MSC designs or
-promise support for a profile that is not present in the checkout.
+```sh
+bash install.sh --configure --font-dir "C:/Private/fonts" --asset-dir "C:/Private/assets"
+```
 
-`--layout corrected` is the default and remains so on updates; use
-`--layout base` on **every** install/update to intentionally select the earlier
-base renderer. Correction payload hashes are verified before installation against canonical LF
-text. Existing Windows CRLF checkouts are accepted by converting only CRLF
-pairs to LF; other source changes still fail verification. `.gitattributes`
-keeps new source checkouts in LF form. Installed-file hashes remain byte-exact.
-Repository-relative resource names are normalized only in installed copies;
-the source build and exact-hash opt-in patch workflow below remain intact.
-Source archives include the correction package needed by this installer.
+The default Windows root is `%LOCALAPPDATA%/wodtex/texmf`, falling back to
+`%USERPROFILE%/wodtex/texmf`. `--tree "C:/Private/wodtex-texmf"` selects another
+root; supply the same `--tree` on updates. The installer prints actual paths.
+The single config is `TREE/tex/latex/wodtex-local/wodtex-local.tex`. You may edit
+it directly using forward slashes and trailing slashes, or use the explicit
+configuration commands above. Per-document `\m20setup{font-path={.../},
+asset-path={.../}}` still overrides its defaults. Generated config rejects
+`{ } % # ~ ^ & $`, backslashes and newlines in paths; spaces and drive letters
+are supported. Pass Windows paths such as `C:/Users/YourName/...` to Windows
+Python in Git Bash.
 
-For TeX Live, omit `--miktex`; the default root is `~/texmf`, which TeX Live
-searches as `TEXMFHOME`. An explicit nondefault root needs registration in your
-TeX distribution (for a temporary Linux check, `TEXMFHOME=/path/to/tree
-lualatex book.tex`). The installer itself has no third-party Python dependency.
+Windows installation invokes the officially documented
+[`initexmf --register-root=DIR`](https://docs.miktex.org/manual/initexmf.html)
+and [`miktex fndb refresh`](https://docs.miktex.org/manual/miktex-fndb.html),
+both in default user mode. Both executables are checked before installation.
+Registration/refresh failures are reported; installed files remain, so correct
+the MiKTeX issue and rerun `bash install.sh`. No `--admin` option is used.
+Direct Python remains available: `python scripts/install.py --miktex`.
 
-Native installation tests: `python -m unittest tests.test_install tests.test_install_shell -v`.
-The Linux smoke test uses public DejaVu substitute faces and synthetic art,
-compiles outside the repository twice before/after an update and with the base
-renderer, and checks table/sidebar/art text, references, private paths and
-installed profile loading. It requires LuaLaTeX, Poppler, fontTools and the
-public DejaVu fonts. It proves resource portability, not authentic licensed
-M20 appearance or an actual Windows/MiKTeX installation.
+Only `TREE/tex/latex/wodtex` is replaced on update. Staging and a hash manifest
+protect managed files: local edits, added/missing files, unowned directories and
+symlinked resources are refused. Back up/reconcile such changes before
+reinstalling; keep custom settings in the local config or manuscript. Other
+tree contents are preserved. Every tracked `profiles/*.tex` resource is
+installed under a unique `wodtex-profile-*.tex` name; updates collect future
+resources without inventing new WoD/MSC designs.
+
+`--layout corrected` is the default. To intentionally select the older renderer,
+use `--layout base` on every install/update with explicit prepared font/art
+paths on first install; the bundle supplies the corrected renderer's faces,
+not all additional legacy Noto/Futura requirements. Correction checksums use
+canonical LF text, accepting existing Windows CRLF checkouts while rejecting
+other source edits. Installed-file hashes and bundled binary hashes are exact.
+`.gitattributes` preserves LF source and exact font/PDF/image bytes.
+
+The same committed rendering inputs produce the same normalized managed
+TeX/Lua bytes and hash manifest on repeated installation. Configuration paths
+depend on your machine; updates preserve them. PDF bytes are not promised to
+be identical across TeX engines, package versions, fonts or build dates.
+
+On TeX Live, the launcher omits MiKTeX registration and defaults to `~/texmf`.
+On Unix MiKTeX, pass `--miktex`. A nondefault TeX Live root needs configuration
+in your distribution (for a temporary check, `TEXMFHOME=/path/to/tree lualatex
+book.tex`). Repository builds and their exact-hash opt-in patch workflow below
+remain separate and unchanged. The source-only archive intentionally excludes
+licensed bundle bytes; archive consumers supply explicit prepared paths.
+
+Run `python -m unittest tests.test_install tests.test_install_shell -v` for
+installation checks. Tests cover the launcher, config preservation, input
+corruption/missing files, CRLF source, source archives, deterministic updates,
+and external-folder compilation with synthetic fixtures and the real bundle.
+The bundled smoke checks genuine Abbess/Goudy faces, original decorations,
+tables, sidebar, art and resolved references before/after updating. Actual
+Windows/MiKTeX execution and complete licensed-layout acceptance remain separate.
 
 ## Repository build workflow
 
@@ -188,10 +158,11 @@ python3 scripts/build.py --target all --source examples/book.tex --out build/boo
 ```
 
 Instead of the ZIP, pass `--idml "/path/to/M20 Template Interior.idml"` with
-the original `Document fonts` and `Links` directories beside it. Licensed
-fonts/art, private manuscripts, caches and build outputs are excluded from Git.
+the original `Document fonts` and `Links` directories beside it. Unbundled
+licensed inputs, private manuscripts, caches and build outputs are excluded from Git.
 Dependencies come from official sources with SHA256 pins and install locally;
-original input files remain intact.
+original input files remain intact. The explicitly authorized rendering bundle
+is tracked in this private repository; unrelated local inputs remain ignored.
 
 Edit [examples/book.tex](examples/book.tex). Use `--target pdf` or `--target epub`
 for one format. Outputs and `build-report.json` are under the selected `build`
@@ -285,7 +256,8 @@ original eight-page reference with SHA256
 They produce the authentic borders/panels, title background, art frames,
 copyright/logo artwork and sidebar texture/shadow assets. The full-page
 placeholder keeps the original pink background while its text uses Goudy.
-No original PDFs, fonts, images or private manuscript are shipped in Git.
+The authorized reference PDF, required fonts and extracted decorations are now
+tracked in this private repository; private manuscripts remain excluded.
 
 Build a native manuscript from the repository root:
 

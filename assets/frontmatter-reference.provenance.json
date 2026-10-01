@@ -1,0 +1,17 @@
+{
+  "source_sha256": "4c876e07b17f4a85877213d557b3f0236004bf6baa48d0bef708a68745e93df5",
+  "outputs": [
+    {
+      "file": "assets/credits-legal.original-template.pdf",
+      "sha256": "76a9b311264f3125c33dd20a379f274314db9bdf7990f008953a63e9b50bbf5f",
+      "source_page": 2,
+      "elements": "original copyright with date glyphs left for dynamic field, links, White Wolf vector logo and address; no original title/footer/border"
+    },
+    {
+      "file": "assets/art-fullpage.original-template.pdf",
+      "sha256": "aa835fbe2f22adade36727cf2add0ec6b0e8bd477acd95843f23f57cfc28e740",
+      "source_page": 4,
+      "elements": "exact original CMYK pink background; dynamic shared-font label; no folio or decorative border"
+    }
+  ]
+}

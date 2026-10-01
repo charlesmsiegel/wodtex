@@ -9,3 +9,9 @@
 *.txt text eol=lf
 *.patch text eol=lf
 *.sh text eol=lf
+
+# Licensed/public font and template bytes must remain exact.
+*.pdf binary
+*.png binary
+*.ttf binary
+*.TTF binary

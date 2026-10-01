@@ -1,0 +1,40 @@
+{
+  "source": "template-source/M20 Template Interior.pdf",
+  "source_sha256": "4c876e07b17f4a85877213d557b3f0236004bf6baa48d0bef708a68745e93df5",
+  "spread_pages": [
+    6,
+    7
+  ],
+  "spread_master": "A-Master ud3",
+  "spread_asset": "M20 Two Page Spread.tif",
+  "title_page": 1,
+  "horizontal_art_page": 6,
+  "vertical_art_page": 7,
+  "outputs": [
+    {
+      "file": "assets/spread-border.original-template.pdf",
+      "sha256": "ad101a0be7e1d8968cba7c01dc7c1c5968eb38529508a0e0c4234cf507c8e029",
+      "bytes": 1292684
+    },
+    {
+      "file": "assets/sidebar-background.original-template.pdf",
+      "sha256": "53a74a195ac62d2ce19112c6b06b7d3ea7658217df702146bbd5468eaa1bc2bf",
+      "bytes": 3611489
+    },
+    {
+      "file": "assets/interior-title.original-template.pdf",
+      "sha256": "82f6aa24982de03b2c5999ea6f54ac45b6f26965d504f7cd43704d1475079432",
+      "bytes": 3611489
+    },
+    {
+      "file": "assets/art-horizontal.original-template.pdf",
+      "sha256": "90374bc212b59fed2a95c35a5f81e9e5240599892c94286681d6d4c99aec1406",
+      "bytes": 23770
+    },
+    {
+      "file": "assets/art-vertical.original-template.pdf",
+      "sha256": "2549faf9983ce903829bff51deb3b5543e014c08c4a1726a4c93abbbf6ed6d8a",
+      "bytes": 27775
+    }
+  ]
+}

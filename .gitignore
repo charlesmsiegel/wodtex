@@ -1,7 +1,7 @@
 .runtime/
 build/
-fonts/
-assets/
+/fonts/*
+/assets/*
 inputs/
 .superpowers/
 __pycache__/
@@ -9,3 +9,39 @@ __pycache__/
 .reader/
 
 .publish/
+
+# Authorized rendering bundle; other local inputs remain ignored.
+/template-source/*
+!/assets/art-fullpage.original-template.pdf
+!/assets/art-horizontal.original-template.pdf
+!/assets/art-vertical.original-template.pdf
+!/assets/chapter-opener.original-template.pdf
+!/assets/credits-legal.original-template.pdf
+!/assets/frontmatter-reference.provenance.json
+!/assets/interior-title.original-template.pdf
+!/assets/page_border.png
+!/assets/sidebar-background.original-template.pdf
+!/assets/sidebar-shadow-bottom-left.reference-template.pdf
+!/assets/sidebar-shadow-bottom-middle.reference-template.pdf
+!/assets/sidebar-shadow-bottom-right.reference-template.pdf
+!/assets/sidebar-shadow-middle-left.reference-template.pdf
+!/assets/sidebar-shadow-middle-middle.reference-template.pdf
+!/assets/sidebar-shadow-middle-right.reference-template.pdf
+!/assets/sidebar-shadow-top-left.reference-template.pdf
+!/assets/sidebar-shadow-top-middle.reference-template.pdf
+!/assets/sidebar-shadow-top-right.reference-template.pdf
+!/assets/sidebar-texture.reference-template.pdf
+!/assets/spread-border.original-template.pdf
+!/assets/spread-page-types.provenance.json
+!/fonts/DejaVuSans-Bold.ttf
+!/fonts/DejaVuSans-BoldOblique.ttf
+!/fonts/DejaVuSans-Oblique.ttf
+!/fonts/DejaVuSans.ttf
+!/fonts/DejaVuSansMono.ttf
+!/fonts/GOUDOS.TTF
+!/fonts/GOUDOSB_0.TTF
+!/fonts/GOUDOSI_0.TTF
+!/fonts/NOTICES.txt
+!/fonts/abbess-regular.ttf
+!/template-source/M20 Template Interior.pdf
+!/template-source/README.md
