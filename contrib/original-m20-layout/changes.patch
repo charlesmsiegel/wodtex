@@ -1754,11 +1754,17 @@
   \csname mTwentyComposeOrAtomic:n\endcsname{#3}%
 --- a/tex/m20-pdf-tables.sty
 +++ b/tex/m20-pdf-tables.sty
-@@ -1,6 +1,25 @@
+@@ -1,6 +1,32 @@
  \NeedsTeXFormat{LaTeX2e}
  \ProvidesPackage{m20-pdf-tables}[2026/09/30 ordered fixed-width row blocks]
--\RequirePackage{array}
-+\RequirePackage{array,colortbl}
+ \RequirePackage{array}
++% MiKTeX may update colortbl independently of its older array/kernel bundle.
++% Pre-tagging array has the same paragraph-cell insertion under insert@column.
++% Keep modern array's tagged implementation whenever it is available.
++\ifdefined\insert@pcolumn\else
++ \let\insert@pcolumn\insert@column
++\fi
++\RequirePackage{colortbl}
 +% The layout's earlier begin-document hook has already opened a multicols
 +% group when colortbl initializes @tabarray. Keep that initialization after
 +% the columns close, otherwise nested native tables restore undefined colors.
@@ -1781,7 +1787,7 @@
  \newdimen\mTwentyTableWidth
  \newdimen\mTwentyCellWidth
  \newdimen\mTwentyTableOffset
-@@ -14,6 +33,50 @@
+@@ -14,6 +40,50 @@
  \newbox\mTwentyRowChunk
  \newbox\mTwentyTableHeader
  \newbox\mTwentyLocalTableHeader
@@ -1832,7 +1838,7 @@
  \newif\ifmTwentyTableActive
  \newdimen\mTwentyOriginalColumnWidth
  \directlua{m20tables = dofile(kpse.find_file("tex/m20-table-nodes.lua", "tex"))}
-@@ -49,6 +112,7 @@
+@@ -49,6 +119,7 @@
  \tl_new:N \l_mtw_table_id_tl
  \fp_new:N \l_mtw_table_scale_fp
  \int_new:N \l_mtw_table_head_int
@@ -1840,7 +1846,7 @@
  \seq_new:N \l_mtw_rows_seq
  \seq_new:N \l_mtw_columns_seq
  \tl_new:N \l_mtw_column_spec_tl
-@@ -74,6 +138,8 @@
+@@ -74,6 +145,8 @@
   \int_compare:nNnT {\l_mtw_table_head_int} < {0}{\PackageError{m20}{M20_E_TABLE_HEADERS}{head-rows~cannot~be~negative}}
   \fp_compare:nNnT {\l_mtw_table_scale_fp} > {1}{\PackageError{m20}{M20_E_TABLE_SCALE}{Scale~must~be~in~0..1}}
   \fp_compare:nNnF {\l_mtw_table_scale_fp} > {0}{\PackageError{m20}{M20_E_TABLE_SCALE}{Scale~must~be~in~0..1}}
@@ -1849,7 +1855,7 @@
   \str_case:VnF \l_mtw_table_width_tl {
    {container}{\ifmTwentySidebarActive\mTwentyTableWidth=\mTwentyUsableWidth\else\mTwentyTableWidth=\linewidth\fi}
    {column}{\ifmTwentySidebarActive\mTwentyTableWidth=\mTwentyOriginalColumnWidth\else\mTwentyTableWidth=\mTwentyColumnWidth\fi}
-@@ -102,6 +168,11 @@
+@@ -102,6 +175,11 @@
   \str_case:Vn \l_mtw_table_align_tl {{center}{\mTwentyTableOffset=\dimexpr\linewidth-\mTwentyTableWidth\relax\divide\mTwentyTableOffset2}{right}{\mTwentyTableOffset=\dimexpr\linewidth-\mTwentyTableWidth\relax}}
  
   \tl_set:Nn \l_mtw_column_spec_tl {#2}
@@ -1861,7 +1867,7 @@
   \regex_match:nnT {\A[lcr|\s]+\Z}{#2} {
    \tl_clear:N \l_mtw_column_spec_tl
    \tl_map_inline:nn {#2}{\str_case:nn {##1}{
-@@ -111,6 +182,21 @@
+@@ -111,6 +189,21 @@
     {|}{\tl_put_right:Nn \l_mtw_column_spec_tl {|}}
    }}
   }
@@ -1883,7 +1889,7 @@
   \setbox\mTwentyNativeTable=\hbox{\exp_args:NnV \begin{tabular}\l_mtw_column_spec_tl #3\end{tabular}}
   \ifdim\wd\mTwentyNativeTable>\dimexpr\mTwentyTableWidth+.5bp\relax
    \PackageError{m20}{M20_E_TABLE_TOO_WIDE}{Explicit~native~columns~exceed~the~chosen~width.~Reduce~their~dimensions~or~use~l/c/r~columns.}\fi
-@@ -121,9 +207,43 @@
+@@ -121,9 +214,47 @@
   \str_case:Vn \l_mtw_table_align_tl {{center}{\mTwentyTableOffset=\dimexpr\linewidth-\mTwentyTableWidth\relax\divide\mTwentyTableOffset2}{right}{\mTwentyTableOffset=\dimexpr\linewidth-\mTwentyTableWidth\relax}}
   \directlua{m20tables.extract(\number\mTwentyNativeTable,\number\mTwentyRowStream,\number\mTwentyLocalTableHeader,\int_use:N\l_mtw_table_head_int,\number\dimexpr\textheight-90bp\relax,\number\mTwentyTableOffset)}
   \global\setbox\mTwentyTableHeader=\box\mTwentyLocalTableHeader
@@ -1904,7 +1910,11 @@
 +     \vskip4bp\copy\mTwentyTableNotesBox
 +    \fi}
 +   \ifdim\dimexpr\ht\mTwentyTableFloatBox+\dp\mTwentyTableFloatBox\relax<\dimexpr\textheight-60bp\relax
++    % The enclosing m20table owns the body-column restart. The native
++    % table's after hook must not open multicols inside that environment.
++    \begingroup\let\mTwentyBodyBegin\relax
 +    \begin{table}[tbp]\noindent\box\mTwentyTableFloatBox\par\end{table}
++    \endgroup
 +    \bool_set_true:N \l_mtw_table_float_bool
 +    \global\setbox\mTwentyTableHeader=\box\voidb@x
 +   \fi

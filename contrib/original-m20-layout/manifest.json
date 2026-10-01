@@ -131,7 +131,7 @@
     {
       "path": "tex/m20-pdf-tables.sty",
       "base_sha256": "5bb3b8b07960f09c22b445e1b852f0b5c8fd7c959442b239c3030013fa92b60c",
-      "sha256": "3b6c11e071eae36aacd26ca01b2d1a1e82d5911ed2f3003eef28d5a3b4c97482"
+      "sha256": "0f283f929f2dc1824114520880ab3379c6a8800278948c0c5d7742336f20ea8e"
     },
     {
       "path": "tex/m20-references.sty",

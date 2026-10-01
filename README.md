@@ -84,6 +84,12 @@ resources; back up edits and remove that obsolete copy.
 
 ### Configuration and advanced installation
 
+The corrected layout supports older `array` package installations paired with
+newer `colortbl`, including the paragraph-cell API mismatch reported with
+MiKTeX 24.1. Update wodtex using the commands above and compile again; no edits
+to your table source are needed. Current `array` implementations keep their
+own paragraph-cell implementation.
+
 Updates preserve the existing local config **byte for byte**, including custom
 font/art locations. Existing installations are not silently switched to bundled
 paths. To explicitly switch an existing config to the checkout's bundled paths:

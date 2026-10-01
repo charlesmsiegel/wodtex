@@ -1,6 +1,13 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesPackage{m20-pdf-tables}[2026/09/30 ordered fixed-width row blocks]
-\RequirePackage{array,colortbl}
+\RequirePackage{array}
+% MiKTeX may update colortbl independently of its older array/kernel bundle.
+% Pre-tagging array has the same paragraph-cell insertion under insert@column.
+% Keep modern array's tagged implementation whenever it is available.
+\ifdefined\insert@pcolumn\else
+ \let\insert@pcolumn\insert@column
+\fi
+\RequirePackage{colortbl}
 % The layout's earlier begin-document hook has already opened a multicols
 % group when colortbl initializes @tabarray. Keep that initialization after
 % the columns close, otherwise nested native tables restore undefined colors.
@@ -221,7 +228,11 @@
      \vskip4bp\copy\mTwentyTableNotesBox
     \fi}
    \ifdim\dimexpr\ht\mTwentyTableFloatBox+\dp\mTwentyTableFloatBox\relax<\dimexpr\textheight-60bp\relax
+    % The enclosing m20table owns the body-column restart. The native
+    % table's after hook must not open multicols inside that environment.
+    \begingroup\let\mTwentyBodyBegin\relax
     \begin{table}[tbp]\noindent\box\mTwentyTableFloatBox\par\end{table}
+    \endgroup
     \bool_set_true:N \l_mtw_table_float_bool
     \global\setbox\mTwentyTableHeader=\box\voidb@x
    \fi
