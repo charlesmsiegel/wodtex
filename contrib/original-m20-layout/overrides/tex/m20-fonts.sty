@@ -7,17 +7,50 @@
 \babelprovide[import]{russian}
 \babelprovide[import]{hebrew}
 \babelprovide[import]{arabic}
+% The supplied Goudy set has genuine regular, bold and italic faces, but no
+% bold italic face. Keep the family intact for that unused combination and
+% disclose the exact italic-only substitution if an author requests it.
+\newif\ifmTwentyGoudyBoldItalicWarned
+\def\mTwentyItalicShape{it}
+\def\mTwentyBoldSeries{b}
+\def\mTwentyBoldExtendedSeries{bx}
+\newcommand\mTwentyWarnGoudyBoldItalicFamily{%
+ \ifmTwentyGoudyBoldItalicWarned\else
+  \ifx\f@family\rmdefault\mTwentyGoudyBoldItalicNotice\else
+   \ifx\f@family\mTwentyFirstFontFamily\mTwentyGoudyBoldItalicNotice\else
+    \ifx\f@family\mTwentySidebarFontFamily\mTwentyGoudyBoldItalicNotice\fi
+   \fi
+  \fi
+ \fi}
+\newcommand\mTwentyGoudyBoldItalicNotice{%
+ \global\mTwentyGoudyBoldItalicWarnedtrue
+ \PackageWarningNoLine{m20-fonts}{Goudy Old Style Bold Italic is not supplied; this combined request uses the genuine Goudy Old Style Italic face without added bold weight}}
+\newcommand\mTwentyWarnGoudyBoldItalic{%
+ \ifx\f@shape\mTwentyItalicShape
+  \ifx\f@series\mTwentyBoldSeries\mTwentyWarnGoudyBoldItalicFamily\else
+   \ifx\f@series\mTwentyBoldExtendedSeries\mTwentyWarnGoudyBoldItalicFamily\fi
+  \fi
+ \fi}
+\AddToHook{cmd/bfseries/after}{\mTwentyWarnGoudyBoldItalic}
+\AddToHook{cmd/itshape/after}{\mTwentyWarnGoudyBoldItalic}
 \newcommand\mTwentyLoadFonts{%
- \setmainfont{GOUDOS.TTF}[Path=\mTwentyFontPath,Scale=.98,RawFeature={extend=1.020408163265306},BoldFont=GOUDOSB_0.TTF,ItalicFont=GOUDOSI_0.TTF,BoldItalicFont=NotoSerif-BoldItalic.ttf]%
+ \ifdefined\mTwentyHeadingFontFile\else\InputIfFileExists{profiles/\mTwentyProfile.tex}{}{}\fi
+ \providecommand\mTwentyHeadingFontFile{GOUDOS.TTF}%
+ % Fallback applies only to unavailable heading glyphs (Abbess, for example,
+ % has no straight double quote). Available glyphs stay in the profile face.
+ \directlua{luaotfload.add_fallback("m20-heading-glyphs",{"[\luaescapestring{\mTwentyFontPath GOUDOS.TTF}]:mode=node;"})}%
+ \setmainfont{GOUDOS.TTF}[Path=\mTwentyFontPath,Scale=.98,RawFeature={extend=1.020408163265306},BoldFont=GOUDOSB_0.TTF,ItalicFont=GOUDOSI_0.TTF,BoldItalicFont=GOUDOSI_0.TTF]%
  \ifmTwentyEpub\else
-  \babelfont{rm}[Path=\mTwentyFontPath,Scale=.98,RawFeature={extend=1.020408163265306},BoldFont=GOUDOSB_0.TTF,ItalicFont=GOUDOSI_0.TTF,BoldItalicFont=NotoSerif-BoldItalic.ttf]{GOUDOS.TTF}%
+  \babelfont{rm}[Path=\mTwentyFontPath,Scale=.98,RawFeature={extend=1.020408163265306},BoldFont=GOUDOSB_0.TTF,ItalicFont=GOUDOSI_0.TTF,BoldItalicFont=GOUDOSI_0.TTF]{GOUDOS.TTF}%
  \fi
- \newfontfamily\mTwentyFirstFont{GOUDOS.TTF}[Path=\mTwentyFontPath,BoldFont=GOUDOSB_0.TTF,ItalicFont=GOUDOSI_0.TTF,BoldItalicFont=NotoSerif-BoldItalic.ttf]%
- \newfontfamily\mTwentyHeadingFont{abbess-regular.ttf}[Path=\mTwentyFontPath,BoldFont=GOUDOSB_0.TTF,ItalicFont=GOUDOSI_0.TTF,BoldItalicFont=NotoSerif-BoldItalic.ttf]%
- \newfontfamily\mTwentyHeadingNarrowFont{abbess-regular.ttf}[Path=\mTwentyFontPath,RawFeature={extend=.97},BoldFont=GOUDOSB_0.TTF,ItalicFont=GOUDOSI_0.TTF,BoldItalicFont=NotoSerif-BoldItalic.ttf]%
- \newfontfamily\mTwentySidebarFont{FuturaPTBook.otf}[Path=\mTwentyFontPath,BoldFont=NotoSans-Bold.ttf,ItalicFont=NotoSans-Italic.ttf,BoldItalicFont=NotoSans-BoldItalic.ttf]%
+ \newfontfamily\mTwentyFirstFont{GOUDOS.TTF}[Path=\mTwentyFontPath,BoldFont=GOUDOSB_0.TTF,ItalicFont=GOUDOSI_0.TTF,BoldItalicFont=GOUDOSI_0.TTF]%
+ \newfontfamily\mTwentyHeadingFont{\mTwentyHeadingFontFile}[Path=\mTwentyFontPath,RawFeature={fallback=m20-heading-glyphs},BoldFont=\mTwentyHeadingFontFile,ItalicFont=\mTwentyHeadingFontFile,BoldItalicFont=\mTwentyHeadingFontFile]%
+ \newfontfamily\mTwentyHeadingNarrowFont{\mTwentyHeadingFontFile}[Path=\mTwentyFontPath,RawFeature={extend=.97,fallback=m20-heading-glyphs},BoldFont=\mTwentyHeadingFontFile,ItalicFont=\mTwentyHeadingFontFile,BoldItalicFont=\mTwentyHeadingFontFile]%
+ \newfontfamily\mTwentySidebarFont{GOUDOS.TTF}[Path=\mTwentyFontPath,BoldFont=GOUDOSB_0.TTF,ItalicFont=GOUDOSI_0.TTF,BoldItalicFont=GOUDOSI_0.TTF]%
+ \begingroup\mTwentyFirstFont\xdef\mTwentyFirstFontFamily{\f@family}\mTwentySidebarFont\xdef\mTwentySidebarFontFamily{\f@family}\endgroup
  \newfontfamily\mTwentyScriptFont{DejaVuSans.ttf}[Path=\mTwentyFontPath,Renderer=HarfBuzz,BoldFont=DejaVuSans-Bold.ttf,ItalicFont=DejaVuSans-Oblique.ttf,BoldItalicFont=DejaVuSans-BoldOblique.ttf]%
- \setmonofont{DejaVuSansMono.ttf}[Path=\mTwentyFontPath,BoldFont=GOUDOSB_0.TTF,ItalicFont=GOUDOSI_0.TTF,BoldItalicFont=NotoSerif-BoldItalic.ttf]%
+ \setsansfont{GOUDOS.TTF}[Path=\mTwentyFontPath,BoldFont=GOUDOSB_0.TTF,ItalicFont=GOUDOSI_0.TTF,BoldItalicFont=GOUDOSI_0.TTF]%
+ \setmonofont{GOUDOS.TTF}[Path=\mTwentyFontPath,BoldFont=GOUDOSB_0.TTF,ItalicFont=GOUDOSI_0.TTF,BoldItalicFont=GOUDOSI_0.TTF]%
  \babelfont[greek,russian,hebrew,arabic]{rm}[Path=\mTwentyFontPath,Renderer=HarfBuzz,BoldFont=DejaVuSans-Bold.ttf,ItalicFont=DejaVuSans-Oblique.ttf,BoldItalicFont=DejaVuSans-BoldOblique.ttf]{DejaVuSans.ttf}%
 }
 \NewDocumentCommand\mTwentyScript{m}{{\mTwentyScriptFont #1}}

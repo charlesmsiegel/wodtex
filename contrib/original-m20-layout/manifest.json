@@ -1,8 +1,23 @@
 {
   "schema": "wodtex-opt-in-source-patch-v1",
-  "base_commit": "f540bc1c0c63b0da12af8aba16b948ff1becde60",
+  "base_commit": "fc6827560f3e31d47f514e8df5d4d640566c32b5",
   "local_correction_base": "4c2f12d017ef5a0d93a7a6f524ef8085efdac644",
   "files": [
+    {
+      "path": "profiles/m20.tex",
+      "base_sha256": "abe34c0e4d6b6c2da74c9e4b2baabfd10e49df322f2e8744df43e02d0b4bdafe",
+      "sha256": "169740e465680bdc860350a632fa5f6f50deee63221b9344db90624e84040fc1"
+    },
+    {
+      "path": "scripts/extract_frontmatter_reference.py",
+      "base_sha256": null,
+      "sha256": "ff61caf4659d44b3d7291731e9a46a938b4bd27b113d9e7cd261ae374d731bb5"
+    },
+    {
+      "path": "scripts/extract_sidebar_frame.py",
+      "base_sha256": null,
+      "sha256": "6883f5a175da96f2a3adcb440295ac3de6f234112d342b1cd0d1b5909c7bc133"
+    },
     {
       "path": "scripts/extract_spread_and_page_types.py",
       "base_sha256": "9e27ce78441a55f1d2070d9031652f701a978a9b1b484add57336a9cd7da5fc6",
@@ -12,6 +27,11 @@
       "path": "scripts/extract_template_art.py",
       "base_sha256": "9ce265793cb6e8caa15165edd9b9a7d9ad0865fc21052e59b104bc25b29a87b7",
       "sha256": "9ce265793cb6e8caa15165edd9b9a7d9ad0865fc21052e59b104bc25b29a87b7"
+    },
+    {
+      "path": "scripts/prepare_assets.py",
+      "base_sha256": "a3765a207adcab0e449d9ba24a969232f410f233e18f9f36144366e77bc152f6",
+      "sha256": "742855403a849c0ea05e3b234fe6a1d24e8b65641eca4025a1eeea809cc100f9"
     },
     {
       "path": "scripts/verify.py",
@@ -24,9 +44,34 @@
       "sha256": "a972c9ec6bf1edee5d552bface72bc24955a61c07ff008e0e5e2daa2519bb1f3"
     },
     {
+      "path": "tests/test_fonts_math.py",
+      "base_sha256": "964a06c4cf304f5f2ba4e88a7e8b03ae2867c6033235c0867834944b52f68115",
+      "sha256": "1ecc18250f1aa9a982683335e8295772852f8c36e6e8775912f1c709ce380c77"
+    },
+    {
+      "path": "tests/test_frontmatter_reference.py",
+      "base_sha256": null,
+      "sha256": "834062f389e6d4ace73ae882e0b2707c4687573b591102bb509e0fd604f480dd"
+    },
+    {
+      "path": "tests/test_horizontal_art_float_edges.py",
+      "base_sha256": null,
+      "sha256": "5d58c8070fa21fa246fb72e96950156567414b5deef5b39c43398732eae0e58c"
+    },
+    {
+      "path": "tests/test_profile.py",
+      "base_sha256": "e1c3102fb1ca4919582eae70586d71fde7b3411b134b2eda3abec57b7768ba61",
+      "sha256": "692a4dd053e3736db3f6ba68697799d2a190b10840642f0c74b5edc467876d66"
+    },
+    {
       "path": "tests/test_sidebar_breaks.py",
       "base_sha256": null,
       "sha256": "2ad93b8d5587b399d9fd1264d21a20f65453c689745d3be2fb4571631051b810"
+    },
+    {
+      "path": "tests/test_sidebar_frame_paint.py",
+      "base_sha256": null,
+      "sha256": "03c8b4faff3bd96de18c4c611a57c9d2f266374909b4a9fd4eb00fce34b3a26e"
     },
     {
       "path": "tests/test_sidebar_keep.py",
@@ -39,34 +84,59 @@
       "sha256": "0e5f1115bde4ca587fee9121cf361cd171240f517257728cb7913c247ac8cca5"
     },
     {
-      "path": "tex/m20-fonts.sty",
-      "base_sha256": "24796ab6770e7ae8c8b54a247a278689769bc9bc4da33b9f03dbbeab8a36f489",
-      "sha256": "d6f9bb07a28a2096361d243c38dae06163afd03f7692abb75befaf5a86cff778"
-    },
-    {
-      "path": "tex/m20-local-text-styles.sty",
+      "path": "tests/test_stat_font_height.py",
       "base_sha256": null,
-      "sha256": "32ab3bb5e0d29b68cfaba331e0ec9ba0aa593e6a7edbade79a73d94eeb9f8e80"
-    },
-    {
-      "path": "tex/m20-pdf-layout.sty",
-      "base_sha256": "4773dad3be907b3eb08c18b1729131e00422420217e9d3202f9d09043184cb22",
-      "sha256": "6e77861cbb8ffc537a78eb977bf11f41fd0ef06514d47a0afb99b20fcbedbcae"
-    },
-    {
-      "path": "tex/m20-pdf-sidebars.sty",
-      "base_sha256": "fcbcae4df44f23dc0ac556dc9652256e0b5f205ce0adc235fbe273044ef431c4",
-      "sha256": "24d537b766d8cad62cb926a962da986998a3ccb981d02903a87af58a28e64634"
-    },
-    {
-      "path": "tex/m20-pdf-tables.sty",
-      "base_sha256": "5bb3b8b07960f09c22b445e1b852f0b5c8fd7c959442b239c3030013fa92b60c",
-      "sha256": "f734f6f1c68400bb7a4db2fd0573884754820285e98bc037aa7eefc0377b51dc"
+      "sha256": "2583d03b4aec10c811ef1bd9024d9977df69e9837ecd79a91a17ad1ab4598338"
     },
     {
       "path": "tests/test_table_lead_flow.py",
       "base_sha256": null,
       "sha256": "4d3b496b2fad8e83493aa1da22425fdf05d89c16110e4a50f54f47b8116352d2"
+    },
+    {
+      "path": "tests/test_top_art_sidebar_capacity.py",
+      "base_sha256": null,
+      "sha256": "6d3da07c3178c46c78a9ac887fc5e903f0f995da5e3e38ed62ef8007252d8557"
+    },
+    {
+      "path": "tex/m20-art.sty",
+      "base_sha256": "3679db635dd7abdc7bfc8f1de9936a214346dcc4c7726ddeecf542578081d914",
+      "sha256": "7d6cffa4aec5c2eecfcb5d2febab2b2beab46476d3e3e52b3659fee607aa43e2"
+    },
+    {
+      "path": "tex/m20-core.sty",
+      "base_sha256": "7d9c0da3316a27d913bb05e591ccaf75f3554a5ae3b7d79f52363b15cda99885",
+      "sha256": "8e8bfd043f46b0165811261b2348299bd9c47861b622d49fccb03ccdaa038392"
+    },
+    {
+      "path": "tex/m20-fonts.sty",
+      "base_sha256": "24796ab6770e7ae8c8b54a247a278689769bc9bc4da33b9f03dbbeab8a36f489",
+      "sha256": "8f0403d0370acb7845d3c545158ac17c882526a6f22919302d42e8c2a1fdd366"
+    },
+    {
+      "path": "tex/m20-local-text-styles.sty",
+      "base_sha256": null,
+      "sha256": "e9889f4df9549396af65219f4c9f3bdba741c947e7c0ff688c616759edfe9a9d"
+    },
+    {
+      "path": "tex/m20-pdf-layout.sty",
+      "base_sha256": "4773dad3be907b3eb08c18b1729131e00422420217e9d3202f9d09043184cb22",
+      "sha256": "6a576923347374f248403ed01f2e4c5031dc92ee2512d46c3fb071585028665b"
+    },
+    {
+      "path": "tex/m20-pdf-sidebars.sty",
+      "base_sha256": "fcbcae4df44f23dc0ac556dc9652256e0b5f205ce0adc235fbe273044ef431c4",
+      "sha256": "171c184deb9bfa8f00be5006684940eda30e726e74c2591ca3355bba54e1c438"
+    },
+    {
+      "path": "tex/m20-pdf-tables.sty",
+      "base_sha256": "5bb3b8b07960f09c22b445e1b852f0b5c8fd7c959442b239c3030013fa92b60c",
+      "sha256": "3b6c11e071eae36aacd26ca01b2d1a1e82d5911ed2f3003eef28d5a3b4c97482"
+    },
+    {
+      "path": "tex/m20-references.sty",
+      "base_sha256": "3c7ecec009cb34f8af29ed4e1d97a89de527e59db38f18f853739e9ae001b1ab",
+      "sha256": "9caf33840f2908ef22d276779e2b788589f498de565e0906fb3aa2f2d859dcc1"
     }
   ]
 }

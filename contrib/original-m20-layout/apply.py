@@ -23,7 +23,7 @@ def main():
     entries = manifest['files']
     for entry in entries:
         relative = Path(entry['path'])
-        if relative.is_absolute() or '..' in relative.parts or relative.parts[0] not in ('tex', 'scripts', 'tests'):
+        if relative.is_absolute() or '..' in relative.parts or not (relative.parts[0] in ('tex', 'scripts', 'tests') or relative.as_posix() == 'profiles/m20.tex'):
             raise SystemExit('Unsafe patch path: ' + entry['path'])
         original, override = ROOT / relative, HERE / 'overrides' / relative
         if original.is_symlink() or override.is_symlink():

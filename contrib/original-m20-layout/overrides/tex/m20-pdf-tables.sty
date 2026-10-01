@@ -64,9 +64,9 @@
   \let\mTwentyBodyBegin\relax\let\mTwentyBodyEnd\relax
   \let\mTwentyKeepHeading\@gobble
   \@nobreakfalse\@noskipsecfalse\everypar{}%
-  % Explicit existing table titles use the supplied screenshot's purple
-  % bold Goudy caption treatment while retaining native heading semantics.
-  \def\subsection{\@startsection{subsection}{2}{\z@}{0bp}{3bp}{\centering\mTwentyHeadingControls\mTwentyFirstFont\bfseries\fontsize{11bp}{13bp}\selectfont\color{m20purple}}}%
+  % Table titles retain the profile-selected heading role; column labels
+  % independently use the genuine Goudy Old Style bold prose face.
+  \def\subsection{\@startsection{subsection}{2}{\z@}{0bp}{3bp}{\centering\mTwentyHeadingControls\mTwentyHeadingFont\mdseries\let\textbf\@firstofone\fontsize{11bp}{13bp}\selectfont\color{m20purple}}}%
   #1\par}%
  \ifdim\dimexpr\ht\mTwentyTableLeadBox+\dp\mTwentyTableLeadBox\relax>\dimexpr\textheight-60bp\relax
   \PackageError{m20}{M20_E_TABLE_LEAD_TOO_TALL}{The bounded title/lead/table group must fit one page. Leave multipage tables in owner pagination.}%

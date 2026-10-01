@@ -11,7 +11,7 @@ Licensed fonts, original template files, rendered art and manuscript inputs are 
 ## PDF behavior in this checkpoint
 
 - Original full-page title background, gold title text, separate cover workflow and source-positioned credits helper
-- Ordinary outer spread borders, dedicated chapter opening panel, deliberate chapter-facing blank versos and alternating book/chapter footer runners
+- Ordinary outer spread borders, dedicated chapter opening panel, original full-page chapter-facing illustration placeholders and bordered/folio-bearing parity spacers and alternating book/chapter footer runners
 - Compact shaded hanging lists and purple keyed stat blocks; pipe separators within stat entries display as new lines without changing table syntax
 - Short standalone full-width tables use native top/bottom floats; long tables retain repeated-header owner pagination; contained tables remain in sidebars
 - A bounded table-lead wrapper keeps existing caption, introductory prose and table together in one float, rather than duplicating or losing those tokens
@@ -42,10 +42,18 @@ For exceptional heading words or dense table headers, allocate enough column wid
 
 The full-height vertical update has a real compiled regression covering height, page-top alignment, outside-edge parity and a single-column section beside the frame. That full-height checkpoint passed strict overflow verification.
 
-### Final bounded flow correction
+### Earlier bounded flow correction (historical checkpoint)
 
 The remaining-space helper now settles pending paragraph/page output with a neutral penalty before reading the current body-region height. This prevents a keep-heading decision based on the previous column/page from forcing a spurious break in a fresh column. Standalone table titles should be included in the existing bounded table-lead wrapper so a top/bottom table float cannot leave its title behind.
 
-A real compiled regression confirms caption/table association while narrative continues in live columns. The affected book page was also checked with exact-hash geometry and pixels: both columns fill normally and the caption stays above its table on the following page. The latest complete PDF has converged. One output-box warning remains on a dense appendix page; actual body ink has over 22bp of footer clearance, and pixels show no clipping or overlap. It is a reviewed warning, not a claimed clean strict pass. These checks do not replace the still-pending full merged PDF/EPUB framework acceptance.
+A real compiled regression confirms caption/table association while narrative continues in live columns. The affected book page was also checked with exact-hash geometry and pixels: both columns fill normally and the caption stays above its table on the following page. That earlier complete PDF converged. One output-box warning remained on a dense appendix page; actual body ink has over 22bp of footer clearance, and pixels show no clipping or overlap. It is a reviewed warning, not a claimed clean strict pass. These checks do not replace the still-pending full merged PDF/EPUB framework acceptance.
 
 All standalone tables in the local book were reviewed systematically. Twenty bounded title/short-lead/table groups and one table kept inside its sidebar were verified both in source and at their shipped anchor pages. No source words were rewritten. Private manuscript inputs remain local, while this public package includes the renderer correction, generic association regression and authoring procedure needed to reproduce the behavior.
+
+## Current frontmatter, type and art-flow checkpoint
+
+The root README supplies complete current command/default/argument/examples. Credit metadata belongs in the document header; all four role/thanks fields default empty. Copyright year defaults to the TeX build year and can be overridden. chapter-body-gap controls the opener-to-body clearance. Headings use the profile face; Goudy regular/bold/italic is the shared nonheading family. Missing heading glyphs alone fall back to Goudy; unavailable genuine Goudy bolditalic requests emit a declared italic-only warning. Futura/Noto and empty chapter-facing versos describe superseded behavior, not this checkpoint.
+
+Original legal/logo/full-page/sidebar assets are restored by the new extract_frontmatter_reference.py and extract_sidebar_frame.py scripts after licensed input preparation. Contents-opening flags preserve the ordinary spread border. Horizontal art enqueues without closing live narrative; top art admission and wide-sidebar budget settlement preserve page capacity. Authored art cadence remains explicit document-source calls and private source changes are excluded from Git.
+
+Five generic public art/float/capacity regressions passed. Old-macro causal checks fail on actual art position and sidebar/footer capacity; the fixed sidebar proof has zero sampled footer RGB delta. The final PDF/code checkpoint has reviewed fonts, content, table associations, bounds, widow/whitespace and art geometry. Five vertical output-box warnings on four pages remain; actual pixels show no clipping or horizontal overflow. The strict verifier therefore exits 1 and no clean strict/full-suite/EPUB result is claimed. The earlier aggregate run, before final pagination changes, recorded 55 passes and 13 failures (seven runtime/mixed-script gates and six legacy policy assertions).
