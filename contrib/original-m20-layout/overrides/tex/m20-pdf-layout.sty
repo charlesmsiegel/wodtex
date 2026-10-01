@@ -1,6 +1,7 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesPackage{m20-pdf-layout}[2026/09/30 isolated live body regions]
 \RequirePackage{fontspec,geometry,multicol,xcolor,tikz}
+\IfFileExists{microtype.sty}{\RequirePackage[protrusion=true,expansion=true]{microtype}}{}
 \InputIfFileExists{profiles/m20.tex}{}{%
  \def\mTwentyPageWidth{612bp}\def\mTwentyPageHeight{792bp}%
  \def\mTwentyBodyWidth{490.4496bp}\def\mTwentyBodyHeight{657bp}%
@@ -9,9 +10,9 @@
 \geometry{paperwidth=\mTwentyPageWidth,paperheight=\mTwentyPageHeight,inner=\mTwentyInner,outer=\mTwentyOuter,top=\mTwentyTop,textheight=\mTwentyBodyHeight,headheight=0bp,headsep=0bp,footskip=16.81bp}
 \setlength\columnsep{\mTwentyGutter}
 \setlength\parindent{18bp}
-\setlength\parskip{1.44bp plus .2bp}
+\setlength\parskip{1.44bp plus .2bp minus .4bp}
 \setlength\multicolsep{0bp}
-\setlength\premulticols{0bp}
+\setlength\premulticols{48bp}
 \setlength\postmulticols{0bp}
 \newif\ifmTwentyBodyActive
 \newif\ifmTwentyBlankPage
@@ -21,12 +22,18 @@
 \newcount\mTwentyChapterArtCount
 \def\mTwentyChapterRunningTitle{}
 \newif\ifmTwentyArtReverse
-\renewcommand\mTwentyBodyBegin{\color{black}\ifmTwentyBodyActive\else\par\ifdim\pagetotal>\dimexpr\textheight-24bp\relax\clearpage\fi\global\mTwentyBodyActivetrue\begin{multicols}{2}\raggedcolumns\fi}
+% Strong endpoint protection is reapplied after each body region and heading.
+\newcommand\mTwentyParagraphControls{%
+ \clubpenalty=10000\widowpenalty=10000\displaywidowpenalty=10000\@clubpenalty=10000%
+ \hyphenpenalty=650\exhyphenpenalty=300\doublehyphendemerits=50000\finalhyphendemerits=10000%
+ \tolerance=1200\emergencystretch=1.25em}
+\newcommand\mTwentyHeadingControls{\hyphenpenalty=10000\exhyphenpenalty=10000}
+\renewcommand\mTwentyBodyBegin{\color{black}\ifmTwentyBodyActive\else\par\ifdim\pagetotal>\dimexpr\textheight-24bp\relax\newpage\fi\global\mTwentyBodyActivetrue\begin{multicols}{2}\mTwentyParagraphControls\raggedcolumns\fi}
 \renewcommand\mTwentyBodyEnd{\ifmTwentyBodyActive\par\end{multicols}\global\mTwentyBodyActivefalse\fi\@nobreakfalse\@noskipsecfalse\everypar{}}
 \newcommand\mTwentySuspendEnvironment[1]{\ifmTwentyBodyActive\endgroup\mTwentyBodyEnd\begingroup\def\@currenvir{#1}\fi}
 \renewcommand\mTwentyNewPage{\mTwentyBodyEnd\clearpage\mTwentyBodyBegin}
 \newwrite\mTwentyPositionStream
-\AtBeginDocument{\mTwentyLoadFonts\fontsize{10bp}{12bp}\selectfont\clubpenalty=5000\widowpenalty=5000\displaywidowpenalty=5000\raggedbottom\immediate\openout\mTwentyPositionStream=\jobname.m20pos\relax\mTwentyBodyBegin}
+\AtBeginDocument{\mTwentyLoadFonts\fontsize{10bp}{12bp}\selectfont\mTwentyParagraphControls\raggedbottom\immediate\openout\mTwentyPositionStream=\jobname.m20pos\relax\mTwentyBodyBegin}
 \AtEndDocument{\mTwentyBodyEnd\clearpage\immediate\closeout\mTwentyPositionStream}
 % Values are frozen now; page and position primitives are evaluated at shipout.
 \newcommand\mTwentyPosition[8]{%
@@ -37,13 +44,13 @@
 \renewcommand\mTwentyAnchor[1]{\mTwentyPosition{#1}{\linewidth}{\linewidth}{1}{anchor}{0}{flow}{}}
 \renewcommand\@seccntformat[1]{}
 \renewcommand\@startsection[6]{\if@noskipsec\leavevmode\fi\par\@tempskipa #4\relax\@afterindenttrue\ifdim\@tempskipa<\z@\@tempskipa-\@tempskipa\@afterindentfalse\fi\if@nobreak\everypar{}\else\addpenalty\@secpenalty\addvspace\@tempskipa\fi\@ifstar{\@ssect{#3}{#4}{#5}{#6}}{\@dblarg{\@sect{#1}{#2}{#3}{#4}{#5}{#6}}}}
-\renewcommand\section{\@startsection{section}{1}{\z@}{7.2bp}{2.1528bp}{\centering\mTwentyHeadingFont\fontsize{24bp}{25bp}\selectfont}}
+\renewcommand\section{\@startsection{section}{1}{\z@}{7.2bp}{2.1528bp}{\centering\mTwentyHeadingControls\mTwentyHeadingFont\fontsize{24bp}{25bp}\selectfont}}
 % Wrap the styled native section only after defining its style.
 \let\mTwentyStyledSection\section
-\RenewDocumentCommand\section{s o m}{\mTwentyBodyEnd\mTwentyRemaining\ifdim\mTwentyAvailable<120bp\relax\clearpage\fi\addvspace{13.5bp}\noindent\mTwentyPosition{span-heading}{\textwidth}{\textwidth}{2}{heading}{0}{flow}{}\IfBooleanTF{#1}{\mTwentyStyledSection*{#3}}{\IfNoValueTF{#2}{\mTwentyStyledSection{#3}}{\mTwentyStyledSection[#2]{#3}}}\vspace{1.8bp}\hrule height1.25bp\vspace{13.5bp}\mTwentyBodyBegin\@afterindentfalse\@afterheading}
+\RenewDocumentCommand\section{s o m}{\mTwentyBodyEnd\mTwentyRemaining\ifdim\mTwentyAvailable<108bp\relax\newpage\fi\addvspace{13.5bp}\noindent\mTwentyPosition{span-heading}{\textwidth}{\textwidth}{2}{heading}{0}{flow}{}\IfBooleanTF{#1}{\mTwentyStyledSection*{#3}}{\IfNoValueTF{#2}{\mTwentyStyledSection{#3}}{\mTwentyStyledSection[#2]{#3}}}\vspace{1.8bp}\hrule height1.25bp\vspace{13.5bp}\mTwentyBodyBegin\@afterindentfalse\@afterheading}
 \newcommand\mTwentyKeepHeading[1]{\mTwentyRemaining\ifdim\mTwentyAvailable<#1\relax\ifmTwentyBodyActive\columnbreak\else\newpage\fi\fi}
-\renewcommand\subsection{\mTwentyKeepHeading{54bp}\@startsection{subsection}{2}{\z@}{7.2bp}{0.01bp}{\mTwentyHeadingNarrowFont\fontsize{18bp}{18bp}\selectfont}}
-\renewcommand\subsubsection{\mTwentyKeepHeading{42bp}\@startsection{subsubsection}{3}{\z@}{7.2bp}{0.01bp}{\mTwentyHeadingFont\fontsize{12bp}{14bp}\selectfont}}
+\renewcommand\subsection{\mTwentyKeepHeading{54bp}\@startsection{subsection}{2}{\z@}{7.2bp}{0.01bp}{\raggedright\mTwentyHeadingControls\mTwentyHeadingNarrowFont\fontsize{18bp}{18bp}\selectfont}}
+\renewcommand\subsubsection{\mTwentyKeepHeading{42bp}\@startsection{subsubsection}{3}{\z@}{7.2bp}{0.01bp}{\raggedright\mTwentyHeadingControls\mTwentyHeadingFont\fontsize{12bp}{14bp}\selectfont}}
 \newif\ifmTwentyNumberedOpener
 \let\mTwentyOriginalChapter\chapter
 \RenewDocumentCommand\chapter{s o m}{%
@@ -113,7 +120,7 @@
  \hypersetup{pdfpagelayout=TwoPageRight,pdftitle={#1}}%
  \mTwentyBodyEnd\clearpage\global\mTwentyInteriorTitlePagetrue\thispagestyle{empty}%
  \AddToHookNext{shipout/foreground}{%
-  \put(0,-136.08bp){\makebox[\paperwidth][c]{\raisebox{-.5\height}[0pt][0pt]{\parbox{490bp}{\centering\mTwentyHeadingFont\fontsize{48bp}{48bp}\selectfont\color{m20gold}#1}}}}%
+  \put(0,-136.08bp){\makebox[\paperwidth][c]{\raisebox{-.5\height}[0pt][0pt]{\parbox{490bp}{\centering\mTwentyHeadingControls\mTwentyHeadingFont\fontsize{48bp}{48bp}\selectfont\color{m20gold}#1}}}}%
   \put(0,-700bp){\makebox[\paperwidth][c]{\parbox{490bp}{\centering\mTwentyFirstFont\fontsize{14bp}{17bp}\selectfont\color{m20gold}#2}}}}
  \null\newpage}
 \newcommand\mTwentyInteriorCredits[1]{%
@@ -142,30 +149,38 @@
  \end{tikzpicture}%
 }
 \newcommand\mTwentyArtPDF{%
- \mTwentyBodyEnd\par
+ \par
  \def\mTwentyVertical{vertical}\def\mTwentyHere{here}\def\mTwentyNextPage{next-page}\def\mTwentyBottom{bottom}\def\mTwentyOuterPosition{outer}%
- \ifx\mTwentyArtPlace\mTwentyNextPage\clearpage\fi
+ \ifx\mTwentyArtPlace\mTwentyNextPage\newpage\fi
  \mTwentyArtWidth=\textwidth\mTwentyArtHeight=341.28bp
- \ifx\mTwentyArtKind\mTwentyVertical\mTwentyArtWidth=\mTwentyColumnWidth\mTwentyArtHeight=\textheight\fi
- \mTwentyRemaining\advance\mTwentyAvailable4bp
- \ifdim\mTwentyAvailable<\mTwentyArtHeight
-  \ifx\mTwentyArtPlace\mTwentyHere\PackageError{m20}{M20_E_PLACEMENT_UNAVAILABLE}{The art reservation does not fit at this exact anchor.}\else\clearpage\fi
- \fi
  \ifx\mTwentyArtKind\mTwentyVertical
+  \mTwentyBodyEnd
+  \mTwentyArtWidth=\mTwentyColumnWidth
+  % Use a substantial remaining side region where it exists; a tall reserve
+  % need not strand a preceding paragraph merely to recover the full 657bp.
+  \mTwentyRemaining
+  \ifdim\mTwentyAvailable<360bp
+   \ifx\mTwentyArtPlace\mTwentyHere\PackageError{m20}{M20_E_PLACEMENT_UNAVAILABLE}{A vertical art reserve needs at least 360bp here.}\else\newpage\fi
+  \fi
   \mTwentyBodyBegin
-  % Put the art first in the native stream. Reverse only this page's physical
-  % columns when needed, leaving subsequent prose beside the reservation.
+  % Multicol has now removed any real top/bottom float space. Reserve only
+  % that page's live column height, leaving the original frame's shadow clear.
+  \mTwentyArtHeight=\dimexpr\@colroom-14bp\relax
+  % The outside default is left on verso and right on recto. Reverse this
+  % page only; shipout restores the ordinary column reading direction.
   \ifodd\c@page
    \ifx\mTwentyArtPosition\mTwentyOuterPosition\RLmulticolcolumns\global\mTwentyArtReversetrue\fi
   \else\ifx\mTwentyArtPosition\mTwentyOuterPosition\else\RLmulticolcolumns\global\mTwentyArtReversetrue\fi\fi
   \noindent\mTwentyArtBox\par\columnbreak
  \else
-  \begingroup\parskip=0bp
+  % Native t/b-only floats reserve the page edge. Deliberately omit p so
+  % interior art does not become a half-page on an otherwise empty float page.
   \ifx\mTwentyArtPosition\mTwentyBottom
-   \mTwentyRemaining\advance\mTwentyAvailable-6bp
-   \noindent\vbox to\mTwentyAvailable{\vfil\hbox{\mTwentyArtBox}}\par
-  \else\noindent\mTwentyArtBox\par\fi
-  \endgroup\mTwentyBodyBegin
+   \begin{figure*}[!b]\noindent\mTwentyArtBox\par\end{figure*}%
+  \else
+   \begin{figure*}[!t]\noindent\mTwentyArtBox\par\end{figure*}%
+  \fi
+  \mTwentyBodyBegin
  \fi
 }
 \InputIfFileExists{tex/m20-local-text-styles.sty}{}{}

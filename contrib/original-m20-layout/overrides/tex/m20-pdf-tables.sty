@@ -18,7 +18,7 @@
    \ifodd\numexpr\rownum-\mTwentyTableHeadingRows\relax\color{m20gold}\else\color{white}\fi
   \else\color{black}\fi
  \else
-  \bfseries\ifmTwentySidebarActive\color{white}\else\color{black}\fi
+  \bfseries\mTwentyHeadingControls\ifmTwentySidebarActive\color{white}\else\color{black}\fi
  \fi}
 \newdimen\mTwentyTableWidth
 \newdimen\mTwentyCellWidth
@@ -66,15 +66,16 @@
   \@nobreakfalse\@noskipsecfalse\everypar{}%
   % Explicit existing table titles use the supplied screenshot's purple
   % bold Goudy caption treatment while retaining native heading semantics.
-  \def\subsection{\@startsection{subsection}{2}{\z@}{0bp}{3bp}{\centering\mTwentyFirstFont\bfseries\fontsize{11bp}{13bp}\selectfont\color{m20purple}}}%
+  \def\subsection{\@startsection{subsection}{2}{\z@}{0bp}{3bp}{\centering\mTwentyHeadingControls\mTwentyFirstFont\bfseries\fontsize{11bp}{13bp}\selectfont\color{m20purple}}}%
   #1\par}%
  \ifdim\dimexpr\ht\mTwentyTableLeadBox+\dp\mTwentyTableLeadBox\relax>\dimexpr\textheight-60bp\relax
   \PackageError{m20}{M20_E_TABLE_LEAD_TOO_TALL}{The bounded title/lead/table group must fit one page. Leave multipage tables in owner pagination.}%
  \fi
- \begin{table}[tbp]\noindent\box\mTwentyTableLeadBox\par\end{table}%
+ \begin{table*}[tb]\noindent\box\mTwentyTableLeadBox\par\end{table*}%
  \endgroup
 }{}
-\AddToHook{env/m20tablelead/before}{\mTwentyBodyEnd}
+% Table-lead floats stay inside the live body columns. Closing and restarting
+% them merely to enqueue a float creates ambiguous stacked reading bands.
 \AddToHook{env/m20tablelead/after}{\mTwentyBodyBegin}
 \newif\ifmTwentyTableActive
 \newdimen\mTwentyOriginalColumnWidth

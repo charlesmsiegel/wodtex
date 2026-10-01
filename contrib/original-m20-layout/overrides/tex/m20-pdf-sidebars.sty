@@ -76,7 +76,7 @@
  \setbox\mTwentyFrameContent=\vbox{%
   \hsize=\mTwentyUsableWidth\linewidth=\hsize
   \vskip7.2bp
-  {\centering\mTwentyHeadingNarrowFont\fontsize{18bp}{18bp}\selectfont\color{m20gold}\mTwentySidebarTitle\ifnum\mTwentySidebarPageSegment>1\space(continued)\fi\par}%
+  {\centering\mTwentyHeadingControls\mTwentyHeadingNarrowFont\fontsize{18bp}{18bp}\selectfont\color{m20gold}\mTwentySidebarTitle\ifnum\mTwentySidebarPageSegment>1\space(continued)\fi\par}%
   \vskip5bp
   \unvbox\mTwentySidebarPageContent
   \vskip10bp}
@@ -116,7 +116,7 @@
 }
 \newcommand\mTwentySetSplitHeight{%
  \mTwentyRemaining
- \setbox\mTwentySidebarTitleMeasure=\vbox{\hsize=\mTwentyUsableWidth\parindent=0bp\centering\mTwentyHeadingNarrowFont\fontsize{18bp}{18bp}\selectfont\mTwentySidebarTitle\ifnum\mTwentySidebarPageSegment>0\space(continued)\fi\par}%
+ \setbox\mTwentySidebarTitleMeasure=\vbox{\hsize=\mTwentyUsableWidth\parindent=0bp\centering\mTwentyHeadingControls\mTwentyHeadingNarrowFont\fontsize{18bp}{18bp}\selectfont\mTwentySidebarTitle\ifnum\mTwentySidebarPageSegment>0\space(continued)\fi\par}%
  \mTwentySplitHeight=\mTwentyAvailable\advance\mTwentySplitHeight-\ht\mTwentySidebarTitleMeasure\advance\mTwentySplitHeight-\dp\mTwentySidebarTitleMeasure\advance\mTwentySplitHeight-53bp
  \advance\mTwentySplitHeight-\mTwentySidebarBeforeGap\advance\mTwentySplitHeight-\mTwentySidebarAfterGap
  \ifvoid\mTwentySidebarPageContent\else\advance\mTwentySplitHeight-\ht\mTwentySidebarPageContent\advance\mTwentySplitHeight-\dp\mTwentySidebarPageContent\advance\mTwentySplitHeight-4bp\fi

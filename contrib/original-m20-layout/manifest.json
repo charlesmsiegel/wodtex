@@ -1,27 +1,32 @@
 {
   "schema": "wodtex-opt-in-source-patch-v1",
-  "base_commit": "b5e152ab70770ae3d57ca575015b783e80a54f5f",
+  "base_commit": "906befdcc77ee47093c1c6d469da5c34be988438",
   "local_correction_base": "4c2f12d017ef5a0d93a7a6f524ef8085efdac644",
   "files": [
     {
       "path": "scripts/extract_spread_and_page_types.py",
-      "base_sha256": null,
+      "base_sha256": "9e27ce78441a55f1d2070d9031652f701a978a9b1b484add57336a9cd7da5fc6",
       "sha256": "9e27ce78441a55f1d2070d9031652f701a978a9b1b484add57336a9cd7da5fc6"
     },
     {
       "path": "scripts/extract_template_art.py",
-      "base_sha256": null,
+      "base_sha256": "9ce265793cb6e8caa15165edd9b9a7d9ad0865fc21052e59b104bc25b29a87b7",
       "sha256": "9ce265793cb6e8caa15165edd9b9a7d9ad0865fc21052e59b104bc25b29a87b7"
     },
     {
       "path": "scripts/verify.py",
-      "base_sha256": "77575479a7b22f011d155f873c09043c19e176a0e26dfd39e960e4f136e34898",
+      "base_sha256": "df5d901ef0e4b62b7e6b27aa23ffe0dc64ed879dccbad31d441e0f8bd5829e01",
       "sha256": "3f079cce56e8a2492adf6f474152b9e5bfab4c0e5fc6d897bc33e6cb4508af92"
+    },
+    {
+      "path": "tests/test_art_edges.py",
+      "base_sha256": null,
+      "sha256": "8a700aeb7e000d93fd55215982c4c180c3dbbc939ff53b47bb8628a47b0f0ea5"
     },
     {
       "path": "tests/test_sidebar_breaks.py",
       "base_sha256": null,
-      "sha256": "97aaccce059e0c02e728fc634ad10f97197cc85dfef600630a046acb4843b9a1"
+      "sha256": "2ad93b8d5587b399d9fd1264d21a20f65453c689745d3be2fb4571631051b810"
     },
     {
       "path": "tests/test_sidebar_keep.py",
@@ -35,7 +40,7 @@
     },
     {
       "path": "tex/m20-fonts.sty",
-      "base_sha256": "8092802844784ee4eeb517058a61f7772183c3c3c6e71e4940fded21d70648cb",
+      "base_sha256": "24796ab6770e7ae8c8b54a247a278689769bc9bc4da33b9f03dbbeab8a36f489",
       "sha256": "d6f9bb07a28a2096361d243c38dae06163afd03f7692abb75befaf5a86cff778"
     },
     {
@@ -45,18 +50,18 @@
     },
     {
       "path": "tex/m20-pdf-layout.sty",
-      "base_sha256": "efbd8496804eb49675571cc982bb07b16af0dd569e9cff32d29d4df69cd98647",
-      "sha256": "2d3ef9e909f0f9f794b494e6b1d8a283826b330e3ada9d2e508ba22a65953887"
+      "base_sha256": "4773dad3be907b3eb08c18b1729131e00422420217e9d3202f9d09043184cb22",
+      "sha256": "ad1269638414b35595cfd1817fc9cd777bf4eb329add2b1256ae28ab6e6b42c8"
     },
     {
       "path": "tex/m20-pdf-sidebars.sty",
-      "base_sha256": "5372dde813cbeb742bcaca4ade2886d6453952f22dd3acfeb23bc6b458ea2984",
-      "sha256": "581d5f4878c7a8637e2d25ebdb6c318eb322e8918fa198d09ce31669de29d09f"
+      "base_sha256": "fcbcae4df44f23dc0ac556dc9652256e0b5f205ce0adc235fbe273044ef431c4",
+      "sha256": "32db9141657acc46d5016299a41a605e33059667a1fc925f757a16fd1b2c3a2f"
     },
     {
       "path": "tex/m20-pdf-tables.sty",
-      "base_sha256": "3f77ea3d33b99bd5eddd1fc791058ba85345f11fb346660ac4aaa56e0d327383",
-      "sha256": "4f43512b3982ddd4a72e2f3c100ce21e60eb3dbb9caa9b46ea3cf5ae4ff1038d"
+      "base_sha256": "5bb3b8b07960f09c22b445e1b852f0b5c8fd7c959442b239c3030013fa92b60c",
+      "sha256": "f734f6f1c68400bb7a4db2fd0573884754820285e98bc037aa7eefc0377b51dc"
     }
   ]
 }

@@ -23,6 +23,7 @@ class SidebarParagraphBreakTests(unittest.TestCase):
             r"\renewcommand\mTwentyAdvance{\advance\sidebarTestRegion1\newpage}"
             r"\makeatother\begin{document}\m20bodyend"
             # Neutralize inherited body policy: the galley needs its own policy.
+            # Returning to the live body must reapply its strong default policy.
             r"\clubpenalty=0\widowpenalty=0\displaywidowpenalty=0"
             r"\begin{m20sidebar}[id=paragraph-break]{Endpoint proof}"
             r"\typeout{SIDEBAR-POLICY:\the\clubpenalty,\the\widowpenalty,\the\displaywidowpenalty}"
@@ -41,7 +42,7 @@ class SidebarParagraphBreakTests(unittest.TestCase):
         log = path.with_suffix(".log").read_text()
         self.assertEqual(re.findall(r"SIDEBAR-POLICY:([^\n]+)", log),
                          ["10000,10000,10000"])
-        self.assertEqual(re.findall(r"OUTSIDE-POLICY:([^\n]+)", log), ["0,0,0"])
+        self.assertEqual(re.findall(r"OUTSIDE-POLICY:([^\n]+)", log), ["10000,10000,10000"])
 
     def test_sidebar_avoids_single_initial_line_in_short_region(self):
         path, chunks = self.compile_paragraph("sidebar-club", 126, 9, 84)
