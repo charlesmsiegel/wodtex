@@ -38,11 +38,16 @@
 \RenewDocumentCommand\section{s o m}{\mTwentyBodyEnd\addvspace{13.5bp}\noindent\mTwentyPosition{span-heading}{\textwidth}{\textwidth}{2}{heading}{0}{flow}{}\IfBooleanTF{#1}{\mTwentyStyledSection*{#3}}{\IfNoValueTF{#2}{\mTwentyStyledSection{#3}}{\mTwentyStyledSection[#2]{#3}}}\vspace{1.8bp}\hrule height1.25bp\vspace{13.5bp}\mTwentyBodyBegin\@afterindentfalse\@afterheading}
 \renewcommand\subsection{\@startsection{subsection}{2}{\z@}{7.2bp}{0bp}{\mTwentyHeadingNarrowFont\fontsize{18bp}{18bp}\selectfont}}
 \renewcommand\subsubsection{\@startsection{subsubsection}{3}{\z@}{7.2bp}{0bp}{\mTwentyHeadingFont\fontsize{12bp}{14bp}\selectfont}}
+\newcommand\mTwentyChapterFacingIllustration{%
+ \mTwentyBlankPagetrue\null\thispagestyle{empty}\newpage}
 \let\mTwentyOriginalChapter\chapter
 \RenewDocumentCommand\chapter{s o m}{%
  \mTwentyBodyEnd\clearpage
- \ifodd\c@page\mTwentyBlankPagetrue\null\thispagestyle{empty}\newpage\fi
- \mTwentyBlankPagetrue\null\thispagestyle{empty}\newpage
+ \mTwentyCheckMainMatterFacing
+ \ifnum\mTwentyNeedChapterFacing=1
+  \ifodd\c@page\mTwentyBlankPagetrue\null\thispagestyle{empty}\newpage\fi
+  \mTwentyChapterFacingIllustration
+ \fi
  \IfBooleanTF{#1}{\mTwentyOriginalChapter*{#3}}{\IfNoValueTF{#2}{\mTwentyOriginalChapter{#3}}{\mTwentyOriginalChapter[#2]{#3}}}%
  \mTwentyBodyBegin\@afterindentfalse\@afterheading}
 \newbox\mTwentyChapterTitleBox

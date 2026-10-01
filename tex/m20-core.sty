@@ -11,6 +11,7 @@
 \let\mTwentyAssetPath\mTwentyBuildAssetPath
 \let\mTwentyFontPath\mTwentyBuildFontPath
 \def\mTwentyRunningTitle{}
+\newif\ifmTwentyRunningTitleExplicit
 \def\mTwentyMath{legacy}
 \def\mTwentyChapterTitleSize{60bp}
 \def\mTwentyChapterTitleLeading{54bp}
@@ -29,7 +30,7 @@
  profile .code:n = \def\mTwentyProfile{#1},
  asset-path .code:n = \def\mTwentyAssetPath{#1},
  font-path .code:n = \def\mTwentyFontPath{#1},
- running-title .code:n = \def\mTwentyRunningTitle{#1},
+ running-title .code:n = \def\mTwentyRunningTitle{#1}\mTwentyRunningTitleExplicittrue,
  math .choice:,
  math / legacy .code:n = \def\mTwentyMath{legacy},
  math / unicode .code:n = \def\mTwentyMath{unicode},
