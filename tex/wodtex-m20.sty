@@ -1,0 +1,59 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{wodtex-m20}[2026/10/01 explicit M20 renderer adapter]
+\RequirePackage{tex/wodtex-registry}
+% Detect local body API replacements before the host column group restores them.
+\AddToHook{env/multicols/end}{\wodtexCheckPublicNames}
+\newcommand\wodtexMageSetup[1]{\mTwentySetup{#1}}
+\newcommand\wodtexMageBeforeWide{\ifmTwentyEpub\else\mTwentyBodyEnd\fi}
+\newcommand\wodtexMageBeforeTable{\ifmTwentyEpub\else\ifmTwentySidebarActive\else\mTwentyBodyEnd\fi\fi}
+\newcommand\wodtexMageAfter{\ifmTwentyEpub\else\mTwentyBodyBegin\fi}
+\newcommand\wodtexMageNoop{}
+\newcommand\wodtexMageSidebar[3]{%
+ \begingroup\let\mTwentyBodyBegin\relax
+ \begin{m20sidebar}[#1]{#2}#3\end{m20sidebar}\endgroup}
+\newcommand\wodtexMageSidebarWide[3]{%
+ \begingroup\let\mTwentyBodyBegin\relax
+ \begin{m20sidebarwide}[#1]{#2}#3\end{m20sidebarwide}\endgroup}
+\newcommand\wodtexMageTable[3]{%
+ \begingroup\let\mTwentyBodyBegin\relax
+ \begin{m20table}[#1]{#2}#3\end{m20table}\endgroup}
+\newcommand\wodtexMageTableLead[1]{%
+ \begingroup\let\mTwentyBodyBegin\relax
+ \begin{m20tablelead}#1\end{m20tablelead}\endgroup}
+\newcommand\wodtexMageStatblock[1]{\begin{m20statblock}#1\end{m20statblock}}
+\newcommand\wodtexMageBreak[1]{\mTwentySidebarBreak[#1]}
+\newcommand\wodtexMageArt[2]{\mTwentyArtReserve[#1]{#2}}
+\newcommand\wodtexMageTitle{%
+ \mTwentyInteriorTitle{\@title}{\wodtexSubtitleText\par\smallskip\emph{\wodtexDescriptionText}}}
+\newcommand\wodtexMageCredits{\mTwentyInteriorCredits{}}
+\wodtexRegisterRenderer{m20}{setup}{wodtexMageSetup}
+\wodtexRegisterRenderer{m20}{sidebar}{wodtexMageSidebar}
+\wodtexRegisterRenderer{m20}{sidebarwide}{wodtexMageSidebarWide}
+\wodtexRegisterRenderer{m20}{sidebarbreak}{wodtexMageBreak}
+\wodtexRegisterRenderer{m20}{booktable}{wodtexMageTable}
+\wodtexRegisterRenderer{m20}{artreserve}{wodtexMageArt}
+\wodtexRegisterRenderer{m20}{sidebar-before}{wodtexMageNoop}
+\wodtexRegisterRenderer{m20}{sidebar-after}{wodtexMageAfter}
+\wodtexRegisterRenderer{m20}{sidebarwide-before}{wodtexMageBeforeWide}
+\wodtexRegisterRenderer{m20}{sidebarwide-after}{wodtexMageAfter}
+\wodtexRegisterRenderer{m20}{booktable-before}{wodtexMageBeforeTable}
+\wodtexRegisterRenderer{m20}{booktable-after}{wodtexMageAfter}
+% Corrected print-only capabilities require their actual renderer definitions.
+\ifmTwentyEpub\else
+ \ifdefined\mTwentyInteriorTitle
+  \wodtexRegisterRenderer{m20}{maketitle}{wodtexMageTitle}
+  \wodtexRegisterRenderer{m20}{makecredits}{wodtexMageCredits}
+ \fi
+ \ifdefined\mTwentyStatEntry
+  \wodtexRegisterRenderer{m20}{statblock}{wodtexMageStatblock}
+  \wodtexRegisterRenderer{m20}{statentry}{mTwentyStatEntry}
+  \wodtexRegisterRenderer{m20}{statblock-before}{wodtexMageNoop}
+  \wodtexRegisterRenderer{m20}{statblock-after}{wodtexMageNoop}
+ \fi
+ \ifcsname m20tablelead\endcsname
+  \wodtexRegisterRenderer{m20}{tablelead}{wodtexMageTableLead}
+  \wodtexRegisterRenderer{m20}{tablelead-before}{wodtexMageNoop}
+  \wodtexRegisterRenderer{m20}{tablelead-after}{wodtexMageAfter}
+ \fi
+\fi
+\endinput

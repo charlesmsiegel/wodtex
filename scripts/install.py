@@ -51,6 +51,7 @@ def payload(layout):
     for name, data in list(files.items()):
         if name.endswith(('.cls', '.sty', '.tex')):
             data = data.replace(b'tex/m20-', b'm20-')
+            data = data.replace(b'tex/wodtex-', b'wodtex-')
             data = data.replace(b'profiles/m20.tex', b'wodtex-profile-m20.tex')
             data = data.replace(b'profiles/\\mTwentyProfile.tex', b'wodtex-profile-\\mTwentyProfile.tex')
         if name == 'm20book.cls':

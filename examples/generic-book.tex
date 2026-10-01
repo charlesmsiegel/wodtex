@@ -1,0 +1,54 @@
+\documentclass{m20book}
+\title{Test Book}
+\subtitle{Exploring the Ruins of the Awakened World}
+\bookdescription{A supplement for Mage: The Ascension 20th Anniversary Edition}
+\author{Charles Siegel}
+\writtenby{Charles Siegel}
+\developedby{Charles Siegel}
+\editedby{Charles Siegel}
+\specialthanks{Special Thanks}
+\setcounter{secnumdepth}{0}
+\setcounter{tocdepth}{2}
+\renewcommand{\contentsname}{Table of Contents}
+\hypersetup{pdfpagelayout=TwoPageRight}
+\begin{document}
+\frontmatter
+\maketitle
+\makecredits
+\tableofcontents
+\label{table-of-contents}
+\mainmatter
+\chapter{Test Chapter}
+This is a test of the installed M20 layout.
+\begin{sidebar}[id=field-note,place=flow]{Field Note}
+One-column sidebar prose with \textbf{genuine bold} and \emph{italic}.
+\end{sidebar}
+\begin{sidebarwide}[id=wide-note,columns=2,place=next-page]{A Wide Note}
+Two internal columns.
+Long content continues with a repeated heading.
+\sidebarbreak[page]
+An explicit author-requested continuation.
+\end{sidebarwide}
+\begin{booktable}[id=example-table,head-rows=1]{ll}
+Name & Description \\
+First & A wrapped cell. \\
+Second & Another value. \\
+\end{booktable}
+\begin{tablelead}
+\subsection{Table Title}
+Existing introductory prose that must travel with this table.
+\begin{booktable}[id=associated-table,head-rows=1]{ll}
+Name & Value \\
+First & One \\
+\end{booktable}
+\end{tablelead}
+\begin{statblock}
+\statentry{\textbf{Ruin Type}: Feral Realm | \textbf{Structural Integrity}: 4}
+\statentry{\textbf{Primary Hazards}: Existing descriptive text.}
+\end{statblock}
+\artreserve[position=top]{art-one}
+\artreserve[position=bottom]{art-two}
+\artreserve[kind=vertical,position=outer]{art-three}
+% art/scene.png is a public geometric test fixture, not licensed scene artwork.
+\artreserve[image={art/scene.png},alt={A concise image description},caption={Scene caption},credit={Artist credit}]{scene-one}
+\end{document}

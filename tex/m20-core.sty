@@ -1,6 +1,7 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesPackage{m20-core}[2026/09/30 shared M20 manuscript semantics]
 \RequirePackage{expl3,xparse,amsmath,graphicx,makeidx}
+\RequirePackage{tex/wodtex-metadata,tex/wodtex-registry}
 \newcounter{m20sidebar}
 \newcounter{m20sidebarnote}
 \newcounter{m20table}
@@ -63,6 +64,7 @@
  \stepcounter{m20sidebar}
  \setcounter{m20sidebarnote}{0}
  \mTwentySidebarActivetrue
+ \def\wodtexActiveStyle{m20}
  \tl_set:Nx \l_mtw_id_tl {sidebar-\arabic{m20sidebar}}
  \tl_set:Nn \l_mtw_place_tl {flow}
  \int_set:Nn \l_mtw_columns_int {1}

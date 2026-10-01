@@ -136,6 +136,8 @@
  \tl_set:Nn \l_mtw_sidebar_body_tl {#1}
  \regex_replace_all:nnN {\c{begin}\cB\{m20table\cE\}} {\c{mTwentyTableStart}} \l_mtw_sidebar_body_tl
  \regex_replace_all:nnN {\c{end}\cB\{m20table\cE\}} {\c{mTwentyTableEnd}} \l_mtw_sidebar_body_tl
+ \regex_replace_all:nnN {\c{begin}\cB\{booktable\cE\}} {\c{mTwentyTableStart}} \l_mtw_sidebar_body_tl
+ \regex_replace_all:nnN {\c{end}\cB\{booktable\cE\}} {\c{mTwentyTableEnd}} \l_mtw_sidebar_body_tl
  \seq_set_split:NnV \l_mtw_blocks_seq {\mTwentyTableStart} \l_mtw_sidebar_body_tl
  \seq_pop_left:NN \l_mtw_blocks_seq \l_mtw_piece_tl
  \exp_args:NV \mTwentyTypesetText \l_mtw_piece_tl

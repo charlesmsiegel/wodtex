@@ -115,7 +115,8 @@ function M.cut_manual(source,pending)
         local mode=n.value==1 and 'page' or 'column'
         n.prev=nil; n.next=nil; node.flush_node(n)
         box.head=nil
-        tex.box[source]=node.vpack(before)
+        -- A break at the start of the post-table chunk has no preceding nodes.
+        tex.box[source]=before and node.vpack(before) or nil
         tex.box[pending]=after and node.vpack(after) or nil
         tex.sprint('\\def\\mTwentyManualMode{'..mode..'}')
         return

@@ -30,4 +30,7 @@
   \RequirePackage{tex/m20-pdf-tables}
 \fi
 \RequirePackage{tex/m20-references}
+\RequirePackage{tex/wodtex-m20}
+\wodtexSetClassStyle{m20}
+\RequirePackage{tex/wodtex-api}
 \endinput

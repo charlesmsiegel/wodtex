@@ -1,0 +1,38 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{wodtex-api}[2026/10/01 class-default generic book interface]
+\RequirePackage{tex/wodtex-metadata,tex/wodtex-registry}
+\ExplSyntaxOn
+\clist_map_inline:nn {subtitle,bookdescription,writtenby,developedby,editedby,specialthanks,copyrightyear,booksetup,makecredits,sidebarbreak,statentry,artreserve,sidebar,endsidebar,sidebarwide,endsidebarwide,booktable,endbooktable,tablelead,endtablelead,statblock,endstatblock}
+ {\wodtexCheckPublicName{#1}}
+\ExplSyntaxOff
+\NewDocumentCommand\subtitle{m}{\wodtexSubtitle{#1}}
+\NewDocumentCommand\bookdescription{m}{\wodtexDescription{#1}}
+\NewDocumentCommand\writtenby{m}{\wodtexWrittenBy{#1}}
+\NewDocumentCommand\developedby{m}{\wodtexDevelopedBy{#1}}
+\NewDocumentCommand\editedby{m}{\wodtexEditedBy{#1}}
+\NewDocumentCommand\specialthanks{m}{\wodtexSpecialThanks{#1}}
+\NewDocumentCommand\copyrightyear{m}{\wodtexCopyrightYear{#1}}
+\NewDocumentCommand\booksetup{m}{\wodtexDispatch{setup}{#1}}
+% Preserve book/tex4ht's native title route in legacy base and EPUB modes.
+\ifcsname wodtex/render/\wodtexClassStyle/maketitle\endcsname
+ \RenewDocumentCommand\maketitle{}{\wodtexDispatch{maketitle}}
+ \wodtexRememberPublicName{maketitle}
+\fi
+\NewDocumentCommand\makecredits{}{\wodtexDispatch{makecredits}}
+\NewDocumentCommand\sidebarbreak{O{page}}{\wodtexDispatch{sidebarbreak}{#1}}
+\NewDocumentCommand\statentry{m}{\wodtexDispatch{statentry}{#1}}
+\NewDocumentCommand\artreserve{O{}m}{\wodtexDispatch{artreserve}{#1}{#2}}
+\NewDocumentEnvironment{sidebar}{O{}m+b}{\wodtexSelectElement\wodtexDispatch{sidebar}{#1}{#2}{#3}}{}
+\NewDocumentEnvironment{sidebarwide}{O{}m+b}{\wodtexSelectElement\wodtexDispatch{sidebarwide}{#1}{#2}{#3}}{}
+\NewDocumentEnvironment{booktable}{O{}m+b}{\wodtexSelectElement\wodtexDispatch{booktable}{#1}{#2}{#3}}{}
+\NewDocumentEnvironment{tablelead}{+b}{\wodtexSelectElement\wodtexDispatch{tablelead}{#1}}{}
+\NewDocumentEnvironment{statblock}{+b}{\wodtexSelectElement\wodtexDispatch{statblock}{#1}}{}
+\ExplSyntaxOn
+\clist_map_inline:nn {sidebar,sidebarwide,booktable,tablelead,statblock} {
+ \AddToHook{env/#1/before}{\wodtexDispatch{#1-before}}
+ \AddToHook{env/#1/after}{\wodtexDispatch{#1-after}}
+}
+\clist_map_inline:nn {subtitle,bookdescription,writtenby,developedby,editedby,specialthanks,copyrightyear,booksetup,makecredits,sidebarbreak,statentry,artreserve,sidebar,endsidebar,sidebarwide,endsidebarwide,booktable,endbooktable,tablelead,endtablelead,statblock,endstatblock}
+ {\wodtexRememberPublicName{#1}}
+\ExplSyntaxOff
+\endinput

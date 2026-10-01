@@ -1,23 +1,66 @@
 # Crossover styles and template ingestion
 
-This is an extension design for review and for agents ingesting additional
-licensed templates. It records the owner's direction; the dispatch layer and
-WoD/MSC renderers described here are **planned**, not implemented. Do not turn
-this guide into an unrequested framework rewrite.
+The generic author interface and M20 adapter described below are implemented.
+WoD/MSC renderers and adaptation to foreign page policies remain planned.
+Do not turn this guide into an unrequested framework rewrite.
 
 ## Current implementation
 
-`m20book` selects the corrected installed M20 PDF renderer. The repository
-builder retains its separate base/explicit-correction workflow. Native `title`
-and `author` collect book metadata; the native title supplies running-title and
-PDF-title defaults unless explicitly overridden. `profile=m20` is already the
-class default and is unnecessary in an ordinary M20 preamble.
+`m20book` owns the M20 page policy and selects the registered `m20` default.
+The repository builder retains its separate base/explicit-correction workflow.
+Native `title` and `author` collect metadata, and the native title supplies running-title and PDF-title defaults unless explicitly overridden.
+The installed corrected layout supports `subtitle`, `bookdescription`, `writtenby`, `developedby`, `editedby`, `specialthanks` and `copyrightyear`.
+Metadata-only M20 setters write the same shared values without attaching a visual-style hint.
 
-Existing `m20setup`, metadata setters, environments, tables, art reservations and
-interior-title/credits helpers remain supported. Only M20 has an implemented
-class/renderer. There is no generic visual dispatch API, no `wodbook` class and
-no implemented MSC design. Setting a profile name is not proof that its fonts,
-artwork, geometry or rendering have been implemented.
+`maketitle` consumes title, subtitle and description through the M20 interior-title renderer.
+`makecredits` consumes credited writers, developers, editors and acknowledgments through the M20 credits renderer.
+Generic `booksetup`, `sidebar`, `sidebarwide`, `sidebarbreak`, `booktable`, `tablelead`, `statblock`, `statentry` and `artreserve` are implemented.
+Existing M20-prefixed commands remain supported and select M20 rendering independently of the class default.
+Generic nested tables and continuation/entry commands inherit their enclosing element's selected style.
+An ordinary top-level generic element selects the class default.
+
+Only M20 has a production class/renderer, and only the corrected native PDF installation has the complete generic capability set.
+There is no `wodbook` class or implemented MSC design.
+Setting a legacy profile name is not proof that its fonts, artwork, geometry or rendering have been implemented.
+Generic EPUB acceptance has not been performed, and corrected print-only capabilities produce a capability error in EPUB/base mode.
+The legacy native `maketitle` route remains available in base and EPUB modes.
+Existing builder/EPUB workflows remain separate.
+
+## Extension interface and ownership
+
+`wodtex-metadata.sty` stores shared values independently of the adapters.
+`wodtex-registry.sty` provides `\wodtexRegisterRenderer{style}{capability}{control-sequence-name}` and `\wodtexSetClassStyle{style}`.
+Both registration and class selection are preamble-only.
+Registration snapshots the callback definition and rejects duplicate style/capability pairs.
+Names use lowercase letters, digits and hyphens, beginning with a letter.
+Unknown styles and unimplemented capabilities fail with `WODTEX_E_STYLE_UNKNOWN` and `WODTEX_E_CAPABILITY`.
+Generic name collisions fail before definitions are installed or when later replacements are detected at document start/shipout.
+The intentional replacement of the native book class's `maketitle` is part of this interface.
+
+The M20 adapter registers the following callback signatures.
+Environment callbacks consume captured bodies without re-reading the manuscript.
+
+| Capability | Arguments |
+| --- | --- |
+| setup | setup key list |
+| maketitle, makecredits | none; consume neutral/native metadata |
+| sidebar, sidebarwide | option key list, title, body |
+| booktable | option key list, column specification, body |
+| tablelead, statblock | body |
+| sidebarbreak | page or column |
+| statentry | entry text |
+| artreserve | option key list, semantic ID |
+| environment-before, environment-after | none; replace environment with sidebar, sidebarwide, booktable, tablelead or statblock |
+
+The environment-before callback executes outside the environment group and suspends host body regions when necessary.
+The environment-after callback resumes the host region after the environment group closes.
+Keep those callbacks consistent with the class's immutable default and the enclosing style context.
+Do not open body columns inside a nested native float or inside the generic environment's closing group.
+Adapters scope local typography and metrics and own continuation records and deferred boxes.
+The dispatcher resolves the selected ID immediately; it must never be queued to choose a mutable style at shipout.
+M20 frames and floats finish typesetting their captured content before deferred output, and continuations remain in the captured enclosing context.
+A test-only alternate adapter proves snapshot registration, mixed dispatch, continuation styling, deferred float styling and body color restoration.
+It is not a WoD or MSC renderer.
 
 ## Required behavior
 
@@ -42,26 +85,14 @@ writers, developers, editors, acknowledgments and copyright year are values,
 not page geometry or font families. A credits renderer consumes those values.
 Changing the renderer must not duplicate or discard their semantic data.
 
-Candidate generic spellings are `booksetup`, `writtenby`, `developedby`,
-`editedby`, `specialthanks` and a book copyright-year setter. These names are
-**provisional**. Short setters can collide with another class or package;
-`bookwrittenby`, `bookdevelopedby`, etc. are possible safer alternatives. Audit
-loaded packages and fail clearly on a collision rather than using `def` to
-silently replace another public command. Standard `title`/`author` remain the
-primary metadata API. Existing `m20...` setters remain compatible.
+The approved generic spellings above are implemented with explicit collision checks.
+Standard `title` and `author` remain the primary metadata API.
+Existing `m20...` setters remain compatible.
 
-The current prefixed metadata setters only collect values; they do not render
-an independent element. Before adding crossover classes, explicitly settle
-whether a prefixed setter also records a style hint for that specific credit
-entry. Do not infer a whole-book style change from it. An explicit prefixed
-credits/title/sidebar **renderer** must select its named style locally. This
-metadata-only naming decision is open; the required explicit visual overrides
-above are not open.
-
-A future preamble should need the class and shared metadata, not repeated title
-strings in setup and PDF metadata. Existing explicit running/PDF-title overrides
-must continue to take precedence. Preserve the explicit interior-title API;
-a user can define one title macro and reuse it for native title and the helper.
+The prefixed metadata setters collect shared values without changing the renderer.
+Explicit prefixed credits/title/sidebar renderers select M20 locally.
+A future adapter consumes the same stored metadata through its own rendering capability.
+Existing explicit running/PDF-title overrides continue to take precedence.
 
 ## Page policies versus element styles
 
@@ -155,17 +186,14 @@ navigation tests exist; a PDF-only checkpoint must say so explicitly.
 - Each claimed PDF/EPUB capability has actual adapter acceptance tests. Report
   platform checks that were not run; a Linux proof is not a Windows proof.
 
-## Minimal implementation sequence
+## Implemented checkpoint and remaining work
 
-1. Approve generic spellings and settle metadata-only prefix semantics. Add
-   collision checks and compatibility tests before changing public commands.
-2. Extract a style-neutral metadata/semantic layer and a registry with only M20.
-   Keep `m20book` output identical; keep M20-prefixed renderers explicitly M20.
-3. Introduce generic rendering entry points that dispatch to the class default,
-   plus immutable per-element explicit selection and scoped resources. Prove
-   same-style behavior and state restoration before adding a foreign design.
-4. Ingest the next authorized WoD or MSC template into the registry, extend its
-   class/install hooks and config, and implement only the reference-backed
-   capabilities. Run mixed-style tests before claiming crossover support.
-5. Extend remaining components and EPUB adapters through separately reviewed
-   checkpoints. Do not bundle new designs into unrelated pagination fixes.
+The generic spellings, neutral metadata, registry, M20 adapter and installed native PDF regressions are implemented.
+Fresh installation and repeat updates include all shared packages and preserve local configuration.
+The exact approved source and its explicitly labeled public geometric fixture are `examples/generic-book.tex` and `examples/art/scene.png`.
+The new/old API comparison checks identical rendered page pixels, genuine font roles, text conservation and PDF navigation.
+
+The next checkpoint must ingest an authorized WoD or MSC template, add a real class/install hook and profile-scoped configuration, and implement only reference-backed capabilities.
+Foreign page policies need approved adapters and capability restrictions before explicit M20 elements can be claimed to work in those real hosts.
+Further style namespaces for Lua callbacks, caches and resources must be added when the second production renderer exists.
+Generic EPUB mappings and acceptance remain a separate checkpoint.

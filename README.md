@@ -2,10 +2,10 @@
 
 Native LaTeX authoring for M20 books, with LuaLaTeX PDF and reflowable EPUB 3
 from the same editable manuscript. The implementation follows the approved
-specification in [docs/design](docs/design). Planned generic/class-selected
-commands and explicit crossover style overrides are documented in the
-[Crossover Style Architecture guide](docs/design/Crossover-Style-Architecture.md);
-WoD/MSC renderers and mixed-style dispatch are not implemented yet.
+specification in [docs/design](docs/design).
+The corrected native PDF installation implements generic class-selected commands and explicit M20 style overrides.
+See the [Crossover Style Architecture guide](docs/design/Crossover-Style-Architecture.md) for implemented behavior and extension hooks.
+WoD/MSC renderers and generic EPUB acceptance remain future work.
 
 ## Install and update (Windows / Git Bash)
 
@@ -53,10 +53,18 @@ separate book folder:
 ```tex
 \documentclass{m20book}
 \title{My Book}
-\author{Author}
+\subtitle{My Subtitle}
+\bookdescription{A supplement description}
+\author{My Name}
+\writtenby{My Name}
 \begin{document}
-\chapter{Beginning}\label{ch:beginning}
-Your text here. See page \pageref{ch:beginning}.
+\frontmatter
+\maketitle
+\makecredits
+\tableofcontents
+\mainmatter
+\chapter{First Chapter}
+Book prose.
 \end{document}
 ```
 
@@ -81,6 +89,22 @@ or install requested public packages through MiKTeX Console. The two
 `kpsewhich` commands should point to the user tree. An obsolete local
 `m20book.cls` or `tex/` directory beside the manuscript can shadow installed
 resources; back up edits and remove that obsolete copy.
+
+### Generic author interface
+
+The corrected installed class provides `booksetup`, `subtitle`, `bookdescription`, `writtenby`, `developedby`, `editedby`, `specialthanks` and `copyrightyear`.
+Native `title` and `author` remain the primary book metadata.
+`maketitle` and `makecredits` render the M20 interior title and credits without repeating metadata strings.
+Generic `sidebar`, `sidebarwide`, `sidebarbreak`, `booktable`, `tablelead`, `statblock`, `statentry` and `artreserve` use the class default.
+Their options match the corresponding existing M20 command or environment.
+Nested generic tables and continuation/entry commands retain the enclosing element's style.
+Explicit M20-prefixed commands retain M20 meaning, and metadata setters share the same stored values.
+
+See [the runnable generic example](examples/generic-book.tex) and [the extension contract](docs/design/Crossover-Style-Architecture.md).
+Copy `generic-book.tex` and its `art/scene.png` into one document folder and run LuaLaTeX twice there.
+`art/scene.png` is a public geometric test fixture supplied alongside the example; replace it with your own scene image at that path.
+A missing meaningful image remains an error rather than being silently dropped.
+The full generic interface is supported for the corrected native PDF installation; WoD/MSC rendering and generic EPUB acceptance remain future work.
 
 ### Configuration and advanced installation
 

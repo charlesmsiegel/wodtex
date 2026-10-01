@@ -1,0 +1,70 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{wodtex-registry}[2026/10/01 immutable style capability registry]
+\RequirePackage{expl3,xparse}
+\def\wodtexClassStyle{}
+\def\wodtexActiveStyle{}
+\ExplSyntaxOn
+\prop_new:N \g_wodtex_styles_prop
+\cs_new_protected:Npn \wodtex_validate_name:n #1 {
+ \regex_match:nnF {\A[a-z][-a-z0-9]*\Z}{#1}
+  {\PackageError{wodtex}{WODTEX_E_REGISTRY_NAME:~#1}{Use~a~lowercase~style~or~capability~ID.}}
+}
+\NewDocumentCommand\wodtexRegisterRenderer{mmm}{
+ \wodtex_validate_name:n {#1}\wodtex_validate_name:n {#2}
+ \cs_if_exist:cTF {wodtex/render/#1/#2}
+  {\PackageError{wodtex}{WODTEX_E_DUPLICATE_RENDERER:~#1/#2}{Registered~renderers~are~immutable.}}
+  {\cs_if_exist:cTF {#3}
+    {\group_begin:
+     \tex_globaldefs:D = 1\scan_stop:
+     \exp_args:Ncc \NewCommandCopy {wodtex/render/#1/#2}{#3}
+     \group_end:
+     \prop_gput:Nnn \g_wodtex_styles_prop {#1}{registered}}
+    {\PackageError{wodtex}{WODTEX_E_RENDERER_MISSING:~#3}{Define~the~renderer~before~registration.}}}
+}
+\NewDocumentCommand\wodtexSetClassStyle{m}{
+ \prop_if_in:NnTF \g_wodtex_styles_prop {#1}
+  {\gdef\wodtexClassStyle{#1}}
+  {\PackageError{wodtex}{WODTEX_E_STYLE_UNKNOWN:~#1}{Load~and~register~an~approved~style~adapter~first.}}
+}
+% Expand the selected ID now; deferred backends must capture their own boxes
+% or immutable resources rather than enqueueing this dispatcher for shipout.
+\cs_new_protected:Npn \wodtexDispatchStyle #1#2 {
+ \cs_if_exist:cTF {wodtex/render/#1/#2}
+  {\use:c {wodtex/render/#1/#2}}
+  {\PackageError{wodtex}{WODTEX_E_CAPABILITY:~#1/#2}{This~style~does~not~implement~the~requested~capability.}}
+}
+\cs_new_protected:Npn \wodtexDispatch #1 {
+ \tl_if_empty:oTF {\wodtexActiveStyle}
+  {\exp_args:No \wodtexDispatchStyle {\wodtexClassStyle}{#1}}
+  {\exp_args:No \wodtexDispatchStyle {\wodtexActiveStyle}{#1}}
+}
+\cs_new_protected:Npn \wodtexSelectElement {
+ \tl_if_empty:oT {\wodtexActiveStyle}{\edef\wodtexActiveStyle{\wodtexClassStyle}}
+}
+\prop_new:N \g_wodtex_public_names_prop
+\cs_new_protected:Npn \wodtexCheckPublicName #1 {
+ \cs_if_exist:cT {#1}
+  {\PackageError{wodtex}{WODTEX_E_NAME_COLLISION:~#1}{Load~wodtex~without~a~package~defining~this~generic~command.}}
+}
+\cs_new_protected:Npn \wodtexRememberPublicName #1 {
+ \clist_map_inline:nn {#1~code,environment~#1~code,environment~#1~end~aux} {
+  \cs_if_exist:cT {##1} {
+   \cs_gset_eq:cc {wodtex/public/##1}{##1}
+   \prop_gput:Nnn \g_wodtex_public_names_prop {##1}{checked}
+  }
+ }
+ \cs_gset_eq:cc {wodtex/public/#1}{#1}
+ \prop_gput:Nnn \g_wodtex_public_names_prop {#1}{checked}
+}
+\cs_new_protected:Npn \wodtexCheckPublicNames {
+ \prop_map_inline:Nn \g_wodtex_public_names_prop {
+  \cs_if_eq:ccF {##1}{wodtex/public/##1}
+   {\PackageError{wodtex}{WODTEX_E_NAME_COLLISION:~##1}{A~later~package~replaced~the~generic~book~interface.}}
+ }
+}
+\AddToHook{begindocument/before}{\wodtexCheckPublicNames}
+\AddToHook{shipout/before}{\wodtexCheckPublicNames}
+\ExplSyntaxOff
+\@onlypreamble\wodtexRegisterRenderer
+\@onlypreamble\wodtexSetClassStyle
+\endinput

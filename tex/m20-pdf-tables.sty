@@ -63,6 +63,7 @@
 }
 \cs_new_protected:Npn \mTwentyTablePDF #1#2#3 {
  \group_begin:
+ \def\wodtexActiveStyle{m20}
  \stepcounter{m20table}
  \tl_set:Nn \l_mtw_table_width_tl {container}
  \tl_set:Nn \l_mtw_table_align_tl {center}

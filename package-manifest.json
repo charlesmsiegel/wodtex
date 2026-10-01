@@ -29,7 +29,9 @@
     "contrib/original-m20-layout/overrides/tex/*.sty",
     "contrib/original-m20-layout/overrides/profiles/*.tex",
     "contrib/original-m20-layout/overrides/scripts/*.py",
-    "contrib/original-m20-layout/overrides/tests/*.py"
+    "contrib/original-m20-layout/overrides/tests/*.py",
+    "examples/art/*",
+    "docs/superpowers/plans/*.md"
   ],
   "excluded_inputs": [
     "fonts",

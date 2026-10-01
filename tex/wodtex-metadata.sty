@@ -1,0 +1,34 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{wodtex-metadata}[2026/10/01 style-neutral book metadata]
+\RequirePackage{expl3,xparse}
+\def\wodtexSubtitleText{}
+\def\wodtexDescriptionText{}
+\def\wodtexWrittenByText{}
+\def\wodtexDevelopedByText{}
+\def\wodtexEditedByText{}
+\def\wodtexSpecialThanksText{}
+\def\wodtexCopyrightYearText{\number\year}
+\NewDocumentCommand\wodtexSubtitle{m}{\gdef\wodtexSubtitleText{#1}}
+\NewDocumentCommand\wodtexDescription{m}{\gdef\wodtexDescriptionText{#1}}
+\NewDocumentCommand\wodtexWrittenBy{m}{\gdef\wodtexWrittenByText{#1}}
+\NewDocumentCommand\wodtexDevelopedBy{m}{\gdef\wodtexDevelopedByText{#1}}
+\NewDocumentCommand\wodtexEditedBy{m}{\gdef\wodtexEditedByText{#1}}
+\NewDocumentCommand\wodtexSpecialThanks{m}{\gdef\wodtexSpecialThanksText{#1}}
+\NewDocumentCommand\wodtexCopyrightYear{m}{\gdef\wodtexCopyrightYearText{#1}}
+% Legacy metadata setters share values without selecting a renderer.
+\def\mTwentyWrittenByText{\wodtexWrittenByText}
+\def\mTwentyDevelopedByText{\wodtexDevelopedByText}
+\def\mTwentyEditedByText{\wodtexEditedByText}
+\def\mTwentySpecialThanksText{\wodtexSpecialThanksText}
+\def\mTwentyCopyrightYearText{\wodtexCopyrightYearText}
+\let\mTwentyWrittenBy\wodtexWrittenBy
+\let\mTwentyDevelopedBy\wodtexDevelopedBy
+\let\mTwentyEditedBy\wodtexEditedBy
+\let\mTwentySpecialThanks\wodtexSpecialThanks
+\let\mTwentyCopyrightYear\wodtexCopyrightYear
+\let\mTwentyPublicwrittenby\mTwentyWrittenBy
+\let\mTwentyPublicdevelopedby\mTwentyDevelopedBy
+\let\mTwentyPubliceditedby\mTwentyEditedBy
+\let\mTwentyPublicspecialthanks\mTwentySpecialThanks
+\let\mTwentyPubliccopyrightyear\mTwentyCopyrightYear
+\endinput
