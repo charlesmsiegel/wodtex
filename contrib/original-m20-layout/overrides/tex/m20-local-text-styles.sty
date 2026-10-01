@@ -65,7 +65,7 @@
 % template's Goudy Stat Dots rating paragraph, so it has its own semantic
 % environment. Wrappers contain the existing manuscript text unchanged.
 \NewDocumentEnvironment{m20statblock}{}{%
- \par\begingroup\mTwentyListShadeAttribute=-1
+ \par\begingroup\def\wodtexActiveStyle{m20}\mTwentyListShadeAttribute=-1
  \mTwentySidebarFont\fontsize{10bp}{10bp}\selectfont
  \color{m20purple}
  \begin{list}{}{\leftmargin=13.5bp\rightmargin=0bp

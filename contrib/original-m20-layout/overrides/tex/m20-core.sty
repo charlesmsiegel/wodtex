@@ -1,6 +1,7 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesPackage{m20-core}[2026/09/30 shared M20 manuscript semantics]
 \RequirePackage{expl3,xparse,amsmath,graphicx,makeidx}
+\RequirePackage{tex/wodtex-metadata,tex/wodtex-registry}
 \newcounter{m20sidebar}
 \newcounter{m20sidebarnote}
 \newcounter{m20table}
@@ -13,22 +14,6 @@
 \def\mTwentyRunningTitle{}
 \newif\ifmTwentyRunningTitleExplicit
 
-% Credit metadata belongs in the document header; no person is inferred.
-\def\mTwentyWrittenByText{}
-\def\mTwentyDevelopedByText{}
-\def\mTwentyEditedByText{}
-\def\mTwentySpecialThanksText{}
-\def\mTwentyCopyrightYearText{\number\year}
-\NewDocumentCommand\mTwentyCopyrightYear{m}{\gdef\mTwentyCopyrightYearText{#1}}
-\let\mTwentyPubliccopyrightyear\mTwentyCopyrightYear
-\NewDocumentCommand\mTwentyWrittenBy{m}{\gdef\mTwentyWrittenByText{#1}}
-\NewDocumentCommand\mTwentyDevelopedBy{m}{\gdef\mTwentyDevelopedByText{#1}}
-\NewDocumentCommand\mTwentyEditedBy{m}{\gdef\mTwentyEditedByText{#1}}
-\NewDocumentCommand\mTwentySpecialThanks{m}{\gdef\mTwentySpecialThanksText{#1}}
-\let\mTwentyPublicwrittenby\mTwentyWrittenBy
-\let\mTwentyPublicdevelopedby\mTwentyDevelopedBy
-\let\mTwentyPubliceditedby\mTwentyEditedBy
-\let\mTwentyPublicspecialthanks\mTwentySpecialThanks
 \def\mTwentyMath{legacy}
 \def\mTwentyChapterTitleSize{60bp}
 \def\mTwentyChapterTitleLeading{54bp}
@@ -82,6 +67,7 @@
  \stepcounter{m20sidebar}
  \setcounter{m20sidebarnote}{0}
  \mTwentySidebarActivetrue
+ \def\wodtexActiveStyle{m20}
  \tl_set:Nx \l_mtw_id_tl {sidebar-\arabic{m20sidebar}}
  \tl_set:Nn \l_mtw_place_tl {flow}
  \int_set:Nn \l_mtw_columns_int {1}

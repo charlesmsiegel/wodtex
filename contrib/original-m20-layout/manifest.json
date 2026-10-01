@@ -1,6 +1,6 @@
 {
   "schema": "wodtex-opt-in-source-patch-v1",
-  "base_commit": "e437dcfe421986e8ffae7a4a2cd2ea6fa2061011",
+  "base_commit": "0449ab511e8f311ed32e0ab0186f1e0924e9bcb9",
   "local_correction_base": "4c2f12d017ef5a0d93a7a6f524ef8085efdac644",
   "files": [
     {
@@ -105,8 +105,8 @@
     },
     {
       "path": "tex/m20-core.sty",
-      "base_sha256": "55427f5530352ee3a7c685cedba92377d909cc6dab3cad12956792eb12933398",
-      "sha256": "4399eba2f7ce6305440a44a7dec94e661068abc35ed5c67586423372285cb39d"
+      "base_sha256": "1184eee1e80c752deb792e0318c9fa30984f522e18a7311256c095b452e7273a",
+      "sha256": "0061dfd5d7467a874bcce48f00e9468c2e08c98c42d90d680610c2040a272c21"
     },
     {
       "path": "tex/m20-fonts.sty",
@@ -116,7 +116,7 @@
     {
       "path": "tex/m20-local-text-styles.sty",
       "base_sha256": null,
-      "sha256": "e9889f4df9549396af65219f4c9f3bdba741c947e7c0ff688c616759edfe9a9d"
+      "sha256": "d6d4cea80c384a897e356a6d47dc8355b14db95f1c3239cfb2c928781a485347"
     },
     {
       "path": "tex/m20-pdf-layout.sty",
@@ -125,18 +125,18 @@
     },
     {
       "path": "tex/m20-pdf-sidebars.sty",
-      "base_sha256": "fcbcae4df44f23dc0ac556dc9652256e0b5f205ce0adc235fbe273044ef431c4",
-      "sha256": "171c184deb9bfa8f00be5006684940eda30e726e74c2591ca3355bba54e1c438"
+      "base_sha256": "6d4ad47035c3d629de0be8c60f1d0abd79b42d04eabb0679a3e1f577ccadddd4",
+      "sha256": "fc1a3a9c0a74b278ea5b6cae909979252320a0d5da1f63a00341b920b937c006"
     },
     {
       "path": "tex/m20-pdf-tables.sty",
-      "base_sha256": "5bb3b8b07960f09c22b445e1b852f0b5c8fd7c959442b239c3030013fa92b60c",
-      "sha256": "0f283f929f2dc1824114520880ab3379c6a8800278948c0c5d7742336f20ea8e"
+      "base_sha256": "8c4e94cd47416302657fc4b59d41d231eb4f164917021cfd224d3ca30d2c1d70",
+      "sha256": "c0aceac3f00d973dac59bb661a08eb9bd1f229814510cf4753dca0a7c8bf33d8"
     },
     {
       "path": "tex/m20-references.sty",
-      "base_sha256": "c59c4f265b5ff16d811a835347793fb25878bf2bb218276a30df67ed19508a2a",
-      "sha256": "c69884b79e87c599f237cca3338b839ae8b6b62caa09f63decf5f78e703dd82c"
+      "base_sha256": "3dc0920a694ca412c82333e0a64ca33a31add6c55024692fe76f929de543c904",
+      "sha256": "430cb29e53aebc9a729512db9cf990ac0856aea204464ca2c575e50f8a653cfa"
     }
   ]
 }

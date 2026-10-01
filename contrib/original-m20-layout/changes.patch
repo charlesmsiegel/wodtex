@@ -954,27 +954,11 @@
   \tl_set:Nn \l_mtw_art_place_tl {flow}
 --- a/tex/m20-core.sty
 +++ b/tex/m20-core.sty
-@@ -12,9 +12,27 @@
+@@ -13,9 +13,11 @@
  \let\mTwentyFontPath\mTwentyBuildFontPath
  \def\mTwentyRunningTitle{}
  \newif\ifmTwentyRunningTitleExplicit
 +
-+% Credit metadata belongs in the document header; no person is inferred.
-+\def\mTwentyWrittenByText{}
-+\def\mTwentyDevelopedByText{}
-+\def\mTwentyEditedByText{}
-+\def\mTwentySpecialThanksText{}
-+\def\mTwentyCopyrightYearText{\number\year}
-+\NewDocumentCommand\mTwentyCopyrightYear{m}{\gdef\mTwentyCopyrightYearText{#1}}
-+\let\mTwentyPubliccopyrightyear\mTwentyCopyrightYear
-+\NewDocumentCommand\mTwentyWrittenBy{m}{\gdef\mTwentyWrittenByText{#1}}
-+\NewDocumentCommand\mTwentyDevelopedBy{m}{\gdef\mTwentyDevelopedByText{#1}}
-+\NewDocumentCommand\mTwentyEditedBy{m}{\gdef\mTwentyEditedByText{#1}}
-+\NewDocumentCommand\mTwentySpecialThanks{m}{\gdef\mTwentySpecialThanksText{#1}}
-+\let\mTwentyPublicwrittenby\mTwentyWrittenBy
-+\let\mTwentyPublicdevelopedby\mTwentyDevelopedBy
-+\let\mTwentyPubliceditedby\mTwentyEditedBy
-+\let\mTwentyPublicspecialthanks\mTwentySpecialThanks
  \def\mTwentyMath{legacy}
  \def\mTwentyChapterTitleSize{60bp}
  \def\mTwentyChapterTitleLeading{54bp}
@@ -982,7 +966,7 @@
  \providecommand\mTwentyBodyBegin{}
  \providecommand\mTwentyBodyEnd{}
  \providecommand\mTwentyNewPage{\clearpage}
-@@ -36,6 +54,7 @@
+@@ -37,6 +39,7 @@
   math / unicode .code:n = \def\mTwentyMath{unicode},
   chapter-title-size .code:n = \gdef\mTwentyChapterTitleSize{#1},
   chapter-title-leading .code:n = \gdef\mTwentyChapterTitleLeading{#1},
@@ -1120,7 +1104,7 @@
 +% template's Goudy Stat Dots rating paragraph, so it has its own semantic
 +% environment. Wrappers contain the existing manuscript text unchanged.
 +\NewDocumentEnvironment{m20statblock}{}{%
-+ \par\begingroup\mTwentyListShadeAttribute=-1
++ \par\begingroup\def\wodtexActiveStyle{m20}\mTwentyListShadeAttribute=-1
 + \mTwentySidebarFont\fontsize{10bp}{10bp}\selectfont
 + \color{m20purple}
 + \begin{list}{}{\leftmargin=13.5bp\rightmargin=0bp
@@ -1718,7 +1702,7 @@
    \ifnum\mTwentySidebarColumns=2
     \@tempdima=\ht\mTwentyGalley\advance\@tempdima\dp\mTwentyGalley
     \@tempdimb=2\mTwentySplitHeight
-@@ -173,13 +297,14 @@
+@@ -175,13 +299,14 @@
   \if\relax\detokenize\expandafter{\the\mTwentyNotes}\relax\else
    \mTwentyTypesetText{\the\mTwentyNotes}
   \fi
@@ -1734,7 +1718,7 @@
     \mTwentyComposeSidebar:n {#1}
    }
    \dim_compare:nNnT {\ht\mTwentyAtomicSidebar+\dp\mTwentyAtomicSidebar} > {\textheight-4bp} {
-@@ -197,12 +322,17 @@
+@@ -199,12 +324,17 @@
  \ExplSyntaxOff
  \newcommand\mTwentySidebarPDF[3]{%
   \global\mTwentyNotes={}%
@@ -1813,7 +1797,7 @@
 +% table are boxed once and move together. Labels, destinations and anchors
 +% remain in that box, rather than in an unrelated preceding prose column.
 +\NewDocumentEnvironment{m20tablelead}{+b}{%
-+ \begingroup
++ \begingroup\def\wodtexActiveStyle{m20}
 + \ifmTwentySidebarActive\PackageError{m20}{M20_E_TABLE_LEAD_CONTEXT}{A table lead float must be outside a sidebar.}\fi
 + \setbox\mTwentyTableLeadBox=\vbox{%
 +  \mTwentyTableLeadActivetrue
@@ -1846,7 +1830,7 @@
  \seq_new:N \l_mtw_rows_seq
  \seq_new:N \l_mtw_columns_seq
  \tl_new:N \l_mtw_column_spec_tl
-@@ -74,6 +145,8 @@
+@@ -75,6 +146,8 @@
   \int_compare:nNnT {\l_mtw_table_head_int} < {0}{\PackageError{m20}{M20_E_TABLE_HEADERS}{head-rows~cannot~be~negative}}
   \fp_compare:nNnT {\l_mtw_table_scale_fp} > {1}{\PackageError{m20}{M20_E_TABLE_SCALE}{Scale~must~be~in~0..1}}
   \fp_compare:nNnF {\l_mtw_table_scale_fp} > {0}{\PackageError{m20}{M20_E_TABLE_SCALE}{Scale~must~be~in~0..1}}
@@ -1855,7 +1839,7 @@
   \str_case:VnF \l_mtw_table_width_tl {
    {container}{\ifmTwentySidebarActive\mTwentyTableWidth=\mTwentyUsableWidth\else\mTwentyTableWidth=\linewidth\fi}
    {column}{\ifmTwentySidebarActive\mTwentyTableWidth=\mTwentyOriginalColumnWidth\else\mTwentyTableWidth=\mTwentyColumnWidth\fi}
-@@ -102,6 +175,11 @@
+@@ -103,6 +176,11 @@
   \str_case:Vn \l_mtw_table_align_tl {{center}{\mTwentyTableOffset=\dimexpr\linewidth-\mTwentyTableWidth\relax\divide\mTwentyTableOffset2}{right}{\mTwentyTableOffset=\dimexpr\linewidth-\mTwentyTableWidth\relax}}
  
   \tl_set:Nn \l_mtw_column_spec_tl {#2}
@@ -1867,7 +1851,7 @@
   \regex_match:nnT {\A[lcr|\s]+\Z}{#2} {
    \tl_clear:N \l_mtw_column_spec_tl
    \tl_map_inline:nn {#2}{\str_case:nn {##1}{
-@@ -111,6 +189,21 @@
+@@ -112,6 +190,21 @@
     {|}{\tl_put_right:Nn \l_mtw_column_spec_tl {|}}
    }}
   }
@@ -1889,7 +1873,7 @@
   \setbox\mTwentyNativeTable=\hbox{\exp_args:NnV \begin{tabular}\l_mtw_column_spec_tl #3\end{tabular}}
   \ifdim\wd\mTwentyNativeTable>\dimexpr\mTwentyTableWidth+.5bp\relax
    \PackageError{m20}{M20_E_TABLE_TOO_WIDE}{Explicit~native~columns~exceed~the~chosen~width.~Reduce~their~dimensions~or~use~l/c/r~columns.}\fi
-@@ -121,9 +214,47 @@
+@@ -122,9 +215,47 @@
   \str_case:Vn \l_mtw_table_align_tl {{center}{\mTwentyTableOffset=\dimexpr\linewidth-\mTwentyTableWidth\relax\divide\mTwentyTableOffset2}{right}{\mTwentyTableOffset=\dimexpr\linewidth-\mTwentyTableWidth\relax}}
   \directlua{m20tables.extract(\number\mTwentyNativeTable,\number\mTwentyRowStream,\number\mTwentyLocalTableHeader,\int_use:N\l_mtw_table_head_int,\number\dimexpr\textheight-90bp\relax,\number\mTwentyTableOffset)}
   \global\setbox\mTwentyTableHeader=\box\mTwentyLocalTableHeader

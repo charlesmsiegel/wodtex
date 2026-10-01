@@ -1,6 +1,7 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesPackage{m20-references}[2026/09/30 native linked book navigation]
 \RequirePackage[unicode,hidelinks,bookmarksopen,pdfusetitle]{hyperref}
+\newif\ifmTwentyMainMatterFacingReady
 \ifmTwentyEpub\else
  % Native title owns defaults; explicit running-title remains authoritative.
  \let\mTwentyUnsetNativeTitle\@title
@@ -8,7 +9,6 @@
   \ifmTwentyRunningTitleExplicit\else
    \ifx\@title\mTwentyUnsetNativeTitle\else\global\let\mTwentyRunningTitle\@title\fi
   \fi}
- \newif\ifmTwentyMainMatterFacingReady
  \newcount\mTwentyMainMatterFacingShipout
  % Main matter begins with its facing verso, before Arabic numbering resets.
  % Reuse this leaf for the next chapter only if no content shipped meanwhile.

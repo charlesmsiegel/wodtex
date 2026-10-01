@@ -62,7 +62,7 @@
 % table are boxed once and move together. Labels, destinations and anchors
 % remain in that box, rather than in an unrelated preceding prose column.
 \NewDocumentEnvironment{m20tablelead}{+b}{%
- \begingroup
+ \begingroup\def\wodtexActiveStyle{m20}
  \ifmTwentySidebarActive\PackageError{m20}{M20_E_TABLE_LEAD_CONTEXT}{A table lead float must be outside a sidebar.}\fi
  \setbox\mTwentyTableLeadBox=\vbox{%
   \mTwentyTableLeadActivetrue
@@ -134,6 +134,7 @@
 }
 \cs_new_protected:Npn \mTwentyTablePDF #1#2#3 {
  \group_begin:
+ \def\wodtexActiveStyle{m20}
  \stepcounter{m20table}
  \tl_set:Nn \l_mtw_table_width_tl {container}
  \tl_set:Nn \l_mtw_table_align_tl {center}
