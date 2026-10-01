@@ -1,6 +1,7 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesPackage{m20-pdf-layout}[2026/09/30 isolated live body regions]
 \RequirePackage{fontspec,geometry,multicol,xcolor,tikz}
+\RequirePackage{tex/m20-art-image}
 \IfFileExists{microtype.sty}{\RequirePackage[protrusion=true,expansion=true]{microtype}}{}
 \InputIfFileExists{profiles/m20.tex}{}{%
  \def\mTwentyPageWidth{612bp}\def\mTwentyPageHeight{792bp}%
@@ -246,16 +247,18 @@
  \begin{tikzpicture}[baseline=0bp]
   \path[use as bounding box] (0,0) rectangle (\mTwentyArtWidth,\mTwentyArtHeight);
   \def\mTwentyVertical{vertical}%
+  \def\mTwentyArtImageBottomInset{7bp}%
   \ifx\mTwentyArtKind\mTwentyVertical
    \node[inner sep=0bp,anchor=north west] at (-2.5bp,\dimexpr\mTwentyArtHeight+2.5399bp) {\includegraphics[width=\dimexpr\mTwentyArtWidth+14.0507bp,height=\dimexpr\mTwentyArtHeight+14.0798bp]{\mTwentyAssetPath art-vertical.original-template.pdf}};
   \else
+   % The horizontal reference canvas includes its lower frame/shadow inset.
+   \def\mTwentyArtImageBottomInset{14bp}%
    \node[inner sep=0bp,anchor=north west] at (-2.5bp,\mTwentyArtHeight) {\includegraphics[width=\dimexpr\mTwentyArtWidth+13.86bp,height=\mTwentyArtHeight]{\mTwentyAssetPath art-horizontal.original-template.pdf}};
   \fi
   \ifx\mTwentyArtImage\@empty
    \node[inner sep=0bp,text width=\dimexpr\mTwentyArtWidth-20bp,align=center,text=\ifx\mTwentyArtKind\mTwentyVertical black\else white\fi] at (.5\mTwentyArtWidth,.5\mTwentyArtHeight) {\mTwentyFirstFont\fontsize{20bp}{24bp}\selectfont Place illustration here\par{\fontsize{11bp}{14bp}\selectfont (recommended full colour)}};
   \else
-   \node[inner sep=0bp] at (.5\mTwentyArtWidth,.5\mTwentyArtHeight) {\includegraphics[width=\dimexpr\mTwentyArtWidth-14bp\relax,height=\dimexpr\mTwentyArtHeight-40bp\relax,keepaspectratio]{\mTwentyArtImage}};
-   \node[inner sep=0bp,anchor=south,text width=\dimexpr\mTwentyArtWidth-14bp\relax,align=center] at (.5\mTwentyArtWidth,7bp) {\fontsize{8bp}{10bp}\selectfont\mTwentyArtCaption\space\mTwentyArtCredit};
+   \mTwentyArtImageContents
   \fi
   \node[inner sep=0bp,outer sep=0bp,minimum size=0bp,anchor=north west] at (0,\mTwentyArtHeight) {\mTwentyPosition{\mTwentyArtID}{\mTwentyArtWidth}{\mTwentyArtWidth}{1}{art}{0}{\mTwentyArtPlace}{\mTwentyArtHeight}};
  \end{tikzpicture}%

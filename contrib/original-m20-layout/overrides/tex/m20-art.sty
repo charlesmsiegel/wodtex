@@ -1,5 +1,6 @@
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesPackage{m20-art}[2026/09/30 stable art reservations and metadata]
+\newcounter{m20art}
 \ExplSyntaxOn
 \tl_new:N \l_mtw_art_kind_tl
 \tl_new:N \l_mtw_art_place_tl
@@ -29,7 +30,11 @@
  role .choices:nn = {meaningful,decorative}{\tl_set_eq:NN \l_mtw_art_role_tl \l_keys_choice_tl},
  unknown .code:n = \PackageError{m20}{M20_E_UNKNOWN_ART:~\l_keys_key_str}{Unknown~art~key}
 }
-\NewDocumentCommand\mTwentyArtReserve{O{}m}{
+\cs_new_protected:Npn \mTwentyAutoArtID {
+ \stepcounter{m20art}\edef\mTwentyArtID{m20-art-auto-\arabic{m20art}}
+ \exp_args:NNV \prop_if_in:NnT \g_mtw_ids_prop \mTwentyArtID {\mTwentyAutoArtID}
+}
+\NewDocumentCommand\mTwentyArtReserve{O{}g}{
  \ifmTwentySidebarActive\PackageError{m20}{M20_E_UNSUPPORTED_NESTING}{Art~reservations~cannot~be~nested~inside~sidebars.}\fi
  % Horizontal wide floats belong in the uninterrupted live column stream.
  % Closing it here freezes a tall left/short right band and strands the prose
@@ -44,7 +49,10 @@
   \str_if_eq:VnT \l_mtw_art_place_tl {next-page}{\bool_set_true:N \l_mtw_art_close_region_bool}
   \bool_if:NT \l_mtw_art_close_region_bool {\mTwentyBodyEnd}
  \fi
- \mTwentyRegisterID:n {#2}
+ \IfNoValueTF{#2}
+  {\mTwentyAutoArtID}
+  {\edef\mTwentyArtID{#2}}
+ \exp_args:NV \mTwentyRegisterID:n \mTwentyArtID
  \tl_set:Nn \l_mtw_art_kind_tl {horizontal}
  \tl_set:Nn \l_mtw_art_place_tl {flow}
  \tl_clear:N \l_mtw_art_position_tl
@@ -65,12 +73,11 @@
  }
  \str_if_eq:VnT \l_mtw_art_role_tl {meaningful} {
   \tl_if_empty:NT \l_mtw_art_image_tl {\PackageError{m20}{M20_E_MEANINGFUL_ART_EMPTY}{Meaningful~art~requires~an~image.}}
-  \tl_if_empty:NT \l_mtw_art_alt_tl {\PackageError{m20}{M20_E_ART_ALT}{Meaningful~images~require~alternative~text.}}
+  \tl_if_blank:VT \l_mtw_art_alt_tl {\PackageWarning{m20}{M20_W_ART_ALT:~Meaningful~image~has~no~alternative~text;~add~alt~for~accessible~output}}
  }
  \str_if_eq:VnTF \l_mtw_art_kind_tl {horizontal}
   {\clist_if_in:nVF {top,bottom}\l_mtw_art_position_tl {\PackageError{m20}{M20_E_ART_POSITION}{Horizontal~art~uses~top~or~bottom.}}}
   {\clist_if_in:nVF {inner,outer}\l_mtw_art_position_tl {\PackageError{m20}{M20_E_ART_POSITION}{Vertical~art~uses~inner~or~outer.}}}
- \edef\mTwentyArtID{#2}
  \edef\mTwentyArtKind{\l_mtw_art_kind_tl}
  \edef\mTwentyArtPlace{\l_mtw_art_place_tl}
  \edef\mTwentyArtPosition{\l_mtw_art_position_tl}

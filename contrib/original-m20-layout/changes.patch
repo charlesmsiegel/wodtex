@@ -913,7 +913,7 @@
 +    unittest.main()
 --- a/tex/m20-art.sty
 +++ b/tex/m20-art.sty
-@@ -9,6 +9,15 @@
+@@ -10,6 +10,15 @@
  \tl_new:N \l_mtw_art_caption_tl
  \tl_new:N \l_mtw_art_credit_tl
  \tl_new:N \l_mtw_art_role_tl
@@ -929,9 +929,9 @@
  \keys_define:nn {m20/art} {
   kind .choices:nn = {horizontal,vertical}{\tl_set_eq:NN \l_mtw_art_kind_tl \l_keys_choice_tl},
   place .choices:nn = {flow,here,next-page}{\tl_set_eq:NN \l_mtw_art_place_tl \l_keys_choice_tl},
-@@ -22,9 +31,19 @@
+@@ -27,9 +36,19 @@
  }
- \NewDocumentCommand\mTwentyArtReserve{O{}m}{
+ \NewDocumentCommand\mTwentyArtReserve{O{}g}{
   \ifmTwentySidebarActive\PackageError{m20}{M20_E_UNSUPPORTED_NESTING}{Art~reservations~cannot~be~nested~inside~sidebars.}\fi
 - % Leave the live region before setting options: ending multicols restores
 - % its group, so options set inside that group would disappear at placement.
@@ -949,9 +949,9 @@
 +  \str_if_eq:VnT \l_mtw_art_place_tl {next-page}{\bool_set_true:N \l_mtw_art_close_region_bool}
 +  \bool_if:NT \l_mtw_art_close_region_bool {\mTwentyBodyEnd}
 + \fi
-  \mTwentyRegisterID:n {#2}
-  \tl_set:Nn \l_mtw_art_kind_tl {horizontal}
-  \tl_set:Nn \l_mtw_art_place_tl {flow}
+  \IfNoValueTF{#2}
+   {\mTwentyAutoArtID}
+   {\edef\mTwentyArtID{#2}}
 --- a/tex/m20-core.sty
 +++ b/tex/m20-core.sty
 @@ -13,9 +13,11 @@
@@ -1124,10 +1124,10 @@
 +\endinput
 --- a/tex/m20-pdf-layout.sty
 +++ b/tex/m20-pdf-layout.sty
-@@ -1,27 +1,58 @@
- \NeedsTeXFormat{LaTeX2e}
+@@ -2,27 +2,58 @@
  \ProvidesPackage{m20-pdf-layout}[2026/09/30 isolated live body regions]
  \RequirePackage{fontspec,geometry,multicol,xcolor,tikz}
+ \RequirePackage{tex/m20-art-image}
 +\IfFileExists{microtype.sty}{\RequirePackage[protrusion=true,expansion=true]{microtype}}{}
  \InputIfFileExists{profiles/m20.tex}{}{%
   \def\mTwentyPageWidth{612bp}\def\mTwentyPageHeight{792bp}%
@@ -1189,7 +1189,7 @@
  \AtEndDocument{\mTwentyBodyEnd\clearpage\immediate\closeout\mTwentyPositionStream}
  % Values are frozen now; page and position primitives are evaluated at shipout.
  \newcommand\mTwentyPosition[8]{%
-@@ -29,33 +60,72 @@
+@@ -30,33 +61,72 @@
   \begingroup
   \edef\mTwentyWrite{\write\mTwentyPositionStream{#1|\noexpand\the\noexpand\ReadonlyShipoutCounter|\noexpand\the\noexpand\lastxpos|\noexpand\the\noexpand\lastypos|\number\dimexpr#2\relax|\number\dimexpr#3\relax|#4|#5|#6|#7|\number\dimexpr#8+0bp\relax|\noexpand\thepage|\noexpand\number\noexpand\c@page}}%
   \mTwentyWrite\endgroup}
@@ -1277,7 +1277,7 @@
  }
  \let\@makeschapterhead\@makechapterhead
  \newif\ifmTwentyFirstRestore
-@@ -67,22 +137,123 @@
+@@ -68,52 +138,158 @@
    \fi
   \else\clubpenalty\@clubpenalty\everypar{}\fi}}
  \AddToHook{para/end}{\ifmTwentyFirstRestore\ifmTwentySidebarActive\else\mTwentyFirstRestorefalse\rmfamily\fi\fi}
@@ -1398,18 +1398,20 @@
 -  \draw[line width=2bp,m20gold] (1bp,1bp) rectangle (\dimexpr\mTwentyArtWidth-1bp,\dimexpr\mTwentyArtHeight-1bp);
 -  \ifx\mTwentyArtImage\@empty\else
 +  \def\mTwentyVertical{vertical}%
++  \def\mTwentyArtImageBottomInset{7bp}%
 +  \ifx\mTwentyArtKind\mTwentyVertical
 +   \node[inner sep=0bp,anchor=north west] at (-2.5bp,\dimexpr\mTwentyArtHeight+2.5399bp) {\includegraphics[width=\dimexpr\mTwentyArtWidth+14.0507bp,height=\dimexpr\mTwentyArtHeight+14.0798bp]{\mTwentyAssetPath art-vertical.original-template.pdf}};
 +  \else
++   % The horizontal reference canvas includes its lower frame/shadow inset.
++   \def\mTwentyArtImageBottomInset{14bp}%
 +   \node[inner sep=0bp,anchor=north west] at (-2.5bp,\mTwentyArtHeight) {\includegraphics[width=\dimexpr\mTwentyArtWidth+13.86bp,height=\mTwentyArtHeight]{\mTwentyAssetPath art-horizontal.original-template.pdf}};
 +  \fi
 +  \ifx\mTwentyArtImage\@empty
 +   \node[inner sep=0bp,text width=\dimexpr\mTwentyArtWidth-20bp,align=center,text=\ifx\mTwentyArtKind\mTwentyVertical black\else white\fi] at (.5\mTwentyArtWidth,.5\mTwentyArtHeight) {\mTwentyFirstFont\fontsize{20bp}{24bp}\selectfont Place illustration here\par{\fontsize{11bp}{14bp}\selectfont (recommended full colour)}};
 +  \else
-    \node[inner sep=0bp] at (.5\mTwentyArtWidth,.5\mTwentyArtHeight) {\includegraphics[width=\dimexpr\mTwentyArtWidth-14bp\relax,height=\dimexpr\mTwentyArtHeight-40bp\relax,keepaspectratio]{\mTwentyArtImage}};
-    \node[inner sep=0bp,anchor=south,text width=\dimexpr\mTwentyArtWidth-14bp\relax,align=center] at (.5\mTwentyArtWidth,7bp) {\fontsize{8bp}{10bp}\selectfont\mTwentyArtCaption\space\mTwentyArtCredit};
+    \mTwentyArtImageContents
    \fi
-@@ -90,30 +261,32 @@
+   \node[inner sep=0bp,outer sep=0bp,minimum size=0bp,anchor=north west] at (0,\mTwentyArtHeight) {\mTwentyPosition{\mTwentyArtID}{\mTwentyArtWidth}{\mTwentyArtWidth}{1}{art}{0}{\mTwentyArtPlace}{\mTwentyArtHeight}};
   \end{tikzpicture}%
  }
  \newcommand\mTwentyArtPDF{%
