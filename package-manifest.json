@@ -1,7 +1,41 @@
 {
   "schema_version": 1,
   "name": "wodtex-m20",
-  "include": ["README.md", "requirements.txt", "m20book.cls", "runtime.lock.json", "package-manifest.json", "profiles/m20.json", "profiles/m20.tex", "tex/*.sty", "tex/*.lua", "scripts/*.py", "scripts/*.cjs", "epub/*", "examples/*.tex", "examples/content/*", "tests/*.py", "docs/*.txt", "docs/*.md", "docs/design/*"],
-  "excluded_inputs": ["fonts", "assets", "inputs", ".runtime", "build", "private manuscripts"],
+  "include": [
+    "README.md",
+    "requirements.txt",
+    "m20book.cls",
+    "runtime.lock.json",
+    "package-manifest.json",
+    "profiles/*.json",
+    "profiles/*.tex",
+    "tex/*.sty",
+    "tex/*.lua",
+    "scripts/*.py",
+    "scripts/*.cjs",
+    "epub/*",
+    "examples/*.tex",
+    "examples/content/*",
+    "tests/*.py",
+    "docs/*.txt",
+    "docs/*.md",
+    "docs/design/*",
+    "contrib/original-m20-layout/README.md",
+    "contrib/original-m20-layout/apply.py",
+    "contrib/original-m20-layout/manifest.json",
+    "contrib/original-m20-layout/changes.patch",
+    "contrib/original-m20-layout/overrides/tex/*.sty",
+    "contrib/original-m20-layout/overrides/profiles/*.tex",
+    "contrib/original-m20-layout/overrides/scripts/*.py",
+    "contrib/original-m20-layout/overrides/tests/*.py"
+  ],
+  "excluded_inputs": [
+    "fonts",
+    "assets",
+    "inputs",
+    ".runtime",
+    "build",
+    "private manuscripts"
+  ],
   "license_note": "Original M20 fonts and decorative art are user-supplied licensed inputs. They and built files embedding them are not redistributed in the source archive."
 }

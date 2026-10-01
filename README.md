@@ -4,7 +4,152 @@ Native LaTeX authoring for M20 books, with LuaLaTeX PDF and reflowable EPUB 3
 from the same editable manuscript. The implementation follows the approved
 specification in [docs/design](docs/design).
 
-## Build a book
+## Per-user native LuaLaTeX installation (Windows / Git Bash)
+
+This workflow installs the reviewed **corrected M20 PDF layout** by default.
+Use `\documentclass{m20book}` and ordinary `lualatex book.tex` from your book's
+folder afterward. It does not apply patches to your checkout, copy licensed
+inputs, or require the pinned Linux builder. Python 3.9+ and MiKTeX with
+LuaLaTeX and its required packages must already be installed and on `PATH`.
+MiKTeX 24.1 / LuaHBTeX 1.17.1 is the intended Windows target; Windows execution
+has not been tested here. Linux portability is tested separately below.
+
+Clone once, or update an existing clean checkout on `main`:
+
+```sh
+git clone https://github.com/charlesmsiegel/wodtex.git
+cd wodtex
+git switch main
+git pull --ff-only origin main
+python --version
+lualatex --version
+initexmf --version
+miktex --version
+```
+
+Use `python` in Git Bash with Windows Python; `py -3` can replace it if needed.
+Supply Windows paths such as `C:/Users/YourName/...` to Python, especially
+inside quotes. Keep licensed inputs in a permanent private directory outside
+the checkout. Reuse your already prepared `fonts` and `assets` directories if
+available. Otherwise, prepare them once:
+
+1. Copy your licensed `GOUDOS.TTF`, `GOUDOSB_0.TTF`, `GOUDOSI_0.TTF`, and
+   `abbess-regular.ttf` from the template's `Document fonts` into your private
+   fonts directory. Also supply the public `DejaVuSans.ttf`,
+   `DejaVuSans-Bold.ttf`, `DejaVuSans-Oblique.ttf`,
+   `DejaVuSans-BoldOblique.ttf`, and `DejaVuSansMono.ttf` there for script/mono
+   roles (available from the [DejaVu project](https://dejavu-fonts.github.io/)).
+   Preserve these exact filenames. These requirements describe the corrected
+   M20 layout; the legacy base renderer has additional font requirements.
+2. Extract private decorations using the original eight-page M20 reference
+   PDF. These cross-platform Python extractors need PyMuPDF, not the pinned
+   build runtime. They check the original PDF SHA256 listed below. Replace
+   the example paths, and run all four commands:
+
+```sh
+python -m pip install PyMuPDF==1.26.6
+python contrib/original-m20-layout/overrides/scripts/extract_template_art.py "C:/Private/M20-Template-Interior.pdf" --out "C:/Private/wodtex/assets"
+python contrib/original-m20-layout/overrides/scripts/extract_spread_and_page_types.py "C:/Private/M20-Template-Interior.pdf" --out "C:/Private/wodtex/assets"
+python contrib/original-m20-layout/overrides/scripts/extract_frontmatter_reference.py "C:/Private/M20-Template-Interior.pdf" --out "C:/Private/wodtex/assets"
+python contrib/original-m20-layout/overrides/scripts/extract_sidebar_frame.py "C:/Private/M20-Template-Interior.pdf" --out "C:/Private/wodtex/assets"
+```
+
+Install and register the user tree (no administrator shell):
+
+```sh
+python scripts/install.py --miktex --font-dir "C:/Private/wodtex/fonts" --asset-dir "C:/Private/wodtex/assets"
+```
+
+On Windows the default tree is `%LOCALAPPDATA%/wodtex/texmf` (falling back to
+`%USERPROFILE%/wodtex/texmf`). The installer prints the actual paths. `--tree
+"C:/Private/wodtex-texmf"` selects another root; supply the same `--tree` on
+updates. The installer runs the officially documented
+[`initexmf --register-root=DIR`](https://docs.miktex.org/manual/initexmf.html)
+and [`miktex fndb refresh`](https://docs.miktex.org/manual/miktex-fndb.html),
+both in default user mode. It checks both executables before writing. If
+registration/refresh fails, it reports failure; installed files remain, so
+correct the MiKTeX error and repeat the update command below. No `--admin`
+option, global root replacement, or shell environment search-path hack is used.
+
+Create `book.tex` in a separate book folder:
+
+```tex
+\documentclass{m20book}
+\m20setup{running-title={My Book}}
+\begin{document}
+\chapter{Beginning}\label{ch:beginning}
+Your text here. See page \pageref{ch:beginning}.
+\end{document}
+```
+
+```sh
+cd "C:/Private/My Book"
+kpsewhich m20book.cls
+kpsewhich wodtex-local.tex
+lualatex -interaction=nonstopmode -halt-on-error book.tex
+lualatex -interaction=nonstopmode -halt-on-error book.tex
+```
+
+Run LuaLaTeX again when references/contents request it; use `makeindex book`
+then LuaLaTeX again for an index. Enable MiKTeX's missing-package installation
+or install requested public packages through MiKTeX Console. The two
+`kpsewhich` commands should point to the new tree. An old `m20book.cls` or
+`tex/` directory alongside the manuscript can shadow installed resources;
+remove that obsolete local copy after backing up edits.
+
+### Repeatable updates and private configuration
+
+From your wodtex checkout, on `main`:
+
+```sh
+git pull --ff-only origin main
+python scripts/install.py --miktex
+```
+
+No font/art flags are needed on updates. The single private config is
+`TREE/tex/latex/wodtex-local/wodtex-local.tex`; it defines absolute font/art
+paths with trailing slashes, and updates preserve its bytes. You may edit
+that file directly (use forward slashes), or explicitly change both paths:
+
+```sh
+python scripts/install.py --miktex --configure --font-dir "C:/NewPrivate/fonts" --asset-dir "C:/NewPrivate/assets"
+```
+
+Per-document `\m20setup{font-path={.../},asset-path={.../}}` still overrides
+these defaults. Path characters `{ } % # ~ ^ & $`, backslashes and newlines
+are rejected when generating config; ordinary spaces and drive letters work.
+
+Only the dedicated managed directory `TREE/tex/latex/wodtex` is replaced.
+A staged replacement and hash manifest prevent accidental loss of local
+managed-file edits: changed, added, missing, unowned, or symlinked resources
+are refused. Back up/reconcile such edits before reinstalling; keep private
+changes in the local config or manuscript. Existing unrelated tree contents
+are preserved. The tree stores public class/packages/Lua and every tracked
+`profiles/*.tex` under unique `wodtex-profile-*.tex` names. Updates collect new
+profile resources automatically; they do not author new WoD/MSC designs or
+promise support for a profile that is not present in the checkout.
+
+`--layout corrected` is the default and remains so on updates; use
+`--layout base` on **every** install/update to intentionally select the earlier
+base renderer. Correction payload hashes are verified before installation.
+Repository-relative resource names are normalized only in installed copies;
+the source build and exact-hash opt-in patch workflow below remain intact.
+Source archives include the correction package needed by this installer.
+
+For TeX Live, omit `--miktex`; the default root is `~/texmf`, which TeX Live
+searches as `TEXMFHOME`. An explicit nondefault root needs registration in your
+TeX distribution (for a temporary Linux check, `TEXMFHOME=/path/to/tree
+lualatex book.tex`). The installer itself has no third-party Python dependency.
+
+Native installation tests: `python -m unittest tests.test_install -v`.
+The Linux smoke test uses public DejaVu substitute faces and synthetic art,
+compiles outside the repository twice before/after an update and with the base
+renderer, and checks table/sidebar/art text, references, private paths and
+installed profile loading. It requires LuaLaTeX, Poppler, fontTools and the
+public DejaVu fonts. It proves resource portability, not authentic licensed
+M20 appearance or an actual Windows/MiKTeX installation.
+
+## Repository build workflow
 
 Use Python 3.12+, a TeX Live/LuaLaTeX installation, Java 17+, Node.js 18+,
 makeindex and Poppler. The tested environment is Linux x86-64; preparation
@@ -73,7 +218,7 @@ Abbess and genuine Goudy regular, bold and italic. Full merged framework
 acceptance and EPUB validation remain pending.
 
 
-The original-template layout is an explicit opt-in source patch. It is not
+For the repository build workflow, the original-template layout is an explicit opt-in source patch. It is not
 activated by selecting `profile=m20` alone. Preserve any uncommitted work, read
 `contrib/original-m20-layout/changes.patch`, and use a disposable checkout of
 the correction checkpoint you want to activate, keeping its complete package.
