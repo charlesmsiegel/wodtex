@@ -30,6 +30,9 @@
 \newcommand\mTwentyLocalNote[1]{\stepcounter{m20sidebarnote}\textsuperscript{\arabic{m20sidebarnote}}\begingroup\edef\mTwentyNewNote{\endgroup\noexpand\mTwentyAppendNote{\arabic{m20sidebarnote}}{\unexpanded{#1}}}\mTwentyNewNote}
 \newcommand\mTwentyRemaining{%
  \par
+ % Settle pending paragraph/page output before reading pagetotal. Otherwise
+ % a heading near the old column limit can force a break on the next page.
+ \ifmTwentyBodyActive\penalty0\fi
  \ifmTwentyBodyActive
   \mTwentyAvailable=\@colroom
   \@tempdima=\pagetotal

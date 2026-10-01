@@ -635,7 +635,17 @@
  \def\mTwentyFrameKind{sidebar}
  \newif\ifmTwentyNarrow
  \newif\ifmTwentyMoreContent
-@@ -34,6 +43,13 @@
+@@ -21,6 +30,9 @@
+ \newcommand\mTwentyLocalNote[1]{\stepcounter{m20sidebarnote}\textsuperscript{\arabic{m20sidebarnote}}\begingroup\edef\mTwentyNewNote{\endgroup\noexpand\mTwentyAppendNote{\arabic{m20sidebarnote}}{\unexpanded{#1}}}\mTwentyNewNote}
+ \newcommand\mTwentyRemaining{%
+  \par
++ % Settle pending paragraph/page output before reading pagetotal. Otherwise
++ % a heading near the old column limit can force a break on the next page.
++ \ifmTwentyBodyActive\penalty0\fi
+  \ifmTwentyBodyActive
+   \mTwentyAvailable=\@colroom
+   \@tempdima=\pagetotal
+@@ -34,6 +46,13 @@
   \advance\mTwentyAvailable-4bp
  }
  \newcommand\mTwentyAdvance{\ifmTwentyNarrow\ifmTwentyBodyActive\columnbreak\else\newpage\fi\else\newpage\fi}
@@ -649,7 +659,7 @@
  \newcommand\mTwentyPlacement{%
   \def\mTwentyNextPage{next-page}\def\mTwentyHere{here}%
   \ifx\mTwentySidebarPlace\mTwentyNextPage
-@@ -46,26 +62,38 @@
+@@ -46,26 +65,38 @@
    \else\mTwentyAdvance\mTwentyRemaining\fi
   \fi}
  \newcommand\mTwentyFrame{%
@@ -695,7 +705,7 @@
  }
  \newcommand\mTwentyTypesetText[1]{%
   \setbox\mTwentyGalley=\vbox{%
-@@ -75,6 +103,10 @@
+@@ -75,6 +106,10 @@
    % stack push in the galley would cross pages and turn later body text white.
    \mTwentySidebarFont\fontsize{10bp}{10bp}\selectfont
    \parindent=0bp\parskip=2.52bp\relax
@@ -706,7 +716,7 @@
    \emergencystretch=12bp\tolerance=2000
    \let\footnote\mTwentyLocalNote
    \let\mTwentyNote\mTwentyLocalNote
-@@ -84,7 +116,10 @@
+@@ -84,7 +119,10 @@
  }
  \newcommand\mTwentySetSplitHeight{%
   \mTwentyRemaining
@@ -718,7 +728,7 @@
   \ifnum\mTwentySegment>0\relax\ifvoid\mTwentyTableHeader\else\advance\mTwentySplitHeight-\ht\mTwentyTableHeader\advance\mTwentySplitHeight-\dp\mTwentyTableHeader\advance\mTwentySplitHeight-4bp\fi\fi
  }
  \newcommand\mTwentyPaginateChunks{%
-@@ -92,9 +127,29 @@
+@@ -92,9 +130,29 @@
   \mTwentyPaginateGalley
   \ifx\mTwentyManualMode\@empty\else
    \def\mTwentyPageMode{page}%
@@ -749,7 +759,7 @@
   \fi
  }
  \newcommand\mTwentyPaginateGalley{%
-@@ -103,11 +158,13 @@
+@@ -103,11 +161,13 @@
   \ifdim\dimexpr\ht\mTwentyGalley+\dp\mTwentyGalley\relax<.1bp\relax\mTwentyMoreContentfalse\fi
   \@whilesw\ifmTwentyMoreContent\fi{%
    \mTwentySetSplitHeight
@@ -765,7 +775,7 @@
    \ifnum\mTwentySidebarColumns=2
     \@tempdima=\ht\mTwentyGalley\advance\@tempdima\dp\mTwentyGalley
     \@tempdimb=2\mTwentySplitHeight
-@@ -173,13 +230,14 @@
+@@ -173,13 +233,14 @@
   \if\relax\detokenize\expandafter{\the\mTwentyNotes}\relax\else
    \mTwentyTypesetText{\the\mTwentyNotes}
   \fi
@@ -781,7 +791,7 @@
     \mTwentyComposeSidebar:n {#1}
    }
    \dim_compare:nNnT {\ht\mTwentyAtomicSidebar+\dp\mTwentyAtomicSidebar} > {\textheight-4bp} {
-@@ -197,12 +255,17 @@
+@@ -197,12 +258,17 @@
  \ExplSyntaxOff
  \newcommand\mTwentySidebarPDF[3]{%
   \global\mTwentyNotes={}%
@@ -977,3 +987,33 @@
   \group_end:
  }
  \ExplSyntaxOff
+--- a/tests/test_table_lead_flow.py
++++ b/tests/test_table_lead_flow.py
+@@ -0,0 +1,27 @@
++"""A table caption must remain in its wide float without balancing prose."""
++import unittest
++import fitz
++from tests.test_layout_proof import compile_source
++
++class TableLeadFlowTests(unittest.TestCase):
++    def test_caption_and_table_remain_together_inside_live_columns(self):
++        prose = ('A continuous narrative should fill both columns while a compact table waits for a page edge. ' * 10 + '\\par\n')
++        source = (r'\documentclass{m20book}\begin{document}' + prose * 4
++                  + r'\begin{m20tablelead}\subsection{Levels for the Example}'
++                  + r'\label{lead-caption}\m20anchor{lead-caption}'
++                  + r'\begin{m20table}[id=lead-table,head-rows=1]{ll}'
++                  + r'Rating & Description \\ One & FIRST-ROW-SENTINEL \\ Two & SECOND-ROW-SENTINEL \\'
++                  + r'\end{m20table}\end{m20tablelead}' + prose * 10
++                  + r'\end{document}')
++        _, path = compile_source(source, 'table-lead-flow-proof')
++        with fitz.open(path.with_suffix('.pdf')) as pdf:
++            title_pages = [i for i,p in enumerate(pdf) if 'Levels for the Example' in p.get_text()]
++            row_pages = [i for i,p in enumerate(pdf) if 'FIRST-ROW-SENTINEL' in p.get_text()]
++            self.assertEqual(title_pages, row_pages)
++            self.assertEqual(len(title_pages), 1)
++            page = pdf[title_pages[0]]
++            self.assertLess(page.search_for('Levels for the Example')[0].y0,
++                            page.search_for('FIRST-ROW-SENTINEL')[0].y0)
++            self.assertGreater(page.get_text().count('continuous narrative'), 3)
++
++if __name__ == '__main__': unittest.main()

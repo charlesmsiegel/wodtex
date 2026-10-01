@@ -1,6 +1,6 @@
 {
   "schema": "wodtex-opt-in-source-patch-v1",
-  "base_commit": "b95576a231c78659212c842a4a60243b056db1e0",
+  "base_commit": "f540bc1c0c63b0da12af8aba16b948ff1becde60",
   "local_correction_base": "4c2f12d017ef5a0d93a7a6f524ef8085efdac644",
   "files": [
     {
@@ -56,12 +56,17 @@
     {
       "path": "tex/m20-pdf-sidebars.sty",
       "base_sha256": "fcbcae4df44f23dc0ac556dc9652256e0b5f205ce0adc235fbe273044ef431c4",
-      "sha256": "32db9141657acc46d5016299a41a605e33059667a1fc925f757a16fd1b2c3a2f"
+      "sha256": "24d537b766d8cad62cb926a962da986998a3ccb981d02903a87af58a28e64634"
     },
     {
       "path": "tex/m20-pdf-tables.sty",
       "base_sha256": "5bb3b8b07960f09c22b445e1b852f0b5c8fd7c959442b239c3030013fa92b60c",
       "sha256": "f734f6f1c68400bb7a4db2fd0573884754820285e98bc037aa7eefc0377b51dc"
+    },
+    {
+      "path": "tests/test_table_lead_flow.py",
+      "base_sha256": null,
+      "sha256": "4d3b496b2fad8e83493aa1da22425fdf05d89c16110e4a50f54f47b8116352d2"
     }
   ]
 }

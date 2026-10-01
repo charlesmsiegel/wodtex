@@ -1,6 +1,6 @@
 # Original M20 PDF correction source patch
 
-This opt-in checkpoint preserves the local original-template PDF correction code without replacing the current PR defaults. It was reconciled against commit b95576a231c78659212c842a4a60243b056db1e0, retaining the newer physical-folio evidence, reference/semantic work, repeated-header sanitization and rule-aware table-width changes.
+This opt-in checkpoint preserves the local original-template PDF correction code without replacing the current PR defaults. It was reconciled against commit f540bc1c0c63b0da12af8aba16b948ff1becde60, retaining the newer physical-folio evidence, reference/semantic work, repeated-header sanitization and rule-aware table-width changes.
 
 The default class, runtime, PDF/EPUB adapters and validation code remain unchanged until you explicitly apply this patch. The patch is not a completed framework release. It requires the separately prepared original-template PDF assets and licensed fonts described in docs/M20-layout-corrections.md. No licensed assets or private manuscript are included.
 
@@ -13,3 +13,5 @@ The follow-up includes native page-edge horizontal floats, outside-edge full-hei
 The manifest uses exact remote source bytes and the current checkpoint as its base, including extraction scripts already present there. Check/apply was tested on an exact-byte current-source copy. A local combined PDF passed strict overflow verification; final semantic-seam rebuilding and independent visual review were still running when this publication checkpoint was prepared. Full merged PDF/EPUB acceptance remains pending.
 
 The final narrow update restores the original 657bp vertical frame height on a fresh body page and permits a section heading in the adjacent single column. A real compiled regression checked height, top alignment, page parity and heading width; the complete local PDF passed strict overflow verification. These focused checks do not replace full merged PDF/EPUB acceptance.
+
+The final bounded flow checkpoint settles pending output before remaining-space measurement and adds a generic compiled caption/table-association regression. The local standalone title/lead/table groups were migrated without rewriting source words. One reviewed output-box warning remains in the latest PDF: measured body ink has more than 22bp of footer clearance, with no clipping or overlap in reviewed pixels. This final checkpoint is not a clean strict pass, nor complete merged PDF/EPUB acceptance.

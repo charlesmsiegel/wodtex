@@ -34,10 +34,18 @@ Focused PDF tests cover sidebar endpoint safeguards, one-frame-per-page composit
 
 The page-edge art, body/heading hyphenation controls and body-restart whitespace correction are implemented. The bounded table-lead float stays inside live columns, rather than closing and balancing prose merely to enqueue a table. Vertical frames now use the original full 657bp text-area height. They start on a fresh body page after any pending wide floats; section headings may use the adjacent single text column on that page, so the art is not shortened to make room for a spanning heading. Chapter-facing intentional blank pages remain unchanged.
 
-The latest local PDF build passes strict overflow verification. Focused art-edge and sidebar endpoint/page-frame tests have run. Full merged PDF/EPUB acceptance remains pending; these PDF-local wrappers still need an EPUB adapter before they may be claimed portable.
+The earlier full-height checkpoint passed strict overflow verification; the final flow warning is recorded below. Focused art-edge and sidebar endpoint/page-frame tests have run. Full merged PDF/EPUB acceptance remains pending; these PDF-local wrappers still need an EPUB adapter before they may be claimed portable.
 
 ### Practical manual adjustments
 
 For exceptional heading words or dense table headers, allocate enough column width for the whole word. The heading policy wraps at spaces without altering authored text. Body regions call `mTwentyParagraphControls`; a book may deliberately redefine that hook to tune its house policy. Routine paragraphs allow at most 0.4bp shrinkage of the template's 1.44bp paragraph clearance, avoiding a forced extra line without inflating whitespace. Explicit `inner` vertical placement remains available when outside placement is unsuitable; `outer` is the default.
 
-The full-height vertical update has a real compiled regression covering height, page-top alignment, outside-edge parity and a single-column section beside the frame. The complete local PDF still passes strict overflow verification.
+The full-height vertical update has a real compiled regression covering height, page-top alignment, outside-edge parity and a single-column section beside the frame. That full-height checkpoint passed strict overflow verification.
+
+### Final bounded flow correction
+
+The remaining-space helper now settles pending paragraph/page output with a neutral penalty before reading the current body-region height. This prevents a keep-heading decision based on the previous column/page from forcing a spurious break in a fresh column. Standalone table titles should be included in the existing bounded table-lead wrapper so a top/bottom table float cannot leave its title behind.
+
+A real compiled regression confirms caption/table association while narrative continues in live columns. The affected book page was also checked with exact-hash geometry and pixels: both columns fill normally and the caption stays above its table on the following page. The latest complete PDF has converged. One output-box warning remains on a dense appendix page; actual body ink has over 22bp of footer clearance, and pixels show no clipping or overlap. It is a reviewed warning, not a claimed clean strict pass. These checks do not replace the still-pending full merged PDF/EPUB framework acceptance.
+
+All standalone tables in the local book were reviewed systematically. Twenty bounded title/short-lead/table groups and one table kept inside its sidebar were verified both in source and at their shipped anchor pages. No source words were rewritten. Private manuscript inputs remain local, while this public package includes the renderer correction, generic association regression and authoring procedure needed to reproduce the behavior.
