@@ -39,10 +39,12 @@ class InstallTests(unittest.TestCase):
         _, target, config = self.first()
         config.write_text(config.read_text() + '% user customization\n')
         before = config.read_bytes()
+        managed_before = {path.name: path.read_bytes() for path in target.iterdir()}
         unrelated = self.tree / 'unrelated.txt'
         unrelated.write_text('keep')
         self.install()
         self.assertEqual(before, config.read_bytes())
+        self.assertEqual(managed_before, {path.name: path.read_bytes() for path in target.iterdir()})
         self.assertEqual('keep', unrelated.read_text())
         self.assertEqual('corrected', json.loads((target / installer.MANIFEST).read_text())['layout'])
         self.assertIn('m20-local-text-styles.sty', [p.name for p in target.iterdir()])
@@ -175,6 +177,7 @@ class InstallTests(unittest.TestCase):
             zipped.extractall(self.base / 'unpack')
         unpacked = self.base / 'unpack/wodtex-m20'
         self.assertEqual((ROOT / '.gitattributes').read_bytes(), (unpacked / '.gitattributes').read_bytes())
+        self.assertEqual((ROOT / 'install.sh').read_bytes(), (unpacked / 'install.sh').read_bytes())
         expected = installer.payload('corrected')
         with patch.object(installer, 'ROOT', unpacked):
             self.assertEqual(expected, installer.payload('corrected'))

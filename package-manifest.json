@@ -3,6 +3,7 @@
   "name": "wodtex-m20",
   "include": [
     ".gitattributes",
+    "install.sh",
     "README.md",
     "requirements.txt",
     "m20book.cls",

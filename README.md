@@ -6,6 +6,27 @@ specification in [docs/design](docs/design).
 
 ## Per-user native LuaLaTeX installation (Windows / Git Bash)
 
+For an already configured installation, update from your checkout on `main`:
+
+```sh
+git pull --ff-only origin main
+bash install.sh
+```
+
+`install.sh` is a thin launcher for `scripts/install.py`. It finds Python 3.9+
+using `python`, `py -3`, then `python3`; native Windows Python automatically
+selects MiKTeX user-root registration and FNDB refresh. It resolves the checkout
+relative to the script, quotes paths and forwards all arguments unchanged. It
+installs no Python/TeX dependencies and makes no administrator changes. On
+Unix it leaves TeX distribution selection to you; pass `--miktex` for MiKTeX.
+First installation currently requires the private font/art paths described
+below; fonts/PDFs and prepared decorations are not yet bundled in this checkout.
+
+The same committed source inputs produce the same normalized managed TeX/Lua
+payload bytes and hash manifest on repeated installs. Private configuration is
+preserved; its absolute paths depend on your machine. PDF bytes are not promised
+to be reproducible across TeX engines, package versions, fonts or build dates.
+
 This workflow installs the reviewed **corrected M20 PDF layout** by default.
 Use `\documentclass{m20book}` and ordinary `lualatex book.tex` from your book's
 folder afterward. It does not apply patches to your checkout, copy licensed
@@ -57,7 +78,7 @@ python contrib/original-m20-layout/overrides/scripts/extract_sidebar_frame.py "C
 Install and register the user tree (no administrator shell):
 
 ```sh
-python scripts/install.py --miktex --font-dir "C:/Private/wodtex/fonts" --asset-dir "C:/Private/wodtex/assets"
+bash install.sh --font-dir "C:/Private/wodtex/fonts" --asset-dir "C:/Private/wodtex/assets"
 ```
 
 On Windows the default tree is `%LOCALAPPDATA%/wodtex/texmf` (falling back to
@@ -103,7 +124,7 @@ From your wodtex checkout, on `main`:
 
 ```sh
 git pull --ff-only origin main
-python scripts/install.py --miktex
+bash install.sh
 ```
 
 No font/art flags are needed on updates. The single private config is
@@ -144,7 +165,7 @@ searches as `TEXMFHOME`. An explicit nondefault root needs registration in your
 TeX distribution (for a temporary Linux check, `TEXMFHOME=/path/to/tree
 lualatex book.tex`). The installer itself has no third-party Python dependency.
 
-Native installation tests: `python -m unittest tests.test_install -v`.
+Native installation tests: `python -m unittest tests.test_install tests.test_install_shell -v`.
 The Linux smoke test uses public DejaVu substitute faces and synthetic art,
 compiles outside the repository twice before/after an update and with the base
 renderer, and checks table/sidebar/art text, references, private paths and
