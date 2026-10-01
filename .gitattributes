@@ -1,0 +1,10 @@
+# Source manifests hash LF text, regardless of Windows core.autocrlf settings.
+*.cls text eol=lf
+*.sty text eol=lf
+*.tex text eol=lf
+*.lua text eol=lf
+*.py text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.patch text eol=lf

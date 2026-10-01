@@ -138,12 +138,43 @@ class InstallTests(unittest.TestCase):
             self.assertEqual(2, error.exception.code)
         self.assertFalse(self.tree.exists())
 
+    def test_windows_crlf_checkout_installs_updates_and_rejects_real_edits(self):
+        source = self.base / 'windows-source'
+        source.mkdir()
+        shutil.copy2(ROOT / 'm20book.cls', source / 'm20book.cls')
+        for name in ('tex', 'profiles', 'contrib'):
+            shutil.copytree(ROOT / name, source / name)
+        for path in source.rglob('*'):
+            if path.is_file() and path.suffix in ('.cls', '.sty', '.tex', '.lua', '.json', '.py', '.md', '.patch'):
+                path.write_bytes(path.read_bytes().replace(b'\r\n', b'\n').replace(b'\n', b'\r\n'))
+        expected = installer.payload('corrected')
+        expected_base = installer.payload('base')
+        with patch.object(installer, 'ROOT', source):
+            self.assertEqual(expected, installer.payload('corrected'))
+            self.assertEqual(expected_base, installer.payload('base'))
+            _, target, config = self.first()
+            before = config.read_bytes()
+            self.install()
+            self.assertEqual(before, config.read_bytes())
+            for path in target.iterdir():
+                self.assertNotIn(b'\r\n', path.read_bytes())
+            changed = source / 'contrib/original-m20-layout/overrides/profiles/m20.tex'
+            original = changed.read_bytes()
+            for altered in (original.replace(b'612.0bp', b'613.0bp'), original.replace(b'\r\n', b'\r'), original + b' '):
+                changed.write_bytes(altered)
+                with self.assertRaisesRegex(ValueError, 'Correction checksum mismatch'):
+                    self.install()
+                self.assertEqual(before, config.read_bytes())
+            changed.write_bytes(original)
+            self.install()
+
     def test_source_archive_contains_complete_native_installer_payload(self):
         archive = ROOT / 'build/native-install-package-test/source.zip'
         subprocess.run([sys.executable, str(ROOT / 'scripts/package.py'), '--out', str(archive)], check=True, stdout=subprocess.DEVNULL)
         with zipfile.ZipFile(archive) as zipped:
             zipped.extractall(self.base / 'unpack')
         unpacked = self.base / 'unpack/wodtex-m20'
+        self.assertEqual((ROOT / '.gitattributes').read_bytes(), (unpacked / '.gitattributes').read_bytes())
         expected = installer.payload('corrected')
         with patch.object(installer, 'ROOT', unpacked):
             self.assertEqual(expected, installer.payload('corrected'))

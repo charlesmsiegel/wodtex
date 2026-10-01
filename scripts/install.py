@@ -17,13 +17,20 @@ def digest(data):
     return hashlib.sha256(data).hexdigest()
 
 
+def canonical_text(data):
+    # Git's Windows checkout conversion may use CRLF. Manifests describe LF
+    # text: normalize only CRLF pairs, preserving all other bytes (including
+    # bare CRs, trailing whitespace, BOMs and actual source modifications).
+    return data.replace(b'\r\n', b'\n')
+
+
 def payload(layout):
-    files = {'m20book.cls': (ROOT / 'm20book.cls').read_bytes()}
+    files = {'m20book.cls': canonical_text((ROOT / 'm20book.cls').read_bytes())}
     for path in sorted((ROOT / 'tex').glob('*')):
         if path.suffix in ('.sty', '.lua'):
-            files[path.name] = path.read_bytes()
+            files[path.name] = canonical_text(path.read_bytes())
     for path in sorted((ROOT / 'profiles').glob('*.tex')):
-        files['wodtex-profile-' + path.name] = path.read_bytes()
+        files['wodtex-profile-' + path.name] = canonical_text(path.read_bytes())
     if layout == 'corrected':
         patch = ROOT / 'contrib/original-m20-layout'
         manifest = json.loads((patch / 'manifest.json').read_text())
@@ -34,7 +41,7 @@ def payload(layout):
             if relative.parts[0] not in ('tex', 'profiles'):
                 continue
             path = patch / 'overrides' / relative
-            data = path.read_bytes()
+            data = canonical_text(path.read_bytes())
             if path.is_symlink() or digest(data) != entry['sha256']:
                 raise ValueError('Correction checksum mismatch: ' + str(relative))
             name = relative.name if relative.parts[0] == 'tex' else 'wodtex-profile-' + relative.name

@@ -2,6 +2,7 @@
   "schema_version": 1,
   "name": "wodtex-m20",
   "include": [
+    ".gitattributes",
     "README.md",
     "requirements.txt",
     "m20book.cls",

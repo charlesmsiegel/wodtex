@@ -131,7 +131,10 @@ promise support for a profile that is not present in the checkout.
 
 `--layout corrected` is the default and remains so on updates; use
 `--layout base` on **every** install/update to intentionally select the earlier
-base renderer. Correction payload hashes are verified before installation.
+base renderer. Correction payload hashes are verified before installation against canonical LF
+text. Existing Windows CRLF checkouts are accepted by converting only CRLF
+pairs to LF; other source changes still fail verification. `.gitattributes`
+keeps new source checkouts in LF form. Installed-file hashes remain byte-exact.
 Repository-relative resource names are normalized only in installed copies;
 the source build and exact-hash opt-in patch workflow below remain intact.
 Source archives include the correction package needed by this installer.
