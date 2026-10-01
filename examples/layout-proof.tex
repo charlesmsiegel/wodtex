@@ -1,0 +1,72 @@
+\documentclass{m20book}
+\m20setup{profile=m20,running-title={M20 actual composition proof}}
+\makeindex
+\title{M20 actual layout proof}
+\author{WodTeX}
+\newcommand\ProofPara[1]{\par\noindent #1. The changing world calls for thoughtful observation. Every voice, every story and every detail belongs in the same living source. These paragraphs exercise genuine font metrics and normal automatic composition.\par}
+\newcommand\ProofLong[2]{\newcount\proofcount\proofcount=0\loop\ifnum\proofcount<#1\advance\proofcount1\ProofPara{#2-\number\proofcount}\repeat}
+\m20epubsafe{ProofPara,ProofLong}
+\begin{document}
+\chapter{Chapter\\Number:\\Title}
+\section{A Heading Across Both Columns}
+\noindent Paragraph Style [n (no indent)].\par
+Paragraph Style [n]. This matching calibration paragraph retains the native manuscript semantics and supplied Goudy face.\par
+\subsection{Paragraph Style -2-}
+\subsubsection{Paragraph Style -3-}
+\m20newpage
+\ProofPara{Left-column body}
+\columnbreak
+\m20anchor{right-column-note}
+A right-column source note\footnote{BODY-NOTE-ONCE: the native source footnote remains once across the following sidebar transition.} is followed by a mandatory anchor.\par
+\m20anchor{here-narrow-anchor}
+\begin{m20sidebar}[id=here-narrow,place=here]{Paragraph Style -sb 1-}
+Paragraph Style [sb 2].\label{proof:once}\index{MEASURED-INDEX-ONCE} A locally numbered sidebar note\m20note{SIDEBAR-NOTE-ONCE: stored exactly once after typesetting.} belongs to its semantic sidebar.
+\begin{itemize}\item Paragraph Style [sb bullet gold].\item Paragraph Style [sb bullet].\end{itemize}
+\end{m20sidebar}
+\m20newpage
+\begin{m20sidebar}[id=long-narrow,place=flow]{Long narrow proof}
+\ProofLong{36}{NARROW} LONG-NARROW-END
+\end{m20sidebar}
+\m20newpage
+\m20anchor{next-narrow-before}
+\begin{m20sidebar}[id=next-narrow,place=next-page]{Next page narrow}
+The narrow frame starts at the next shipped page. NEXT-NARROW-END
+\end{m20sidebar}
+\m20newpage
+\ProofPara{Wide-one preceding body}
+\m20bodyend
+\m20anchor{here-wide1-anchor}
+\begin{m20sidebarwide}[id=here-wide1,columns=1,place=here]{Wide single-column here}
+The full-width one-column frame belongs directly at this source anchor. HERE-WIDE1-END
+\end{m20sidebarwide}
+\m20newpage
+\begin{m20sidebarwide}[id=long-wide1,columns=1,place=flow]{Long full-width proof}
+\ProofLong{60}{WIDE-ONE} LONG-WIDE1-END
+\end{m20sidebarwide}
+\m20newpage
+\m20bodyend\m20anchor{next-wide1-before}
+\begin{m20sidebarwide}[id=next-wide1,columns=1,place=next-page]{Next page full width}
+This full-width frame starts on the mandated next page. NEXT-WIDE1-END
+\end{m20sidebarwide}
+\m20newpage
+\ProofPara{Wide-two preceding body}
+\m20bodyend\m20anchor{here-wide2-anchor}
+\begin{m20sidebarwide}[id=here-wide2,columns=2,place=here]{Two internal columns here}
+The full-width frame is assembled from two explicitly split, once-typeset columns at the anchor. HERE-WIDE2-END
+\end{m20sidebarwide}
+\m20newpage
+\begin{m20sidebarwide}[id=long-wide2,columns=2,place=flow]{Long two-column proof}
+\ProofLong{30}{WIDE-TWO-BEFORE}
+\begin{m20table}[id=wide2-table,width=container,head-rows=1]{ll}
+TABLE-BETWEEN-SEGMENTS & Source-ordered spanning table \\
+First full-width row & Every cell remains present \\
+Second full-width row & Then two-column text resumes \\
+\end{m20table}
+\ProofLong{30}{WIDE-TWO-AFTER} LONG-WIDE2-END
+\end{m20sidebarwide}
+\m20newpage
+\m20bodyend\m20anchor{next-wide2-before}
+\begin{m20sidebarwide}[id=next-wide2,columns=2,place=next-page]{Next page two columns}
+These explicitly assembled columns start at the next page. NEXT-WIDE2-END
+\end{m20sidebarwide}
+\end{document}

@@ -1,0 +1,62 @@
+\documentclass{m20book}
+\m20setup{profile=m20,running-title={WodTeX M20 Specimen}}
+\title{WodTeX M20 Specimen}
+\author{WodTeX}
+\makeindex
+\begin{document}
+\maketitle
+\tableofcontents
+\chapter{Native\\Composition}
+\label{ch:composition}
+The first paragraph uses its independently measured unindented style.
+\par The indented body uses Goudy Old Style, genuine \textbf{bold}, genuine
+\textit{italic}, and an explicitly declared \textbf{\textit{bold italic}} face.
+\section[Language and mathematics]{Language and mathematics}
+Combining accents: \m20script{é}. Declared script fonts:
+\foreignlanguage{greek}{\m20script{Ελληνικά}}, \foreignlanguage{russian}{\m20script{Русский}},
+\foreignlanguage{hebrew}{\m20script{שלום}}, and \foreignlanguage{arabic}{\m20script{مرحبا}}.
+Native inline mathematics $x_{i_j}^{2}+\frac{1}{1+x}$ retains its meaning.
+\begin{equation}\int_0^1 x^2\,dx=\frac13\end{equation}
+\begin{itemize}\item A list remains a real list.\item References remain native.\end{itemize}
+\begin{quote}A quotation uses the same manuscript in both reading formats.\end{quote}
+A body note\footnote{SEM-BODY-NOTE} remains native.
+\index{native@Native composition!notes}\index{range|(}
+\begin{m20sidebarwide}[columns=2,id=notes]{Local notes}
+A sidebar note\m20note{SEM-SIDEBAR-NOTE} belongs to the end of this aside.
+\begin{m20table}[id=note-table,head-rows=1,width=column,scale=.75,align=right]{lr}
+Term & Result \\ Observation & 7\m20note{SEM-TABLE-NOTE} \\
+\end{m20table}
+Prose resumes in two internal columns after the spanning block.
+\end{m20sidebarwide}
+\input{examples/content/sidebars.tex}
+\input{examples/content/tables.tex}
+\index{range|)}
+\m20newpage
+\m20anchor{here-narrow-anchor}
+\begin{m20sidebar}[id=here-narrow,place=here]{Required narrow placement}A short aside at its exact source anchor.\end{m20sidebar}
+\m20newpage
+\m20anchor{here-wide1-anchor}
+\begin{m20sidebarwide}[id=here-wide1,columns=1,place=here]{Required wide placement}A full-width aside at its exact source anchor.\end{m20sidebarwide}
+\m20newpage
+\m20anchor{here-wide2-anchor}
+\begin{m20sidebarwide}[id=here-wide2,columns=2,place=here]{Required paired columns}Two internal columns at their source anchor.\end{m20sidebarwide}
+\begin{m20sidebar}[id=next-narrow,place=next-page]{Next page narrow}Required next-page placement.\end{m20sidebar}
+\begin{m20sidebarwide}[id=next-wide1,columns=1,place=next-page]{Next page wide one}Required next-page placement.\end{m20sidebarwide}
+\begin{m20sidebarwide}[id=next-wide2,columns=2,place=next-page]{Next page wide two}Required next-page placement.\end{m20sidebarwide}
+\chapter{Art and\\Navigation}
+\label{ch:art}
+Refer back to Chapter~\ref{ch:composition}, print page~\pageref{ch:composition}.
+A plain bookmark variant is supplied for \texorpdfstring{$E=mc^2$}{Energy equals mass times c squared}.
+\m20artreserve[kind=horizontal,position=top,place=next-page,image=examples/content/diagram.png,alt={Three colored panels connected from left to right},caption={SEM-ART-CAPTION},credit={SEM-ART-CREDIT}]{meaningful-art}
+Meaningful art preserves its reserved bounds. Empty print reservations are omitted from EPUB.
+\m20artreserve[kind=horizontal,position=bottom,place=next-page]{horizontal-bottom}
+\m20artreserve[kind=vertical,position=inner,place=next-page]{vertical-inner}
+Text flows beside the vertical reservation, without entering its area.
+\m20artreserve[kind=vertical,position=outer,place=next-page]{vertical-outer}
+Text flows on the other side when the requested region changes.
+\section[Energy]{Energy $E=mc^2$}
+\label{sec:energy}
+SEM-LAST. The index, contents and references are rebuilt when earlier material changes.
+\index{energy@Energy!equation}
+\printindex
+\end{document}

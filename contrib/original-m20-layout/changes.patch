@@ -1,0 +1,1938 @@
+--- a/profiles/m20.tex
++++ b/profiles/m20.tex
+@@ -1,4 +1,6 @@
+ % Source-resolved M20 geometry in bp (72 units/inch), not TeX pt.
++% Heading identity belongs to the profile; prose is shared Goudy Old Style.
++\def\mTwentyHeadingFontFile{abbess-regular.ttf}
+ \def\mTwentyPageWidth{612.0bp}
+ \def\mTwentyPageHeight{792.0bp}
+ \def\mTwentyBodyWidth{490.4496bp}
+--- a/scripts/extract_frontmatter_reference.py
++++ b/scripts/extract_frontmatter_reference.py
+@@ -0,0 +1,40 @@
++#!/usr/bin/env python3
++"""Extract exact original user-provided legal block and full-page placeholder."""
++from pathlib import Path
++import argparse,hashlib,json,re,fitz
++p=argparse.ArgumentParser();p.add_argument('template',type=Path);p.add_argument('--out',type=Path,default=Path('assets'));a=p.parse_args()
++sha=hashlib.sha256(a.template.read_bytes()).hexdigest()
++assert sha=='4c876e07b17f4a85877213d557b3f0236004bf6baa48d0bef708a68745e93df5'
++a.out.mkdir(parents=True,exist_ok=True);src=fitz.open(a.template);outputs=[]
++legal=fitz.open();legal.insert_pdf(src,from_page=1,to_page=1)
++page=legal[0];ids=page.get_contents();stream=b''.join(legal.xref_stream(x) for x in ids)
++start=re.search(rb'/Span <<[^>]*?/MCID 16 >>BDC',stream).start()
++tail=stream[start:]
++# The retained legal text originally inherits TT2/GS1 from the thanks paragraph.
++# Reestablish that exact text state, without retaining any other page content.
++stream=b'q\n/GS1 gs\n0 0 0 1 k\nBT\n/TT2 1 Tf\nET\n'+tail+b'\nQ\n'
++legal.update_stream(ids[0],stream)
++for x in ids[1:]:legal.update_stream(x,b'')
++page.clean_contents()
++# Only the four historical date glyphs become a dynamic document-header field.
++# Redaction is transparent and limited to text; all remaining logo/legal ink stays.
++page.add_redact_annot(fitz.Rect(291.78,631.19,309.64,642.37),fill=False)
++page.apply_redactions(images=0,graphics=0,text=0)
++fn=a.out/'credits-legal.original-template.pdf';legal.save(fn,garbage=4,deflate=True)
++outputs.append({'file':str(fn),'sha256':hashlib.sha256(fn.read_bytes()).hexdigest(),'source_page':2,'elements':'original copyright with date glyphs left for dynamic field, links, White Wolf vector logo and address; no original title/footer/border'})
++assert 'White Wolf Entertainment AB' in legal[0].get_text()
++assert '2018' not in legal[0].get_text()
++assert 'Credits' not in legal[0].get_text()
++art=fitz.open();art.insert_pdf(src,from_page=3,to_page=3)
++# Keep exact full-bleed pink art; label now uses the shared Goudy text role.
++for xref,name,inv,bbox in art[0].get_xobjects():
++    stream=art.xref_stream(xref)
++    stream=re.sub(rb'/Span <<.*?>>BDC\s*BT\b.*?ET\s*EMC',b'',stream,flags=re.S)
++    art.update_stream(xref,stream)
++    art.xref_set_key(xref,'Resources/Font','null')
++art[0].clean_contents()
++assert not art[0].get_text().strip()
++fn=a.out/'art-fullpage.original-template.pdf';art.save(fn,garbage=4,deflate=True)
++outputs.append({'file':str(fn),'sha256':hashlib.sha256(fn.read_bytes()).hexdigest(),'source_page':4,'elements':'exact original CMYK pink background; dynamic shared-font label; no folio or decorative border'})
++(a.out/'frontmatter-reference.provenance.json').write_text(json.dumps({'source_sha256':sha,'outputs':outputs},indent=2)+'\n')
++print(json.dumps(outputs,indent=2))
+--- a/scripts/extract_sidebar_frame.py
++++ b/scripts/extract_sidebar_frame.py
+@@ -0,0 +1,64 @@
++#!/usr/bin/env python3
++"""Privately extract the licensed sidebar texture and fixed-scale shadow tiles.
++
++No artwork bytes belong in the public correction package. Supply the pinned
++original template PDF, then run this script to restore the local assets.
++"""
++import argparse
++import hashlib
++from pathlib import Path
++import fitz
++
++EXPECTED = '4c876e07b17f4a85877213d557b3f0236004bf6baa48d0bef708a68745e93df5'
++FRAME = fitz.Rect(67.5504, 63.0, 558.0, 167.04)
++SHADOW = fitz.Rect(66.6104, 62.06, 568.09, 176.90)
++
++
++def isolate(original, stream, crop, destination):
++    doc = fitz.open()
++    doc.insert_pdf(original, from_page=5, to_page=5)
++    page = doc[0]
++    doc.update_stream(page.get_contents()[0], stream)
++    # Do not retain unrelated template artwork, fonts or page resources.
++    gs, xobject = ('GS1', 'Fm1') if b'/Fm1 Do' in stream else ('GS0', 'Im0')
++    gsref = doc.xref_get_key(page.xref, f'Resources/ExtGState/{gs}')[1]
++    xref = doc.xref_get_key(page.xref, f'Resources/XObject/{xobject}')[1]
++    doc.xref_set_key(page.xref, 'Resources',
++                     f'<< /ExtGState << /{gs} {gsref} >> '
++                     f'/XObject << /{xobject} {xref} >> >>')
++    page.set_cropbox(crop)
++    if page.get_text().strip():
++        raise RuntimeError('Sidebar decorative extraction unexpectedly contains text')
++    doc.save(destination, garbage=4, deflate=True)
++    doc.close()
++
++
++def main():
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument('template', type=Path)
++    parser.add_argument('--out', type=Path, default=Path('assets'))
++    args = parser.parse_args()
++    if hashlib.sha256(args.template.read_bytes()).hexdigest() != EXPECTED:
++        raise SystemExit('Authoritative original template hash mismatch')
++    args.out.mkdir(parents=True, exist_ok=True)
++    original = fitz.open(args.template)
++    texture = (b'q\n/GS0 gs\n492.479989 0 0 106.3199976 '
++               b'66.5352367 623.8199788 cm\n/Im0 Do\nQ\n')
++    isolate(original, texture, FRAME,
++            args.out / 'sidebar-texture.reference-template.pdf')
++    # Twelve-point corners preserve the original blur, displacement and CMYK
++    # Multiply ink. Stretch only flat edge middles, never blur radii.
++    xs = (SHADOW.x0, SHADOW.x0+12, SHADOW.x1-12, SHADOW.x1)
++    ys = (SHADOW.y0, SHADOW.y0+12, SHADOW.y1-12, SHADOW.y1)
++    for row, vertical in enumerate(('top', 'middle', 'bottom')):
++        for col, horizontal in enumerate(('left', 'middle', 'right')):
++            crop = fitz.Rect(xs[col], ys[row], xs[col+1], ys[row+1])
++            isolate(original, b'q\n/GS1 gs\n/Fm1 Do\nQ\n', crop,
++                    args.out / f'sidebar-shadow-{vertical}-{horizontal}.reference-template.pdf')
++    original.close()
++    for path in sorted(args.out.glob('sidebar-*.reference-template.pdf')):
++        print(path, hashlib.sha256(path.read_bytes()).hexdigest())
++
++
++if __name__ == '__main__':
++    main()
+--- a/scripts/prepare_assets.py
++++ b/scripts/prepare_assets.py
+@@ -169,8 +169,10 @@
+ 
+ def write_profile_tex(profile, path):
+     geometry=profile['geometry']
++    heading_font = next(face['file'] for face in profile['fonts'] if face['id'] == 'heading_regular')
+     values={'PageWidth':profile['page'][0],'PageHeight':profile['page'][1],'BodyWidth':geometry['body_width'],'BodyHeight':geometry['body_height'],'Top':geometry['top'],'Inner':geometry['inner'],'Outer':geometry['outer'],'ColumnWidth':geometry['column_width'],'Gutter':geometry['gutter']}
+     text='% Source-resolved M20 geometry in bp (72 units/inch), not TeX pt.\n'
++    text+='\\def\\mTwentyHeadingFontFile{'+heading_font+'}\n'
+     for name,value in values.items():text+='\\def\\mTwenty'+name+'{'+str(value)+'bp}\n'
+     text+='\\def\\mTwentyBodySize{10bp}\n\\def\\mTwentyBodyLeading{12bp}\n\\def\\mTwentyBodyIndent{18bp}\n\\def\\mTwentyBodyBefore{1.44bp}\n\\def\\mTwentyBodyAfter{1.44bp}\n\\def\\mTwentyBodyVerticalScale{98}\n\\def\\mTwentyFirstVerticalScale{100}\n'
+     text+='\\def\\mTwentyOpenerBodyTop{'+str(profile['opener']['body_top'])+'bp}\n'
+--- a/scripts/verify.py
++++ b/scripts/verify.py
+@@ -41,7 +41,7 @@
+     records=[]
+     for line in path.read_text().splitlines():
+         p=line.split('|')
+-        if len(p)<11:continue
++        if len(p)<11 or not p[1].isdigit():continue
+         unit=65536*1.00375
+         records.append(dict(id=p[0],page=int(p[1]),x=int(p[2])/unit,y=792-int(p[3])/unit,
+                             width=int(p[4])/unit,usable=int(p[5])/unit,columns=int(p[6]),
+--- a/tests/test_art_edges.py
++++ b/tests/test_art_edges.py
+@@ -0,0 +1,35 @@
++"""PDF-local art reservations must use page edges and preserve text flow."""
++import unittest
++import fitz
++from tests.test_layout_proof import compile_source, positions
++
++class ArtEdgeTests(unittest.TestCase):
++    def test_horizontal_top_reserve_is_at_page_top_with_body(self):
++        prose = ('This is narrative beside an illustration reserve. The text must continue naturally across the page. ' * 8 + '\\par\n')
++        source = (r'\documentclass{m20book}\begin{document}' + prose * 2
++                  + r'\m20artreserve[kind=horizontal,position=top]{edge-horizontal}' + prose * 12
++                  + r'\end{document}')
++        _, path = compile_source(source, 'edge-horizontal-proof')
++        art = next(p for p in positions(path) if p['id'] == 'edge-horizontal')
++        self.assertLess(art['y'], 85, art)
++        with fitz.open(path.with_suffix('.pdf')) as pdf:
++            self.assertGreater(pdf[art['page'] - 1].get_text().count('narrative'), 3)
++
++    def test_vertical_reserve_is_full_height_with_single_column_section(self):
++        prose = ('The section text flows beside a full-height column illustration. Its heading must not shorten the art. ' * 8 + '\\par\n')
++        source = (r'\documentclass{m20book}\begin{document}' + prose * 2
++                  + r'\m20artreserve[kind=vertical,position=outer]{edge-vertical}'
++                  + r'\section{A Section Beside Art}' + prose * 12
++                  + r'\end{document}')
++        _, path = compile_source(source, 'edge-vertical-proof')
++        records = positions(path)
++        art = next(p for p in records if p['id'] == 'edge-vertical')
++        heading = next(p for p in records if p['kind'] == 'heading')
++        self.assertAlmostEqual(art['height'], 657, places=2)
++        self.assertLess(art['y'], 85, art)
++        self.assertAlmostEqual(art['x'], 305.2248 if art['page'] % 2 else 67.5504, places=2)
++        self.assertEqual(heading['page'], art['page'])
++        self.assertEqual(heading['columns'], 1)
++        self.assertAlmostEqual(heading['width'], 239.2248, places=2)
++
++if __name__ == '__main__': unittest.main()
+--- a/tests/test_fonts_math.py
++++ b/tests/test_fonts_math.py
+@@ -21,8 +21,10 @@
+         self.assertNotIn('Some font shapes were not available',p.stdout)
+         with fitz.open(path.with_suffix('.pdf')) as pdf:
+             fonts={f[3] for page in pdf for f in page.get_fonts()}
+-        for face in ['GoudyOldStyleT-Regular','GoudyOldStyleT-Bold','GoudyOldStyleT-Italic','NotoSerif-BoldItalic']:
++        for face in ['GoudyOldStyleT-Regular','GoudyOldStyleT-Bold','GoudyOldStyleT-Italic']:
+             self.assertTrue(any(face in f for f in fonts),face)
++        self.assertFalse(any('NotoSerif-BoldItalic' in f for f in fonts), fonts)
++        self.assertIn('Goudy Old Style Bold Italic is not supplied', p.stdout)
+ 
+     def test_explicit_script_fonts_preserve_glyphs_and_genuine_faces(self):
+         source=r'''\documentclass{m20book}\begin{document}\section{Languages}
+--- a/tests/test_frontmatter_reference.py
++++ b/tests/test_frontmatter_reference.py
+@@ -0,0 +1,98 @@
++"""Real-page proofs for the opt-in reference-matched front matter."""
++import unittest
++import fitz
++from tests.test_layout_proof import compile_source
++from tests.support import ROOT
++
++SOURCE = r'''\documentclass{m20book}
++\m20setup{running-title={Reference Proof}}
++\m20writtenby{[Writer Name]}
++\m20developedby{[Developer Name]}
++\m20editedby{[Editor Name]}
++\m20specialthanks{[Special Thanks]}
++\AtBeginDocument{\renewcommand{\contentsname}{Table of Contents}}
++\makeatletter
++\begin{document}\frontmatter
++\typeout{REFERENCE-FRONT=\if@mainmatter TRUE\else FALSE\fi}
++\mTwentyInteriorTitle{Reference Proof}{Subtitle}
++\mTwentyInteriorCredits{\section{Credits and Attributions}SOURCE-ATTRIBUTION.}
++\tableofcontents\mainmatter
++\typeout{REFERENCE-MAIN=\if@mainmatter TRUE\else FALSE\fi}
++\chapter{First Title}\section{First Section}BODY-ONE.
++\chapter{A Longer Second Chapter Title}BODY-TWO.
++\appendix\chapter{Appendix Title}BODY-APPENDIX.
++\end{document}'''
++
++class FrontMatterReferenceTests(unittest.TestCase):
++    @classmethod
++    def setUpClass(cls):
++        cls.process, cls.path = compile_source(SOURCE, 'frontmatter-regression')
++
++    def test_credit_header_commands_and_direct_contents(self):
++        with fitz.open(self.path.with_suffix('.pdf')) as d:
++            credit=d[1].get_text();toc=d[2].get_text()
++            for text in ['Credits','Written By: [Writer Name]','Developed By: [Developer Name]',
++                         'Edited By: [Editor Name]','Special Thanks to:','[Special Thanks]',
++                         'SOURCE-ATTRIBUTION.','White Wolf Entertainment AB','www.storytellersvault.com']:
++                self.assertIn(text, credit)
++            legal=[sp for b in d[1].get_text('dict')['blocks'] for l in b.get('lines',[]) for sp in l['spans'] if abs(sp['origin'][1]-639.7725)<.1]
++            line=''.join(sp['text'] for sp in sorted(legal,key=lambda sp:sp['bbox'][0]))
++            self.assertIn('2026 White Wolf Entertainment AB',' '.join(line.split()))
++            self.assertIn('Contents',toc)
++            self.assertNotIn('Credits and Attributions',toc)
++            self.assertIn('REFERENCE-FRONT=FALSE',self.process.stdout)
++            self.assertIn('REFERENCE-MAIN=TRUE',self.process.stdout)
++
++    def test_word_chapter_toc_uses_purple_abbess_without_numeral_column(self):
++        with fitz.open(self.path.with_suffix('.pdf')) as d:
++            toc=d[2];text=toc.get_text()
++            for label in ['Chapter One: First Title','Chapter Two: A Longer Second Chapter Title','Appendix A: Appendix Title']:
++                self.assertIn(label,' '.join(text.split()))
++            spans=[s for b in toc.get_text('dict')['blocks'] for l in b.get('lines',[]) for s in l['spans']]
++            chapter=next(s for s in spans if 'Chapter One:' in s['text'])
++            self.assertIn('Abbess',chapter['font']);self.assertNotIn(chapter['color'],[0,0xffffff])
++            self.assertAlmostEqual(chapter['size'],12,places=2)
++            self.assertNotIn('\\contentsline {section}{Credits',self.path.with_suffix('.toc').read_text())
++
++    def test_contents_uses_the_ordinary_spread_border(self):
++        with fitz.open(self.path.with_suffix('.pdf')) as d, fitz.open(ROOT/'assets/spread-border.original-template.pdf') as ref:
++            actual=d[2].get_pixmap(dpi=72,alpha=False).samples
++            wanted=ref[1].get_pixmap(dpi=72,alpha=False).samples
++            stride=612*3
++            for y in range(792):
++                a=actual[y*stride:(y+1)*stride];b=wanted[y*stride:(y+1)*stride]
++                if y<40 or y>=760:
++                    self.assertEqual(a,b)
++                elif y<740:
++                    self.assertEqual(a[:40*3],b[:40*3]);self.assertEqual(a[-40*3:],b[-40*3:])
++
++    def test_parity_spacers_have_border_and_footer(self):
++        with fitz.open(self.path.with_suffix('.pdf')) as d:
++            for page in d:
++                self.assertTrue(page.get_text().strip() or page.get_images() or page.get_xobjects())
++                text=page.get_text().strip()
++                if text and not any(label in text for label in ['BODY-','Contents','Credits','Reference Proof','illustration']):
++                    self.assertTrue(page.get_xobjects())
++                    footer=[s for b in page.get_text('dict')['blocks'] for l in b.get('lines',[]) for s in l['spans'] if abs(s['origin'][1]-736.81)<.1]
++                    self.assertTrue(footer)
++
++    def test_copyright_year_header_override(self):
++        _,path=compile_source(SOURCE.replace(r'\begin{document}',r'\m20copyrightyear{2042}\begin{document}'),'copyright-year-override')
++        with fitz.open(path.with_suffix('.pdf')) as d:
++            sp=[s for b in d[1].get_text('dict')['blocks'] for l in b.get('lines',[]) for s in l['spans'] if abs(s['origin'][1]-639.7725)<.1]
++            line=''.join(s['text'] for s in sorted(sp,key=lambda s:s['bbox'][0]))
++            self.assertIn('2042 White Wolf Entertainment AB',' '.join(line.split()))
++            self.assertNotIn('2018',line)
++
++    def test_each_chapter_faces_exact_fullpage_placeholder(self):
++        with fitz.open(self.path.with_suffix('.pdf')) as d, fitz.open(ROOT/'assets/art-fullpage.original-template.pdf') as art:
++            expected=art[0].get_pixmap(dpi=72,alpha=False).samples
++            for marker in ['BODY-ONE.','BODY-TWO.','BODY-APPENDIX.']:
++                i=next(i for i,p in enumerate(d) if marker in p.get_text())
++                self.assertEqual((i+1)%2,1)
++                actual=d[i-1].get_pixmap(dpi=72,alpha=False).samples
++                self.assertEqual(actual[:280*612*3],expected[:280*612*3])
++                self.assertEqual(actual[420*612*3:],expected[420*612*3:])
++                self.assertEqual(' '.join(d[i-1].get_text().split()),'Place illustration here (recomended full colour)')
++                font_spans=[s for b in d[i-1].get_text('dict')['blocks'] for l in b.get('lines',[]) for s in l['spans']]
++                self.assertTrue(all('Goudy' in s['font'] for s in font_spans))
+--- a/tests/test_horizontal_art_float_edges.py
++++ b/tests/test_horizontal_art_float_edges.py
+@@ -0,0 +1,101 @@
++"""Real shipout/pixel regressions for horizontal art's float and column boundaries."""
++import unittest
++
++import fitz
++
++from tests.test_layout_proof import compile_source, positions
++
++
++def queued_table_source(following_prose):
++    """A compact native lead/table is queued ahead of a top-edge art float."""
++    paragraph = (
++        'The survey team records each measurement before returning to the central office. '
++        'A careful account preserves the evidence and gives the next team a useful starting point. '
++        'Every route has a reference marker, and every report includes enough detail for an independent review. '
++    ) + r'\par' + '\n'
++    lead = r'''\begin{m20tablelead}
++\subsection{Survey reference}
++The following entries summarize the five routes in the sample survey.\par
++\begin{m20table}[id=queued-table,width=container,head-rows=1]{llll}
++Route & Team & Distance & Notes \\
++North & Alpha & Short & First record \\
++South & Beta & Medium & Second record \\
++East & Gamma & Long & Third record \\
++West & Delta & Short & Fourth record \\
++Central & Epsilon & Medium & Fifth record \\
++\end{m20table}
++\end{m20tablelead}'''
++    return (r'\documentclass{m20book}\begin{document}\chapter{Survey Records}'
++            + paragraph * 3 + lead + paragraph * 3
++            + r'\m20artreserve[kind=horizontal,position=top]{top-art}'
++            + (paragraph * 20 if following_prose else 'End of sample prose.')
++            + r'\end{document}')
++
++
++class HorizontalArtFloatEdgeTests(unittest.TestCase):
++    def test_forced_float_page_keeps_art_as_its_first_float(self):
++        _, path = compile_source(queued_table_source(following_prose=False),
++                                 'horizontal-art-clearpage-proof')
++        records = positions(path)
++        art = next(p for p in records if p['id'] == 'top-art')
++        table = next(p for p in records if p['id'] == 'queued-table')
++        self.assertLess(table['page'], art['page'])
++        self.assertAlmostEqual(art['y'], 63, delta=.1, msg=art)
++
++    def test_later_bottom_float_cannot_lift_horizontal_art_from_page_bottom(self):
++        prose = 'Continuous narrative filling the live columns before and after art. ' * 40 + '\\par\n'
++        source = (r'\documentclass{m20book}\begin{document}' + prose
++                  + r'\m20artreserve[kind=horizontal,position=bottom]{bottom-art}'
++                  + r'\begin{table*}[!b]\noindent\rule{100bp}{45bp}\par\end{table*}'
++                  + prose * 12 + r'\end{document}')
++        _, path = compile_source(source, 'horizontal-art-bottom-proof')
++        art = next(p for p in positions(path) if p['id'] == 'bottom-art')
++        self.assertAlmostEqual(art['y'] + art['height'], 720, delta=.1, msg=art)
++
++    def test_art_waits_for_top_edge_after_an_earlier_table_float(self):
++        _, path = compile_source(queued_table_source(following_prose=True),
++                                 'horizontal-art-after-table-proof')
++        records = positions(path)
++        art = next(p for p in records if p['id'] == 'top-art')
++        table = next(p for p in records if p['id'] == 'queued-table')
++        self.assertLess(table['page'], art['page'])
++        self.assertAlmostEqual(art['y'], 63, delta=.1, msg=art)
++        self.assertAlmostEqual(art['width'], 490.4496, places=2)
++        self.assertAlmostEqual(art['height'], 341.28, places=2)
++        with fitz.open(path.with_suffix('.pdf')) as pdf:
++            page = pdf[art['page'] - 1]
++            # The visible dark panel must really occupy the top reserve, not
++            # merely report a corrected metadata coordinate.
++            pixels = page.get_pixmap(dpi=72, alpha=False)
++            for y in range(85, 110):
++                self.assertTrue(all(c < 80 for c in pixels.pixel(300, y)), (y, pixels.pixel(300, y)))
++
++    def test_horizontal_enqueue_keeps_heading_stats_and_prose_in_live_column(self):
++        # A nearly full left column and a forced right-column heading recreate
++        # a generic device entry without depending on upstream chapter pagination.
++        source = (r'\documentclass{m20book}\begin{document}'
++                  r'\noindent\rule{1bp}{590bp}\par\columnbreak'
++                  r'\subsection{Survey Device}\m20anchor{device-heading}'
++                  r'\begin{m20statblock}'
++                  r'\mTwentyStatEntry{\textbf{Type}: Instrument | \textbf{Range}: 3 | '
++                  r'\textbf{Capacity}: 6 | \textbf{Cost}: 2}'
++                  r'\end{m20statblock}'
++                  r'\m20artreserve[kind=horizontal,position=top]{device-horizontal}'
++                  r'\m20anchor{device-prose}A compact measuring instrument, stored in a padded case. '
++                  + 'Its narrative continues in the same live column. ' * 90
++                  + r'\end{document}')
++        _, path = compile_source(source, 'horizontal-art-live-column-proof')
++        records = positions(path)
++        heading = next(p for p in records if p['id'] == 'device-heading')
++        prose = next(p for p in records if p['id'] == 'device-prose')
++        self.assertEqual(prose['page'], heading['page'])
++        self.assertAlmostEqual(prose['x'], heading['x'], delta=1)
++        with fitz.open(path.with_suffix('.pdf')) as pdf:
++            page = pdf[heading['page'] - 1]
++            last_stat = page.search_for('Cost: 2')[0]
++            first_prose = page.search_for('A compact measuring instrument')[0]
++            self.assertLess(first_prose.y0 - last_stat.y1, 28)
++
++
++if __name__ == '__main__':
++    unittest.main()
+--- a/tests/test_profile.py
++++ b/tests/test_profile.py
+@@ -1,5 +1,7 @@
+ import importlib.util
++import tempfile
+ import unittest
++from pathlib import Path
+ from tests.support import ROOT, IDML
+ 
+ class ProfileTests(unittest.TestCase):
+@@ -45,3 +47,18 @@
+         self.assertTrue(fonts['heading_regular']['glyph_coverage']['M20'])
+         self.assertTrue(fonts['script_fallback']['glyph_coverage']['greek_cyrillic'])
+         self.assertFalse(any(f.get('synthetic', False) for f in fonts.values()))
++
++    def test_generated_profile_preserves_its_heading_font_selection(self):
++        module = self.module()
++        profile = module.resolve_profile(IDML)
++        with tempfile.TemporaryDirectory(dir=ROOT / 'build') as directory:
++            path = Path(directory) / 'profile.tex'
++            module.write_profile_tex(profile, path)
++            self.assertIn(r'\def\mTwentyHeadingFontFile{abbess-regular.ttf}', path.read_text())
++            # Authoring configuration follows the profile's genuine heading
++            # font record instead of hardcoding M20's face into shared code.
++            for face in profile['fonts']:
++                if face['id'] == 'heading_regular':
++                    face['file'] = 'configured-heading.ttf'
++            module.write_profile_tex(profile, path)
++            self.assertIn(r'\def\mTwentyHeadingFontFile{configured-heading.ttf}', path.read_text())
+--- a/tests/test_sidebar_breaks.py
++++ b/tests/test_sidebar_breaks.py
+@@ -0,0 +1,66 @@
++"""Real sidebar splits must respect paragraph endpoints without stretching."""
++import re
++import unittest
++
++import fitz
++
++from tests.test_layout_proof import compile_source, positions
++
++
++class SidebarParagraphBreakTests(unittest.TestCase):
++    def compile_paragraph(self, name, available, lines, first_available=None):
++        paragraph = r"\newline ".join(f"PARA-{i:02d}" for i in range(lines))
++        first_available = available if first_available is None else first_available
++        source = (
++            r"\documentclass{m20book}\makeatletter"
++            r"\newcount\sidebarTestRegion"
++            r"\renewcommand\mTwentyRemaining{"
++            r"\ifnum\sidebarTestRegion=0 "
++            f"\\mTwentyAvailable={first_available}bp "
++            r"\else "
++            f"\\mTwentyAvailable={available}bp "
++            r"\fi}"
++            r"\renewcommand\mTwentyAdvance{\advance\sidebarTestRegion1\newpage}"
++            r"\makeatother\begin{document}\m20bodyend"
++            # Neutralize inherited body policy: the galley needs its own policy.
++            # Returning to the live body must reapply its strong default policy.
++            r"\clubpenalty=0\widowpenalty=0\displaywidowpenalty=0"
++            r"\begin{m20sidebar}[id=paragraph-break]{Endpoint proof}"
++            r"\typeout{SIDEBAR-POLICY:\the\clubpenalty,\the\widowpenalty,\the\displaywidowpenalty}"
++            + paragraph
++            + r"\par\end{m20sidebar}"
++            r"\typeout{OUTSIDE-POLICY:\the\clubpenalty,\the\widowpenalty,\the\displaywidowpenalty}"
++            r"\end{document}"
++        )
++        _, path = compile_source(source, name)
++        with fitz.open(path.with_suffix(".pdf")) as pdf:
++            chunks = [re.findall(r"PARA-\d\d", p.get_text()) for p in pdf]
++        return path, [chunk for chunk in chunks if chunk]
++
++    def test_sidebar_galley_sets_local_endpoint_penalties(self):
++        path, _ = self.compile_paragraph("sidebar-local-penalties", 110, 4)
++        log = path.with_suffix(".log").read_text()
++        self.assertEqual(re.findall(r"SIDEBAR-POLICY:([^\n]+)", log),
++                         ["10000,10000,10000"])
++        self.assertEqual(re.findall(r"OUTSIDE-POLICY:([^\n]+)", log), ["10000,10000,10000"])
++
++    def test_sidebar_avoids_single_initial_line_in_short_region(self):
++        path, chunks = self.compile_paragraph("sidebar-club", 126, 9, 84)
++        self.assertEqual([x for chunk in chunks for x in chunk],
++                         [f"PARA-{i:02d}" for i in range(9)])
++        self.assertTrue(all(len(chunk) >= 2 for chunk in chunks), chunks)
++        self.assertTrue(all(p["height"] <= 126 for p in positions(path)
++                            if p["kind"] == "sidebar"))
++
++    def test_sidebar_avoids_single_final_line(self):
++        path, chunks = self.compile_paragraph("sidebar-widow", 103, 4)
++        self.assertEqual([x for chunk in chunks for x in chunk],
++                         [f"PARA-{i:02d}" for i in range(4)])
++        self.assertGreaterEqual(len(chunks), 2, chunks)
++        self.assertTrue(all(len(chunk) >= 2 for chunk in chunks), chunks)
++        self.assertTrue(all(p["height"] <= 103 for p in positions(path)
++                            if p["kind"] == "sidebar"))
++
++
++if __name__ == "__main__":
++    unittest.main()
+--- a/tests/test_sidebar_frame_paint.py
++++ b/tests/test_sidebar_frame_paint.py
+@@ -0,0 +1,41 @@
++"""Real pixels for the authoritative double-rule sidebar frame; no source mocks."""
++import unittest
++import fitz
++from tests.test_layout_proof import compile_source
++
++
++class SidebarFramePaintTests(unittest.TestCase):
++    @classmethod
++    def setUpClass(cls):
++        _, cls.path = compile_source(
++            r'\documentclass{m20book}\begin{document}'
++            r'\begin{m20sidebarwide}[id=frame-paint,columns=1]{Frame proof}'
++            r'First line.\par Second line.\par Third line.'
++            r'\end{m20sidebarwide}\end{document}', 'sidebar-frame-paint')
++
++    def test_gradient_double_gold_rules_and_clear_gap(self):
++        with fitz.open(self.path.with_suffix('.pdf')) as doc:
++            page = doc[0]
++            frame = next(d['rect'] for d in page.get_drawings()
++                         if d['type'] == 'f' and d.get('fill')
++                         and abs(d['fill'][0] - .2918898) < .002)
++            pix = page.get_pixmap(matrix=fitz.Matrix(8, 8), alpha=False)
++            def sample(x, y):
++                return pix.pixel(round(x * 8), round(y * 8))[:3]
++            outer = sample(frame.x0 + 1.75, frame.y0 + frame.height / 2)
++            gap = sample(frame.x0 + 4.7, frame.y0 + frame.height / 2)
++            inner = sample(frame.x0 + 6.4155, frame.y0 + frame.height / 2)
++            self.assertLess(max(gap), 100, 'A 2.331 bp dark gap must separate gold rules')
++            self.assertGreater(min(inner[:2]), 140, 'The inset 1.169 bp rule must be gold')
++            self.assertLess(max(abs(a-b) for a,b in zip(outer, inner)), 5)
++            top = sample(frame.x0 + 1.75, frame.y0 + 2)
++            bottom = sample(frame.x0 + 1.75, frame.y1 - 2)
++            self.assertGreater(top[1] - bottom[1], 60, 'Gold must fade from pale top to dark bottom')
++            self.assertLess(max(abs(a-b) for a,b in zip(outer, (203,175,102))), 8)
++            shadow = sample(frame.x1 + 4, frame.y0 + frame.height/2)
++            self.assertLess(min(shadow), 252, 'Authentic lower-right drop shadow must remain visible')
++            self.assertGreater(min(shadow), 220, 'Shadow must remain subtle')
++
++
++if __name__ == '__main__':
++    unittest.main()
+--- a/tests/test_sidebar_keep.py
++++ b/tests/test_sidebar_keep.py
+@@ -0,0 +1,85 @@
++"""A short flow sidebar should move intact instead of creating continuations."""
++import re
++import unittest
++
++import fitz
++
++from tests.test_layout_proof import compile_source, positions
++
++
++class SidebarKeepTogetherTests(unittest.TestCase):
++    def compile_sidebar(self, name, lines=20, environment="m20sidebar", options=""):
++        paragraph = r"\newline ".join(f"KEEP-{i:03d}" for i in range(lines))
++        source = (
++            r"\documentclass{m20book}\makeatletter"
++            r"\newcount\sidebarTestRegion"
++            r"\renewcommand\mTwentyRemaining{"
++            r"\ifnum\sidebarTestRegion=0 \mTwentyAvailable=200bp "
++            r"\else\mTwentyAvailable=650bp\fi}"
++            r"\renewcommand\mTwentyAdvance{\advance\sidebarTestRegion1\newpage}"
++            r"\makeatother\begin{document}\m20bodyend"
++            r"\null\par\m20anchor{keep-before}"
++            + "\\begin{" + environment + "}[id=keep," + options + "]{Keep proof}"
++            + paragraph
++            + "\\par\\end{" + environment + "}\\end{document}"
++        )
++        _, path = compile_source(source, name)
++        with fitz.open(path.with_suffix(".pdf")) as pdf:
++            markers = [m for page in pdf for m in re.findall(r"KEEP-\d\d\d", page.get_text())]
++        self.assertEqual(markers, [f"KEEP-{i:03d}" for i in range(lines)])
++        return path, positions(path)
++
++    def test_short_flow_sidebar_moves_intact_to_next_region(self):
++        _, p = self.compile_sidebar("sidebar-keep-narrow")
++        frames = [row for row in p if row["id"] == "keep"]
++        anchor = next(row for row in p if row["id"] == "keep-before")
++        self.assertEqual(len(frames), 1, frames)
++        self.assertEqual(frames[0]["page"], anchor["page"] + 1)
++        self.assertLessEqual(frames[0]["height"], 650)
++
++    def test_short_wide_one_column_sidebar_keeps_requested_columns(self):
++        _, p = self.compile_sidebar("sidebar-keep-wide1", environment="m20sidebarwide",
++                                    options="columns=1,")
++        frames = [row for row in p if row["id"] == "keep"]
++        self.assertEqual(len(frames), 1, frames)
++        self.assertEqual(frames[0]["columns"], 1)
++
++    def test_short_wide_two_column_sidebar_moves_as_one_frame(self):
++        _, p = self.compile_sidebar("sidebar-keep-wide2", lines=40,
++                                    environment="m20sidebarwide", options="columns=2,")
++        frames = [row for row in p if row["id"] == "keep"]
++        self.assertEqual(len(frames), 1, frames)
++        self.assertEqual(frames[0]["columns"], 2)
++        self.assertLessEqual(frames[0]["height"], 650)
++
++    def test_explicit_here_placement_retains_its_anchor(self):
++        _, p = self.compile_sidebar("sidebar-keep-here", options="place=here,")
++        frames = [row for row in p if row["id"] == "keep"]
++        anchor = next(row for row in p if row["id"] == "keep-before")
++        self.assertGreaterEqual(len(frames), 2, frames)
++        self.assertEqual(frames[0]["page"], anchor["page"])
++
++    def test_sidebar_taller_than_whole_region_remains_breakable(self):
++        _, p = self.compile_sidebar("sidebar-keep-long", lines=80)
++        frames = [row for row in p if row["id"] == "keep"]
++        self.assertGreaterEqual(len(frames), 2, frames)
++        self.assertTrue(all(row["height"] <= 650 for row in frames))
++
++    def test_narrow_sidebar_moves_to_next_native_body_column(self):
++        preceding = r"\newline ".join(f"PRE-{i:02d}" for i in range(40))
++        paragraph = r"\newline ".join(f"KEEP-{i:03d}" for i in range(20))
++        source = (r"\documentclass{m20book}\begin{document}" + preceding
++                  + r"\par\m20anchor{native-before}"
++                  + r"\begin{m20sidebar}[id=native-keep]{Keep proof}"
++                  + paragraph + r"\par\end{m20sidebar}\end{document}")
++        _, path = compile_source(source, "sidebar-keep-native-column")
++        p = positions(path)
++        frames = [row for row in p if row["id"] == "native-keep"]
++        anchor = next(row for row in p if row["id"] == "native-before")
++        self.assertEqual(len(frames), 1, frames)
++        self.assertEqual(frames[0]["page"], anchor["page"])
++        self.assertGreater(frames[0]["x"], 300)
++
++
++if __name__ == "__main__":
++    unittest.main()
+--- a/tests/test_sidebar_page_frames.py
++++ b/tests/test_sidebar_page_frames.py
+@@ -0,0 +1,58 @@
++"""One continuous frame per physical page, including spanning table bands."""
++import collections
++import re
++import unittest
++
++import fitz
++
++from tests.test_layout_proof import compile_source, positions
++
++
++class SidebarPageFrameTests(unittest.TestCase):
++    def verify(self, path, ident, expected):
++        frames = [r for r in positions(path) if r["id"] == ident
++                  and r["kind"] in ("sidebar", "table-segment")]
++        self.assertTrue(frames)
++        counts = collections.Counter(r["page"] for r in frames)
++        self.assertTrue(all(n == 1 for n in counts.values()), frames)
++        self.assertTrue(all(r["height"] <= 657 for r in frames), frames)
++        with fitz.open(path.with_suffix(".pdf")) as pdf:
++            text = "\n".join(p.get_text() for p in pdf)
++        for marker in expected:
++            self.assertEqual(text.count(marker), 1, marker)
++        return frames
++
++    def test_text_table_text_share_one_frame_per_page(self):
++        before = r"\newline ".join(f"PRE-{i:03d}" for i in range(20))
++        after = r"\newline ".join(f"POST-{i:03d}" for i in range(140))
++        table = "HEAD-A & HEAD-B \\\\ " + "".join(
++            f"CELL-{i:03d} & Description {i} \\\\ " for i in range(7))
++        source = (r"\documentclass{m20book}\begin{document}"
++                  r"\begin{m20sidebarwide}[id=composite,columns=2]{Composite proof}"
++                  + before + r"\par\begin{m20table}[head-rows=1,id=composite-table]{ll}"
++                  + table + r"\end{m20table}" + after
++                  + r"\par\end{m20sidebarwide}\end{document}")
++        _, path = compile_source(source, "sidebar-composite-pages")
++        markers = ([f"PRE-{i:03d}" for i in range(20)]
++                   + [f"CELL-{i:03d}" for i in range(7)]
++                   + [f"POST-{i:03d}" for i in range(140)])
++        frames = self.verify(path, "composite", markers)
++        self.assertGreaterEqual(len(frames), 2)
++        self.assertTrue(all(r["columns"] == 2 for r in frames))
++        table_position = next(r for r in positions(path) if r["id"] == "composite-table")
++        frame = next(r for r in frames if r["page"] == table_position["page"])
++        self.assertGreaterEqual(table_position["y"], frame["y"])
++        self.assertLessEqual(table_position["y"], frame["y"] + frame["height"])
++
++    def test_long_narrow_sidebar_continues_on_distinct_pages(self):
++        body = r"\newline ".join(f"NARROW-{i:03d}" for i in range(120))
++        source = (r"\documentclass{m20book}\begin{document}"
++                  r"\begin{m20sidebar}[id=narrow-pages]{Narrow proof}" + body
++                  + r"\par\end{m20sidebar}\end{document}")
++        _, path = compile_source(source, "sidebar-narrow-pages")
++        frames = self.verify(path, "narrow-pages", [f"NARROW-{i:03d}" for i in range(120)])
++        self.assertGreaterEqual(len(frames), 2)
++
++
++if __name__ == "__main__":
++    unittest.main()
+--- a/tests/test_stat_font_height.py
++++ b/tests/test_stat_font_height.py
+@@ -0,0 +1,122 @@
++"""Real PDF ink proofs for the global stat-block emphasis role."""
++import unittest
++
++import fitz
++import numpy as np
++
++from tests.test_layout_proof import compile_source
++
++
++SOURCE = r'''\documentclass{m20book}
++\begin{document}\m20bodyend
++Body before \textbf{BODY BOLD}.\par
++\begin{minipage}{239.2248bp}
++\begin{m20statblock}
++\mTwentyStatEntry{H \textbf{H}}
++\mTwentyStatEntry{x \textbf{x}}
++\mTwentyStatEntry{\textbf{Ruin Type}: Feral Realm | \textbf{Structural Integrity}: 4}
++\mTwentyStatEntry{\textbf{Primary Hazards}: Inhabitants (the realm's biological defenses are continuous and sophisticated), Spiritual Contamination (the life Resonance triggers magical responses in visitors that are not entirely under visitor control)}
++\end{m20statblock}
++\end{minipage}\par
++Body after \textbf{BODY BOLD}.\par
++{\mTwentySidebarFont SIDEBAR REGULAR \textbf{SIDEBAR BOLD}}\par
++\clearpage
++\section{SECTION HEADING}
++\subsection{SUBSECTION HEADING}
++\subsubsection{SUBSUBSECTION HEADING}
++\begin{itemize}\item LIST REGULAR \textbf{LIST BOLD} \textit{LIST ITALIC}\end{itemize}
++\begin{m20sidebar}[id=font-role-sidebar]{SIDEBAR HEADING}
++SIDEBAR PROSE \textbf{SIDEBAR PROSE BOLD} \textit{SIDEBAR PROSE ITALIC}
++\end{m20sidebar}
++\m20bodyend
++\begin{m20table}[head-rows=1,id=font-role-table]{ll}
++TABLE LABEL A & TABLE LABEL B \\
++TABLE CELL & \textit{TABLE ITALIC} \\
++\end{m20table}
++\end{document}'''
++
++
++def spans(page, kind='dict'):
++    return [span for block in page.get_text(kind)['blocks']
++            for line in block.get('lines', []) for span in line['spans']]
++
++
++def glyph_ink(page, char):
++    # PDF span boxes describe font ascenders, not visible ink. Rasterize the
++    # actual shipped glyph at 1200dpi and count ink inside its isolated cell.
++    pixmap = page.get_pixmap(matrix=fitz.Matrix(1200 / 72, 1200 / 72),
++                            clip=fitz.Rect(char['bbox']), alpha=False,
++                            colorspace=fitz.csRGB)
++    pixels = np.frombuffer(pixmap.samples, dtype=np.uint8).reshape(
++        pixmap.height, pixmap.width, 3)
++    # Ignore any black body ink in an overlapping font-metric box: all proof
++    # glyphs are purple, which has blue > red > green channels.
++    rgb = pixels.astype(np.int16)
++    ink = ((rgb.min(axis=2) < 160) & (rgb[:, :, 2] > rgb[:, :, 0] + 10)
++           & (rgb[:, :, 0] > rgb[:, :, 1] + 10))
++    rows = np.flatnonzero(ink.any(axis=1))
++    return (rows[-1] - rows[0] + 1) * 72 / 1200, int(ink.sum())
++
++
++class StatFontHeightTests(unittest.TestCase):
++    @classmethod
++    def setUpClass(cls):
++        cls.process, cls.path = compile_source(SOURCE, 'stat-font-height')
++
++    def test_bold_and_regular_stat_glyphs_have_matching_visible_height(self):
++        with fitz.open(self.path.with_suffix('.pdf')) as document:
++            page = document[0]
++            stat_spans = [span for span in spans(page, 'rawdict') if span['color']]
++            # Each initial proof row contains exactly one regular and one
++            # emphasized instance, without relying on PDF font bold flags.
++            for letter in ('H', 'x'):
++                chars = [(span, char) for span in stat_spans
++                         for char in span['chars'] if char['c'] == letter][:2]
++                self.assertEqual(len(chars), 2, letter)
++                regular, bold = [glyph_ink(page, char) for _, char in chars]
++                self.assertLessEqual(abs(bold[0] - regular[0]), .18,
++                                     f'{letter}: regular {regular[0]:.2f}bp, bold {bold[0]:.2f}bp')
++                self.assertGreater(bold[1], regular[1] * 1.10,
++                                   'Emphasis must increase ink weight visibly')
++                self.assertAlmostEqual(chars[0][0]['size'], chars[1][0]['size'], places=3)
++                self.assertAlmostEqual(chars[0][1]['origin'][1], chars[1][1]['origin'][1], places=3)
++
++    def test_all_prose_roles_use_genuine_goudy_old_style_faces(self):
++        self.assertNotIn('Missing character:', self.process.stdout)
++        self.assertNotIn('Some font shapes were not available', self.process.stdout)
++        with fitz.open(self.path.with_suffix('.pdf')) as document:
++            page_spans = spans(document[0])
++            body = [span for span in page_spans if 'BODY BOLD' in span['text']]
++            self.assertEqual(len(body), 2)
++            self.assertTrue(all(span['font'] == 'GoudyOldStyleT-Bold' for span in body))
++            sidebar = next(span for span in page_spans if 'SIDEBAR BOLD' in span['text'])
++            self.assertEqual(sidebar['font'], 'GoudyOldStyleT-Bold')
++            stat = [span for span in page_spans if span['color']]
++            self.assertTrue(stat)
++            self.assertTrue(all(abs(span['size'] - 10) < .001 for span in stat))
++            regular = [span for span in stat if 'Feral Realm' in span['text']]
++            self.assertTrue(regular)
++            self.assertTrue(all(span['font'] == 'GoudyOldStyleT-Regular' for span in regular))
++            self.assertTrue(all(span['font'].startswith('GoudyOldStyleT-') for span in stat))
++            text = document[0].get_text()
++            self.assertEqual(text.count('Ruin Type'), 1)
++            self.assertEqual(text.count('Primary Hazards'), 1)
++
++    def test_rendered_list_sidebar_and_table_fonts_follow_their_roles(self):
++        with fitz.open(self.path.with_suffix('.pdf')) as document:
++            all_spans = [span for page in document for span in spans(page)]
++            for marker, face in [('SECTION HEADING', 'Abbess'),
++                                 ('SUBSECTION HEADING', 'Abbess'),
++                                 ('SUBSUBSECTION HEADING', 'Abbess'),
++                                 ('SIDEBAR HEADING', 'Abbess'),
++                                 ('LIST REGULAR', 'GoudyOldStyleT-Regular'),
++                                 ('LIST BOLD', 'GoudyOldStyleT-Bold'),
++                                 ('LIST ITALIC', 'GoudyOldStyleT-Italic'),
++                                 ('SIDEBAR PROSE BOLD', 'GoudyOldStyleT-Bold'),
++                                 ('SIDEBAR PROSE ITALIC', 'GoudyOldStyleT-Italic'),
++                                 ('TABLE LABEL A', 'GoudyOldStyleT-Bold'),
++                                 ('TABLE CELL', 'GoudyOldStyleT-Regular'),
++                                 ('TABLE ITALIC', 'GoudyOldStyleT-Italic')]:
++                matches = [span for span in all_spans if marker in span['text']]
++                self.assertTrue(matches, marker)
++                self.assertTrue(all(span['font'] == face for span in matches), (marker, matches))
+--- a/tests/test_table_lead_flow.py
++++ b/tests/test_table_lead_flow.py
+@@ -0,0 +1,27 @@
++"""A table caption must remain in its wide float without balancing prose."""
++import unittest
++import fitz
++from tests.test_layout_proof import compile_source
++
++class TableLeadFlowTests(unittest.TestCase):
++    def test_caption_and_table_remain_together_inside_live_columns(self):
++        prose = ('A continuous narrative should fill both columns while a compact table waits for a page edge. ' * 10 + '\\par\n')
++        source = (r'\documentclass{m20book}\begin{document}' + prose * 4
++                  + r'\begin{m20tablelead}\subsection{Levels for the Example}'
++                  + r'\label{lead-caption}\m20anchor{lead-caption}'
++                  + r'\begin{m20table}[id=lead-table,head-rows=1]{ll}'
++                  + r'Rating & Description \\ One & FIRST-ROW-SENTINEL \\ Two & SECOND-ROW-SENTINEL \\'
++                  + r'\end{m20table}\end{m20tablelead}' + prose * 10
++                  + r'\end{document}')
++        _, path = compile_source(source, 'table-lead-flow-proof')
++        with fitz.open(path.with_suffix('.pdf')) as pdf:
++            title_pages = [i for i,p in enumerate(pdf) if 'Levels for the Example' in p.get_text()]
++            row_pages = [i for i,p in enumerate(pdf) if 'FIRST-ROW-SENTINEL' in p.get_text()]
++            self.assertEqual(title_pages, row_pages)
++            self.assertEqual(len(title_pages), 1)
++            page = pdf[title_pages[0]]
++            self.assertLess(page.search_for('Levels for the Example')[0].y0,
++                            page.search_for('FIRST-ROW-SENTINEL')[0].y0)
++            self.assertGreater(page.get_text().count('continuous narrative'), 3)
++
++if __name__ == '__main__': unittest.main()
+--- a/tests/test_top_art_sidebar_capacity.py
++++ b/tests/test_top_art_sidebar_capacity.py
+@@ -0,0 +1,64 @@
++"""Settled native top floats reduce the outside-body sidebar split capacity."""
++import unittest
++
++import fitz
++
++from tests.support import ROOT
++from tests.test_layout_proof import compile_source, positions
++
++
++def top_art_sidebar_source():
++    """Admit a native top reserve before a long, table-bearing wide sidebar."""
++    paragraph = (
++        'The survey team records each measurement before returning to the central office. '
++        'A careful account preserves the evidence and gives the next team a useful starting point. '
++        'Every route has a reference marker, and every report includes enough detail for an independent review. '
++    ) + r'\par' + '\n'
++    table = r'''\begin{m20table}[id=sidebar-table,width=container,head-rows=1]{lll}
++Record & Category & Result \\
++Sample one & Short route & Verified \\
++Sample two & Long route & Pending \\
++Sample three & Central route & Verified \\
++\end{m20table}'''
++    return (r'\documentclass{m20book}\begin{document}'
++            r'\m20artreserve[kind=horizontal,position=top]{sidebar-top-art}'
++            + paragraph * 14
++            + r'\begin{m20sidebarwide}[id=sample-sidebar,place=flow,breakable=true,columns=2]{Extended Survey Notes}'
++            + paragraph * 8 + table + paragraph * 20
++            + r'\end{m20sidebarwide}\end{document}')
++
++
++class TopArtSidebarCapacityTests(unittest.TestCase):
++    def test_long_wide_sidebar_splits_within_native_top_art_page_room(self):
++        # Body prose admits the pending native reserve before the sidebar
++        # closes the live columns. Its split budget must retain that reserve.
++        _, path = compile_source(top_art_sidebar_source(),
++                                 'top-art-wide-sidebar-capacity-proof')
++        records = positions(path)
++        art = next(p for p in records if p['id'] == 'sidebar-top-art')
++        frames = [p for p in records if p['kind'] in ('sidebar', 'table-segment')]
++        self.assertGreaterEqual(len(frames), 2)
++        self.assertTrue(all(frame['columns'] == 2 for frame in frames))
++        table = next(p for p in records if p['id'] == 'sidebar-table')
++        self.assertGreater(table['usable'], 400, 'The table must span both internal columns')
++        shared = [p for p in frames if p['page'] == art['page']]
++        self.assertTrue(shared, 'A blanket page clear must not isolate the illustration')
++        for frame in frames:
++            self.assertLessEqual(frame['y'] + frame['height'], 720.1, frame)
++        for frame in shared:
++            self.assertGreaterEqual(frame['y'], art['y'] + art['height'], frame)
++        with fitz.open(path.with_suffix('.pdf')) as pdf:
++            art_page = pdf[art['page'] - 1]
++            self.assertIn('Extended Survey Notes', art_page.get_text())
++            # Inspect a real raster rather than trusting a corrected m20pos
++            # number alone: the frame must not darken the outer folio region.
++            pixels = art_page.get_pixmap(dpi=72, alpha=False)
++            with fitz.open(ROOT / 'assets/spread-border.original-template.pdf') as border:
++                reference = border[0 if art['page'] % 2 == 0 else 1].get_pixmap(dpi=72, alpha=False)
++                for x in range(180, 440):
++                    self.assertLess(sum(abs(a - b) for a, b in zip(
++                        pixels.pixel(x, 745), reference.pixel(x, 745))), 6)
++
++
++if __name__ == '__main__':
++    unittest.main()
+--- a/tex/m20-art.sty
++++ b/tex/m20-art.sty
+@@ -9,6 +9,15 @@
+ \tl_new:N \l_mtw_art_caption_tl
+ \tl_new:N \l_mtw_art_credit_tl
+ \tl_new:N \l_mtw_art_role_tl
++\bool_new:N \l_mtw_art_close_region_bool
++% Inspect only the keys that require leaving the live column group. The full
++% option parse/validation still runs below, after a required close, so vertical
++% options survive multicols' group restoration.
++\keys_define:nn {m20/art/region} {
++ kind .tl_set:N = \l_mtw_art_kind_tl,
++ place .tl_set:N = \l_mtw_art_place_tl,
++ unknown .code:n = {}
++}
+ \keys_define:nn {m20/art} {
+  kind .choices:nn = {horizontal,vertical}{\tl_set_eq:NN \l_mtw_art_kind_tl \l_keys_choice_tl},
+  place .choices:nn = {flow,here,next-page}{\tl_set_eq:NN \l_mtw_art_place_tl \l_keys_choice_tl},
+@@ -22,9 +31,19 @@
+ }
+ \NewDocumentCommand\mTwentyArtReserve{O{}m}{
+  \ifmTwentySidebarActive\PackageError{m20}{M20_E_UNSUPPORTED_NESTING}{Art~reservations~cannot~be~nested~inside~sidebars.}\fi
+- % Leave the live region before setting options: ending multicols restores
+- % its group, so options set inside that group would disappear at placement.
+- \ifmTwentyEpub\else\mTwentyBodyEnd\fi
++ % Horizontal wide floats belong in the uninterrupted live column stream.
++ % Closing it here freezes a tall left/short right band and strands the prose
++ % after a right-column heading. Vertical/explicit-next-page art still closes
++ % before setting options, because ending multicols restores its group.
++ \ifmTwentyEpub\else
++  \bool_set_false:N \l_mtw_art_close_region_bool
++  \tl_set:Nn \l_mtw_art_kind_tl {horizontal}
++  \tl_set:Nn \l_mtw_art_place_tl {flow}
++  \keys_set:nn {m20/art/region}{#1}
++  \str_if_eq:VnT \l_mtw_art_kind_tl {vertical}{\bool_set_true:N \l_mtw_art_close_region_bool}
++  \str_if_eq:VnT \l_mtw_art_place_tl {next-page}{\bool_set_true:N \l_mtw_art_close_region_bool}
++  \bool_if:NT \l_mtw_art_close_region_bool {\mTwentyBodyEnd}
++ \fi
+  \mTwentyRegisterID:n {#2}
+  \tl_set:Nn \l_mtw_art_kind_tl {horizontal}
+  \tl_set:Nn \l_mtw_art_place_tl {flow}
+--- a/tex/m20-core.sty
++++ b/tex/m20-core.sty
+@@ -11,9 +11,27 @@
+ \let\mTwentyAssetPath\mTwentyBuildAssetPath
+ \let\mTwentyFontPath\mTwentyBuildFontPath
+ \def\mTwentyRunningTitle{}
++
++% Credit metadata belongs in the document header; no person is inferred.
++\def\mTwentyWrittenByText{}
++\def\mTwentyDevelopedByText{}
++\def\mTwentyEditedByText{}
++\def\mTwentySpecialThanksText{}
++\def\mTwentyCopyrightYearText{\number\year}
++\NewDocumentCommand\mTwentyCopyrightYear{m}{\gdef\mTwentyCopyrightYearText{#1}}
++\let\mTwentyPubliccopyrightyear\mTwentyCopyrightYear
++\NewDocumentCommand\mTwentyWrittenBy{m}{\gdef\mTwentyWrittenByText{#1}}
++\NewDocumentCommand\mTwentyDevelopedBy{m}{\gdef\mTwentyDevelopedByText{#1}}
++\NewDocumentCommand\mTwentyEditedBy{m}{\gdef\mTwentyEditedByText{#1}}
++\NewDocumentCommand\mTwentySpecialThanks{m}{\gdef\mTwentySpecialThanksText{#1}}
++\let\mTwentyPublicwrittenby\mTwentyWrittenBy
++\let\mTwentyPublicdevelopedby\mTwentyDevelopedBy
++\let\mTwentyPubliceditedby\mTwentyEditedBy
++\let\mTwentyPublicspecialthanks\mTwentySpecialThanks
+ \def\mTwentyMath{legacy}
+ \def\mTwentyChapterTitleSize{60bp}
+ \def\mTwentyChapterTitleLeading{54bp}
++\def\mTwentyChapterBodyGap{6bp}
+ \providecommand\mTwentyBodyBegin{}
+ \providecommand\mTwentyBodyEnd{}
+ \providecommand\mTwentyNewPage{\clearpage}
+@@ -35,6 +53,7 @@
+  math / unicode .code:n = \def\mTwentyMath{unicode},
+  chapter-title-size .code:n = \gdef\mTwentyChapterTitleSize{#1},
+  chapter-title-leading .code:n = \gdef\mTwentyChapterTitleLeading{#1},
++ chapter-body-gap .code:n = \gdef\mTwentyChapterBodyGap{#1},
+  unknown .code:n = \PackageError{m20}{M20_E_UNKNOWN_SETUP:~\l_keys_key_str}{Unknown~setup~key}
+ }
+ \NewDocumentCommand\mTwentySetup{m}{\keys_set:nn {m20/setup}{#1}}
+--- a/tex/m20-fonts.sty
++++ b/tex/m20-fonts.sty
+@@ -7,17 +7,50 @@
+ \babelprovide[import]{russian}
+ \babelprovide[import]{hebrew}
+ \babelprovide[import]{arabic}
++% The supplied Goudy set has genuine regular, bold and italic faces, but no
++% bold italic face. Keep the family intact for that unused combination and
++% disclose the exact italic-only substitution if an author requests it.
++\newif\ifmTwentyGoudyBoldItalicWarned
++\def\mTwentyItalicShape{it}
++\def\mTwentyBoldSeries{b}
++\def\mTwentyBoldExtendedSeries{bx}
++\newcommand\mTwentyWarnGoudyBoldItalicFamily{%
++ \ifmTwentyGoudyBoldItalicWarned\else
++  \ifx\f@family\rmdefault\mTwentyGoudyBoldItalicNotice\else
++   \ifx\f@family\mTwentyFirstFontFamily\mTwentyGoudyBoldItalicNotice\else
++    \ifx\f@family\mTwentySidebarFontFamily\mTwentyGoudyBoldItalicNotice\fi
++   \fi
++  \fi
++ \fi}
++\newcommand\mTwentyGoudyBoldItalicNotice{%
++ \global\mTwentyGoudyBoldItalicWarnedtrue
++ \PackageWarningNoLine{m20-fonts}{Goudy Old Style Bold Italic is not supplied; this combined request uses the genuine Goudy Old Style Italic face without added bold weight}}
++\newcommand\mTwentyWarnGoudyBoldItalic{%
++ \ifx\f@shape\mTwentyItalicShape
++  \ifx\f@series\mTwentyBoldSeries\mTwentyWarnGoudyBoldItalicFamily\else
++   \ifx\f@series\mTwentyBoldExtendedSeries\mTwentyWarnGoudyBoldItalicFamily\fi
++  \fi
++ \fi}
++\AddToHook{cmd/bfseries/after}{\mTwentyWarnGoudyBoldItalic}
++\AddToHook{cmd/itshape/after}{\mTwentyWarnGoudyBoldItalic}
+ \newcommand\mTwentyLoadFonts{%
+- \setmainfont{GOUDOS.TTF}[Path=\mTwentyFontPath,Scale=.98,RawFeature={extend=1.020408163265306},BoldFont=GOUDOSB_0.TTF,ItalicFont=GOUDOSI_0.TTF,BoldItalicFont=NotoSerif-BoldItalic.ttf]%
++ \ifdefined\mTwentyHeadingFontFile\else\InputIfFileExists{profiles/\mTwentyProfile.tex}{}{}\fi
++ \providecommand\mTwentyHeadingFontFile{GOUDOS.TTF}%
++ % Fallback applies only to unavailable heading glyphs (Abbess, for example,
++ % has no straight double quote). Available glyphs stay in the profile face.
++ \directlua{luaotfload.add_fallback("m20-heading-glyphs",{"[\luaescapestring{\mTwentyFontPath GOUDOS.TTF}]:mode=node;"})}%
++ \setmainfont{GOUDOS.TTF}[Path=\mTwentyFontPath,Scale=.98,RawFeature={extend=1.020408163265306},BoldFont=GOUDOSB_0.TTF,ItalicFont=GOUDOSI_0.TTF,BoldItalicFont=GOUDOSI_0.TTF]%
+  \ifmTwentyEpub\else
+-  \babelfont{rm}[Path=\mTwentyFontPath,Scale=.98,RawFeature={extend=1.020408163265306},BoldFont=GOUDOSB_0.TTF,ItalicFont=GOUDOSI_0.TTF,BoldItalicFont=NotoSerif-BoldItalic.ttf]{GOUDOS.TTF}%
++  \babelfont{rm}[Path=\mTwentyFontPath,Scale=.98,RawFeature={extend=1.020408163265306},BoldFont=GOUDOSB_0.TTF,ItalicFont=GOUDOSI_0.TTF,BoldItalicFont=GOUDOSI_0.TTF]{GOUDOS.TTF}%
+  \fi
+- \newfontfamily\mTwentyFirstFont{GOUDOS.TTF}[Path=\mTwentyFontPath,BoldFont=GOUDOSB_0.TTF,ItalicFont=GOUDOSI_0.TTF,BoldItalicFont=NotoSerif-BoldItalic.ttf]%
+- \newfontfamily\mTwentyHeadingFont{abbess-regular.ttf}[Path=\mTwentyFontPath]%
+- \newfontfamily\mTwentyHeadingNarrowFont{abbess-regular.ttf}[Path=\mTwentyFontPath,RawFeature={extend=.97}]%
+- \newfontfamily\mTwentySidebarFont{FuturaPTBook.otf}[Path=\mTwentyFontPath,BoldFont=NotoSans-Bold.ttf,ItalicFont=NotoSans-Italic.ttf,BoldItalicFont=NotoSans-BoldItalic.ttf]%
++ \newfontfamily\mTwentyFirstFont{GOUDOS.TTF}[Path=\mTwentyFontPath,BoldFont=GOUDOSB_0.TTF,ItalicFont=GOUDOSI_0.TTF,BoldItalicFont=GOUDOSI_0.TTF]%
++ \newfontfamily\mTwentyHeadingFont{\mTwentyHeadingFontFile}[Path=\mTwentyFontPath,RawFeature={fallback=m20-heading-glyphs},BoldFont=\mTwentyHeadingFontFile,ItalicFont=\mTwentyHeadingFontFile,BoldItalicFont=\mTwentyHeadingFontFile]%
++ \newfontfamily\mTwentyHeadingNarrowFont{\mTwentyHeadingFontFile}[Path=\mTwentyFontPath,RawFeature={extend=.97,fallback=m20-heading-glyphs},BoldFont=\mTwentyHeadingFontFile,ItalicFont=\mTwentyHeadingFontFile,BoldItalicFont=\mTwentyHeadingFontFile]%
++ \newfontfamily\mTwentySidebarFont{GOUDOS.TTF}[Path=\mTwentyFontPath,BoldFont=GOUDOSB_0.TTF,ItalicFont=GOUDOSI_0.TTF,BoldItalicFont=GOUDOSI_0.TTF]%
++ \begingroup\mTwentyFirstFont\xdef\mTwentyFirstFontFamily{\f@family}\mTwentySidebarFont\xdef\mTwentySidebarFontFamily{\f@family}\endgroup
+  \newfontfamily\mTwentyScriptFont{DejaVuSans.ttf}[Path=\mTwentyFontPath,Renderer=HarfBuzz,BoldFont=DejaVuSans-Bold.ttf,ItalicFont=DejaVuSans-Oblique.ttf,BoldItalicFont=DejaVuSans-BoldOblique.ttf]%
+- \setmonofont{DejaVuSansMono.ttf}[Path=\mTwentyFontPath]%
++ \setsansfont{GOUDOS.TTF}[Path=\mTwentyFontPath,BoldFont=GOUDOSB_0.TTF,ItalicFont=GOUDOSI_0.TTF,BoldItalicFont=GOUDOSI_0.TTF]%
++ \setmonofont{GOUDOS.TTF}[Path=\mTwentyFontPath,BoldFont=GOUDOSB_0.TTF,ItalicFont=GOUDOSI_0.TTF,BoldItalicFont=GOUDOSI_0.TTF]%
+  \babelfont[greek,russian,hebrew,arabic]{rm}[Path=\mTwentyFontPath,Renderer=HarfBuzz,BoldFont=DejaVuSans-Bold.ttf,ItalicFont=DejaVuSans-Oblique.ttf,BoldItalicFont=DejaVuSans-BoldOblique.ttf]{DejaVuSans.ttf}%
+ }
+ \NewDocumentCommand\mTwentyScript{m}{{\mTwentyScriptFont #1}}
+--- a/tex/m20-local-text-styles.sty
++++ b/tex/m20-local-text-styles.sty
+@@ -0,0 +1,85 @@
++\NeedsTeXFormat{LaTeX2e}
++\ProvidesPackage{m20-local-text-styles}[2026/09/30 source and reference matched lists and stat blocks]
++\ifdefined\mTwentyLocalListNextItem\expandafter\endinput\fi
++\RequirePackage{enumitem,luatexbase,xcolor}
++% Original M20 IDML Bullet: Goudy 10/12, hanging text at 18bp,
++% marker at 4.5bp, right inset 9bp, 4.5bp paragraph spacing and
++% 10 percent purple shading with 1.44bp vertical padding.
++% User's supplied enumeration reference confirms alternating shaded rows.
++\newcount\mTwentyLocalListRow
++\let\mTwentyLocalNativeItem\item
++\newattribute\mTwentyListShadeAttribute
++\newattribute\mTwentyListLeftAttribute
++\newattribute\mTwentyListWidthAttribute
++\mTwentyListShadeAttribute=-1
++\convertcolorspec{named}{m20purple}{cmyk}\mTwentyListInkSpec
++\AtBeginDocument{\pgfutil@addpdfresource@extgs{/M20ListShade << /ca .1 >>}}
++\directlua{
++ local shade=luatexbase.attributes.mTwentyListShadeAttribute
++ local left=luatexbase.attributes.mTwentyListLeftAttribute
++ local width=luatexbase.attributes.mTwentyListWidthAttribute
++ local hlist=node.id('hlist')
++ local sp_per_bp=65536*72.27/72
++ local ink=('\mTwentyListInkSpec'):gsub(',', ' ')
++ luatexbase.add_to_callback('post_linebreak_filter',function(head)
++  for line in node.traverse_id(hlist,head) do
++   if node.has_attribute(line,shade)==1 then
++    local inset=(node.has_attribute(line,left) or 0)/sp_per_bp
++    local rowwidth=(node.has_attribute(line,width) or line.width)/sp_per_bp
++    local bottom=-3
++    local height=12
++    local literal=node.new('whatsit','pdf_literal')
++    literal.mode=0
++    literal.data='q /M20ListShade gs '..ink..' k '..(-inset)..' '..bottom..' '..rowwidth..' '..height..' re f Q'
++    line.head=node.insert_before(line.head,line.head,literal)
++   end
++  end
++  return head
++ end,'m20-local-list-row-backgrounds')
++}
++\newcommand\mTwentyLocalListNextItem{%
++ \par\advance\mTwentyLocalListRow\@ne
++ \ifmTwentySidebarActive
++  \mTwentyListShadeAttribute=-1
++ \else
++  \ifodd\mTwentyLocalListRow\mTwentyListShadeAttribute=1\else\mTwentyListShadeAttribute=0\fi
++ \fi
++ \mTwentyListLeftAttribute=\number\leftmargin
++ \mTwentyListWidthAttribute=\number\dimexpr\linewidth+\leftmargin+\rightmargin\relax
++ \mTwentyLocalNativeItem}
++\newcommand\mTwentyLocalListBegin{%
++ \mTwentyLocalListRow=0\mTwentyListShadeAttribute=-1
++ \ifmTwentySidebarActive
++  \mTwentySidebarFont\fontsize{10bp}{10bp}\selectfont
++ \else\rmfamily\fontsize{10bp}{12bp}\selectfont\fi
++ \let\item\mTwentyLocalListNextItem}
++\newcommand\mTwentyLocalListEnd{\par\mTwentyListShadeAttribute=-1}
++\setlist{leftmargin=18bp,rightmargin=9bp,labelindent=4.5bp,
++ labelwidth=9bp,labelsep=4.5bp,itemindent=0bp,align=left,
++ topsep=4.5bp,itemsep=4.5bp,parsep=0bp,partopsep=0bp,
++ before=\mTwentyLocalListBegin,after=\mTwentyLocalListEnd}
++% Marker definitions and native enumerate counters are deliberately untouched.
++\setlist[description]{style=standard,font=\bfseries}
++% Stat blocks use purple Goudy Old Style with genuine bold run-in keys,
++% compact separate rows, and a modest inset. This is different from the
++% template's Goudy Stat Dots rating paragraph, so it has its own semantic
++% environment. Wrappers contain the existing manuscript text unchanged.
++\NewDocumentEnvironment{m20statblock}{}{%
++ \par\begingroup\mTwentyListShadeAttribute=-1
++ \mTwentySidebarFont\fontsize{10bp}{10bp}\selectfont
++ \color{m20purple}
++ \begin{list}{}{\leftmargin=13.5bp\rightmargin=0bp
++  \itemindent=0bp\labelwidth=0bp\labelsep=0bp
++  \topsep=1.44bp\itemsep=1.44bp\parsep=0bp\partopsep=0bp
++  \listparindent=0bp}%
++}{\end{list}\endgroup\par}
++\ExplSyntaxOn
++\tl_new:N \l_mtw_stat_display_tl
++\cs_new_protected:Npn \mTwentyStatDisplay:n #1 {
++ \tl_set:Nn \l_mtw_stat_display_tl {#1}
++ \tl_replace_all:Nnn \l_mtw_stat_display_tl {|}{\par\noindent}
++ \mTwentyLocalNativeItem[]\tl_use:N \l_mtw_stat_display_tl
++}
++\NewDocumentCommand\mTwentyStatEntry{m}{\mTwentyStatDisplay:n{#1}}
++\ExplSyntaxOff
++\endinput
+--- a/tex/m20-pdf-layout.sty
++++ b/tex/m20-pdf-layout.sty
+@@ -1,27 +1,60 @@
+ \NeedsTeXFormat{LaTeX2e}
+ \ProvidesPackage{m20-pdf-layout}[2026/09/30 isolated live body regions]
+ \RequirePackage{fontspec,geometry,multicol,xcolor,tikz}
++\IfFileExists{microtype.sty}{\RequirePackage[protrusion=true,expansion=true]{microtype}}{}
+ \InputIfFileExists{profiles/m20.tex}{}{%
+  \def\mTwentyPageWidth{612bp}\def\mTwentyPageHeight{792bp}%
+  \def\mTwentyBodyWidth{490.4496bp}\def\mTwentyBodyHeight{657bp}%
+  \def\mTwentyTop{63bp}\def\mTwentyInner{54bp}\def\mTwentyOuter{67.5504bp}%
+  \def\mTwentyColumnWidth{239.2248bp}\def\mTwentyGutter{12bp}}
+-\geometry{paperwidth=\mTwentyPageWidth,paperheight=\mTwentyPageHeight,inner=\mTwentyInner,outer=\mTwentyOuter,top=\mTwentyTop,textheight=\mTwentyBodyHeight,headheight=0bp,headsep=0bp,footskip=27bp}
++\geometry{paperwidth=\mTwentyPageWidth,paperheight=\mTwentyPageHeight,inner=\mTwentyInner,outer=\mTwentyOuter,top=\mTwentyTop,textheight=\mTwentyBodyHeight,headheight=0bp,headsep=0bp,footskip=16.81bp}
+ \setlength\columnsep{\mTwentyGutter}
+ \setlength\parindent{18bp}
+-\setlength\parskip{1.44bp plus .2bp}
++\setlength\parskip{1.44bp plus .2bp minus .4bp}
+ \setlength\multicolsep{0bp}
+-\setlength\premulticols{0bp}
++\setlength\premulticols{48bp}
+ \setlength\postmulticols{0bp}
+ \newif\ifmTwentyBodyActive
+ \newif\ifmTwentyBlankPage
++\newif\ifmTwentyOpenerPage
++\newif\ifmTwentyContentsOpeningPage
++\newif\ifmTwentyInteriorTitlePage
++\newif\ifmTwentyHadChapter
++\newcount\mTwentyChapterArtCount
++
++% book's frontmatter flag must be assigned outside the active multicol group.
++\let\mTwentyNativeFrontMatter\frontmatter
++\renewcommand\frontmatter{\mTwentyBodyEnd\mTwentyNativeFrontMatter}
++\let\mTwentyNativeMainMatter\mainmatter
++\renewcommand\mainmatter{\mTwentyBodyEnd\mTwentyNativeMainMatter}
++\renewcommand\cleardoublepage{%
++ \mTwentyBodyEnd\clearpage
++ \if@twoside\ifodd\c@page\else
++  \null\thispagestyle{mTwenty}\newpage
++  \if@twocolumn\null\thispagestyle{mTwenty}\newpage\fi
++ \fi\fi}
++\newcommand\mTwentyChapterFacingIllustration{%
++ \mTwentyBlankPagetrue\null\thispagestyle{empty}%
++ \AddToHookNext{shipout/foreground}{%
++  \put(0,-\paperheight){\includegraphics{\mTwentyAssetPath art-fullpage.original-template.pdf}}%
++  \put(0,-344.2858bp){\makebox[\paperwidth][c]{\mTwentyFirstFont\mdseries\fontsize{36bp}{43.2bp}\selectfont\color[cmyk]{0,0,0,1}Place illustration here}}%
++  \put(0,-387.4858bp){\makebox[\paperwidth][c]{\mTwentyFirstFont\mdseries\fontsize{36bp}{43.2bp}\selectfont\color[cmyk]{0,0,0,1}(recomended full colour)}}}%
++ \newpage}
++\def\mTwentyChapterRunningTitle{}
+ \newif\ifmTwentyArtReverse
+-\renewcommand\mTwentyBodyBegin{\color{black}\ifmTwentyBodyActive\else\par\ifdim\pagetotal>\dimexpr\textheight-24bp\relax\clearpage\fi\global\mTwentyBodyActivetrue\begin{multicols}{2}\raggedcolumns\fi}
+-\renewcommand\mTwentyBodyEnd{\ifmTwentyBodyActive\par\end{multicols}\global\mTwentyBodyActivefalse\fi}
++\newif\ifmTwentyArtColumnActive
++% Strong endpoint protection is reapplied after each body region and heading.
++\newcommand\mTwentyParagraphControls{%
++ \clubpenalty=10000\widowpenalty=10000\displaywidowpenalty=10000\@clubpenalty=10000%
++ \hyphenpenalty=650\exhyphenpenalty=300\doublehyphendemerits=50000\finalhyphendemerits=10000%
++ \tolerance=3000\emergencystretch=24bp}
++\newcommand\mTwentyHeadingControls{\hyphenpenalty=10000\exhyphenpenalty=10000}
++\renewcommand\mTwentyBodyBegin{\color{black}\ifmTwentyBodyActive\else\par\ifdim\pagetotal>\dimexpr\textheight-24bp\relax\newpage\fi\global\mTwentyBodyActivetrue\begin{multicols}{2}\mTwentyParagraphControls\raggedcolumns\fi}
++\renewcommand\mTwentyBodyEnd{\ifmTwentyBodyActive\par\end{multicols}\global\mTwentyBodyActivefalse\fi\@nobreakfalse\@noskipsecfalse\everypar{}}
+ \newcommand\mTwentySuspendEnvironment[1]{\ifmTwentyBodyActive\endgroup\mTwentyBodyEnd\begingroup\def\@currenvir{#1}\fi}
+ \renewcommand\mTwentyNewPage{\mTwentyBodyEnd\clearpage\mTwentyBodyBegin}
+ \newwrite\mTwentyPositionStream
+-\AtBeginDocument{\mTwentyLoadFonts\fontsize{10bp}{12bp}\selectfont\immediate\openout\mTwentyPositionStream=\jobname.m20pos\relax\mTwentyBodyBegin}
++\AtBeginDocument{\mTwentyLoadFonts\fontsize{10bp}{12bp}\selectfont\mTwentyParagraphControls\raggedbottom\immediate\openout\mTwentyPositionStream=\jobname.m20pos\relax\mTwentyBodyBegin}
+ \AtEndDocument{\mTwentyBodyEnd\clearpage\immediate\closeout\mTwentyPositionStream}
+ % Values are frozen now; page and position primitives are evaluated at shipout.
+ \newcommand\mTwentyPosition[8]{%
+@@ -29,28 +62,69 @@
+  \begingroup
+  \edef\mTwentyWrite{\write\mTwentyPositionStream{#1|\noexpand\the\noexpand\ReadonlyShipoutCounter|\noexpand\the\noexpand\lastxpos|\noexpand\the\noexpand\lastypos|\number\dimexpr#2\relax|\number\dimexpr#3\relax|#4|#5|#6|#7|\number\dimexpr#8+0bp\relax|\noexpand\thepage|\noexpand\number\noexpand\c@page}}%
+  \mTwentyWrite\endgroup}
+-\renewcommand\mTwentyAnchor[1]{\par\noindent\mTwentyPosition{#1}{\linewidth}{\linewidth}{1}{anchor}{0}{flow}{}\par}
++\renewcommand\mTwentyAnchor[1]{%
++ \mTwentyPosition{#1}{\linewidth}{\linewidth}{1}{anchor}{0}{flow}{}%
++ % Zero-height semantic writes must not introduce a new break between a
++ % native heading's no-break guard and its first actual paragraph line.
++ \ifvmode\if@nobreak\nobreak\fi\fi}
+ \renewcommand\@seccntformat[1]{}
+ \renewcommand\@startsection[6]{\if@noskipsec\leavevmode\fi\par\@tempskipa #4\relax\@afterindenttrue\ifdim\@tempskipa<\z@\@tempskipa-\@tempskipa\@afterindentfalse\fi\if@nobreak\everypar{}\else\addpenalty\@secpenalty\addvspace\@tempskipa\fi\@ifstar{\@ssect{#3}{#4}{#5}{#6}}{\@dblarg{\@sect{#1}{#2}{#3}{#4}{#5}{#6}}}}
+-\renewcommand\section{\@startsection{section}{1}{\z@}{7.2bp}{2.1528bp}{\centering\mTwentyHeadingFont\fontsize{24bp}{25bp}\selectfont}}
++\renewcommand\section{\@startsection{section}{1}{\z@}{7.2bp}{2.1528bp}{\centering\mTwentyHeadingControls\mTwentyHeadingFont\mdseries\let\textbf\@firstofone\fontsize{24bp}{25bp}\selectfont}}
+ % Wrap the styled native section only after defining its style.
+ \let\mTwentyStyledSection\section
+-\RenewDocumentCommand\section{s o m}{\mTwentyBodyEnd\addvspace{13.5bp}\noindent\mTwentyPosition{span-heading}{\textwidth}{\textwidth}{2}{heading}{0}{flow}{}\IfBooleanTF{#1}{\mTwentyStyledSection*{#3}}{\IfNoValueTF{#2}{\mTwentyStyledSection{#3}}{\mTwentyStyledSection[#2]{#3}}}\vspace{1.8bp}\hrule height1.25bp\vspace{13.5bp}\mTwentyBodyBegin\@afterindentfalse\@afterheading}
+-\renewcommand\subsection{\@startsection{subsection}{2}{\z@}{7.2bp}{0bp}{\mTwentyHeadingNarrowFont\fontsize{18bp}{18bp}\selectfont}}
+-\renewcommand\subsubsection{\@startsection{subsubsection}{3}{\z@}{7.2bp}{0bp}{\mTwentyHeadingFont\fontsize{12bp}{14bp}\selectfont}}
++\newcommand\mTwentySectionBody[3]{%
++ \IfBooleanTF{#1}{\mTwentyStyledSection*{#3}}{\IfNoValueTF{#2}{\mTwentyStyledSection{#3}}{\mTwentyStyledSection[#2]{#3}}}%
++}
++\RenewDocumentCommand\section{s o m}{%
++ \ifmTwentyArtColumnActive
++  % A full-height side reserve owns the other column on this page. Keep the
++  % section and its following text in the live narrative column beside it.
++  \mTwentyKeepHeading{90bp}\addvspace{13.5bp}\noindent
++  \mTwentyPosition{span-heading}{\linewidth}{\linewidth}{1}{heading}{0}{flow}{}%
++  \mTwentySectionBody{#1}{#2}{#3}\vspace{1.8bp}\hrule width\linewidth height1.25bp\vspace{13.5bp}%
++ \else
++  \mTwentyBodyEnd\mTwentyRemaining\ifdim\mTwentyAvailable<108bp\relax\newpage\fi
++  \addvspace{13.5bp}\noindent\mTwentyPosition{span-heading}{\textwidth}{\textwidth}{2}{heading}{0}{flow}{}%
++  \mTwentySectionBody{#1}{#2}{#3}\vspace{1.8bp}\hrule height1.25bp\vspace{13.5bp}\mTwentyBodyBegin
++ \fi
++ \@afterindentfalse\@afterheading}
++\newcommand\mTwentyKeepHeading[1]{\mTwentyRemaining\ifdim\mTwentyAvailable<#1\relax\ifmTwentyBodyActive\columnbreak\else\newpage\fi\fi}
++\renewcommand\subsection{\mTwentyKeepHeading{54bp}\@startsection{subsection}{2}{\z@}{7.2bp}{0.01bp}{\raggedright\mTwentyHeadingControls\mTwentyHeadingNarrowFont\mdseries\let\textbf\@firstofone\fontsize{18bp}{18bp}\selectfont}}
++\renewcommand\subsubsection{\mTwentyKeepHeading{42bp}\@startsection{subsubsection}{3}{\z@}{7.2bp}{0.01bp}{\raggedright\mTwentyHeadingControls\mTwentyHeadingFont\mdseries\let\textbf\@firstofone\fontsize{12bp}{14bp}\selectfont}}
++\newif\ifmTwentyNumberedOpener
+ \let\mTwentyOriginalChapter\chapter
+ \RenewDocumentCommand\chapter{s o m}{%
+  \mTwentyBodyEnd\clearpage
+- \ifodd\c@page\mTwentyBlankPagetrue\null\thispagestyle{empty}\newpage\fi
+- \mTwentyBlankPagetrue\null\thispagestyle{empty}\newpage
+- \IfBooleanTF{#1}{\mTwentyOriginalChapter*{#3}}{\IfNoValueTF{#2}{\mTwentyOriginalChapter{#3}}{\mTwentyOriginalChapter[#2]{#3}}}%
++ \IfBooleanTF{#1}{\gdef\mTwentyChapterRunningTitle{#3}}{\IfNoValueTF{#2}{\gdef\mTwentyChapterRunningTitle{#3}}{\gdef\mTwentyChapterRunningTitle{#2}}}
++ % Contents follows Credits; chapter-facing illustration leaves remain blank-free art.
++ \def\mTwentyFrontOpening{0}%
++ \IfBooleanT{#1}{\if@mainmatter\else\def\mTwentyFrontOpening{1}\fi}%
++ \ifnum\mTwentyFrontOpening=1
++  \ifodd\c@page\else\null\thispagestyle{mTwenty}\newpage\fi
++ \else
++  \ifodd\c@page\null\thispagestyle{mTwenty}\newpage\fi
++  \mTwentyChapterFacingIllustration
++ \fi
++ \global\mTwentyHadChaptertrue
++ \IfBooleanTF{#1}{\mTwentyNumberedOpenerfalse\mTwentyOriginalChapter*{#3}}{\mTwentyNumberedOpenertrue\IfNoValueTF{#2}{\mTwentyOriginalChapter{#3}}{\mTwentyOriginalChapter[#2]{#3}}}%
+  \mTwentyBodyBegin\@afterindentfalse\@afterheading}
+ \newbox\mTwentyChapterTitleBox
++\newdimen\mTwentyTitleHalfHeight
++\newdimen\mTwentyTitleTextWidth
++\newcommand\mTwentyMakeOpenerTitle[3]{%
++ \setbox\mTwentyChapterTitleBox=\vbox{\hsize=\mTwentyTitleTextWidth\parindent\z@\centering\mTwentyHeadingFont\mdseries\let\textbf\@firstofone\fontsize{#1}{#2}\selectfont\hyphenpenalty=10000\exhyphenpenalty=10000
++  \begingroup\color{m20gold}\ifmTwentyNumberedOpener\if@mainmatter\ifnum\c@secnumdepth>\m@ne\@chapapp\space\thechapter:\par\fi\fi\fi #3\par\endgroup}%
++ \mTwentyTitleHalfHeight=\ht\mTwentyChapterTitleBox\advance\mTwentyTitleHalfHeight\dp\mTwentyChapterTitleBox\divide\mTwentyTitleHalfHeight2
++}
+ \def\@makechapterhead#1{%
+- \setbox\mTwentyChapterTitleBox=\vbox{\hsize=\textwidth\parindent\z@\centering\mTwentyHeadingFont\fontsize{\mTwentyChapterTitleSize}{\mTwentyChapterTitleLeading}\selectfont\color{m20gold}#1\par}%
+- \ifdim\dimexpr\ht\mTwentyChapterTitleBox+\dp\mTwentyChapterTitleBox\relax>\dimexpr\mTwentyOpenerBodyTop-\mTwentyTop-24bp\relax
+-  \PackageError{m20}{M20_E_CHAPTER_TITLE_TOO_TALL}{Add deliberate line breaks or an explicit chapter-title-size and chapter-title-leading override.}\fi
+- \vbox to\dimexpr\mTwentyOpenerBodyTop-\mTwentyTop-\topskip\relax{\vskip6bp\box\mTwentyChapterTitleBox\vfil}%
++ \global\mTwentyOpenerPagetrue
++ \mTwentyTitleTextWidth=\dimexpr\textwidth-40bp\relax
++ \mTwentyMakeOpenerTitle{\mTwentyChapterTitleSize}{\mTwentyChapterTitleLeading}{#1}%
++ \ifdim\mTwentyTitleHalfHeight>95bp\mTwentyMakeOpenerTitle{48bp}{45bp}{#1}\fi
++ \ifdim\mTwentyTitleHalfHeight>95bp\mTwentyMakeOpenerTitle{42bp}{39bp}{#1}\fi
++ \AddToHookNext{shipout/background}{\put(0,-\paperheight){\includegraphics[width=\paperwidth,height=\paperheight]{\mTwentyAssetPath chapter-opener.original-template.pdf}}}%
++ \AddToHookNext{shipout/foreground}{\begingroup\put(0,-202.325bp){\makebox[\paperwidth][l]{\hspace{\mTwentyInner}\makebox[\textwidth][c]{\raisebox{-\mTwentyTitleHalfHeight}[0pt][0pt]{\copy\mTwentyChapterTitleBox}}}}\endgroup}%
++ \vbox to\dimexpr\mTwentyOpenerBodyTop+\mTwentyChapterBodyGap-\mTwentyTop-\topskip\relax{\null\vfil}%
+ }
+ \let\@makeschapterhead\@makechapterhead
+ \newif\ifmTwentyFirstRestore
+@@ -62,22 +136,122 @@
+   \fi
+  \else\clubpenalty\@clubpenalty\everypar{}\fi}}
+ \AddToHook{para/end}{\ifmTwentyFirstRestore\ifmTwentySidebarActive\else\mTwentyFirstRestorefalse\rmfamily\fi\fi}
+-\definecolor{m20gold}{RGB}{183,137,47}
+-\definecolor{m20purple}{RGB}{44,25,63}
++% Original sb 1/sb bullet gold text swatch; dark gold remains in authentic frame gradients.
++\definecolor{m20gold}{cmyk}{.1144,.1735,.6863,0}
++\definecolor{m20framedark}{cmyk}{.2888,.4368,.8328,.0635}
++\definecolor{m20purple}{cmyk}{.8549,1,.2161,.1239}
++% Original footer: baseline y=736.81bp; outer folio and inward-facing runner.
++\newcommand\mTwentyFooterText[1]{{\mTwentyFirstFont\mdseries\fontsize{10bp}{10bp}\selectfont\scalebox{.8}[1]{#1}}}
++\newcommand\mTwentyFooterRunner[1]{\begingroup\setbox\z@=\hbox{\mTwentyFooterText{#1}}\ifdim\wd\z@>390bp\resizebox{390bp}{!}{\box\z@}\else\box\z@\fi\endgroup}
+ \def\ps@mTwenty{\let\@oddhead\@empty\let\@evenhead\@empty
+- \def\@oddfoot{\hfil{\mTwentyHeadingFont\fontsize{9bp}{11bp}\selectfont\mTwentyRunningTitle}\hfil\thepage}%
+- \def\@evenfoot{\thepage\hfil{\mTwentyHeadingFont\fontsize{9bp}{11bp}\selectfont\mTwentyRunningTitle}\hfil}}
++ \def\@oddfoot{\hfil\mTwentyFooterRunner{\mTwentyChapterRunningTitle}\makebox[35.77bp][r]{\mTwentyFooterText{\thepage}}}%
++ \def\@evenfoot{\makebox[33.9bp][l]{\mTwentyFooterText{\thepage}}\mTwentyFooterRunner{\mTwentyRunningTitle}\hfil}}
+ \let\ps@plain\ps@mTwenty\pagestyle{mTwenty}
+ \AddToHook{shipout/background}{\ifmTwentyBlankPage\else
+- \IfFileExists{\mTwentyAssetPath page_border.png}{\put(0,-\paperheight){\makebox[\paperwidth][l]{\ifodd\c@page\includegraphics[width=\paperwidth,height=\paperheight]{\mTwentyAssetPath page_border.png}\else\reflectbox{\includegraphics[width=\paperwidth,height=\paperheight]{\mTwentyAssetPath page_border.png}}\fi}}}{}\fi}
+-\AddToHook{shipout/after}{\global\mTwentyBlankPagefalse\ifmTwentyArtReverse\global\let\mc@align@columns\LR@column@boxes\global\mTwentyArtReversefalse\fi}
++ \ifmTwentyInteriorTitlePage
++  \put(0,-\paperheight){\includegraphics{\mTwentyAssetPath interior-title.original-template.pdf}}%
++ \else\ifmTwentyOpenerPage
++  \ifmTwentyContentsOpeningPage
++   \put(0,-\paperheight){\includegraphics[page=\ifodd\c@page2\else1\fi]{\mTwentyAssetPath spread-border.original-template.pdf}}%
++  \else
++   \put(0,-\paperheight){\includegraphics[width=\paperwidth,height=\paperheight]{\mTwentyAssetPath page_border.png}}%
++  \fi
++ \else
++  \put(0,-\paperheight){\includegraphics[page=\ifodd\c@page2\else1\fi]{\mTwentyAssetPath spread-border.original-template.pdf}}%
++ \fi\fi\fi}
++\AddToHook{shipout/after}{\global\mTwentyBlankPagefalse\global\mTwentyOpenerPagefalse\global\mTwentyContentsOpeningPagefalse\global\mTwentyInteriorTitlePagefalse\global\mTwentyArtColumnActivefalse\ifmTwentyArtReverse\global\let\mc@align@columns\LR@column@boxes\global\mTwentyArtReversefalse\fi}
++\newcommand\mTwentyInteriorTitle[2]{%
++ \hypersetup{pdfpagelayout=TwoPageRight,pdftitle={#1}}%
++ \mTwentyBodyEnd\clearpage\global\mTwentyInteriorTitlePagetrue\thispagestyle{empty}%
++ \AddToHookNext{shipout/foreground}{%
++  \put(0,-136.08bp){\makebox[\paperwidth][c]{\raisebox{-.5\height}[0pt][0pt]{\parbox{490bp}{\centering\mTwentyHeadingControls\mTwentyHeadingFont\fontsize{48bp}{48bp}\selectfont\color{m20gold}#1}}}}%
++  \put(0,-700bp){\makebox[\paperwidth][c]{\parbox{490bp}{\centering\mTwentyFirstFont\fontsize{14bp}{17bp}\selectfont\color{m20gold}#2}}}}
++ \null\newpage}
++\newcommand\mTwentyInteriorCredits[1]{%
++ \mTwentyBodyEnd\clearpage\thispagestyle{mTwenty}%
++ \AddToHookNext{shipout/foreground}{%
++  \put(0,-\paperheight){\includegraphics{\mTwentyAssetPath credits-legal.original-template.pdf}}%
++  \put(290.8004bp,-639.7725bp){\makebox[0bp][l]{\mTwentyFirstFont\mdseries\fontsize{10bp}{12bp}\selectfont\color[cmyk]{0,0,0,1}\scalebox{.9429}[.98]{\mTwentyCopyrightYearText}}}}%
++ \begingroup\mTwentyFirstFont\fontsize{10bp}{12bp}\selectfont\parindent=0bp\parskip=1.44bp
++ % Source anchors/attributions remain, but Credits has no Contents entry.
++ \renewcommand\section[1]{\par\phantomsection}%
++ \noindent\begin{minipage}[t]{\mTwentyColumnWidth}
++  {\mTwentyHeadingFont\mdseries\fontsize{12bp}{14bp}\selectfont Credits\par}
++  \textbf{Written By:} \mTwentyWrittenByText\par
++  \textbf{Developed By:} \mTwentyDevelopedByText\par
++  \textbf{Edited By:} \mTwentyEditedByText\par\vskip9bp
++  #1
++ \end{minipage}\hspace{\mTwentyGutter}%
++ \begin{minipage}[t]{\mTwentyColumnWidth}
++  {\mTwentyHeadingFont\mdseries\fontsize{12bp}{14bp}\selectfont Special Thanks to:\par}
++  \mTwentySpecialThanksText\par
++ \end{minipage}\par\endgroup\newpage}
++% Chapter TOC entries use the template's purple Abbess role. The number is
++% consumed as words inside the title, rather than a detached numeral column.
++\ExplSyntaxOn
++\cs_new:Npn \mTwentyChapterWord #1 {\str_case:nnF {#1}
++ {{1}{One}{2}{Two}{3}{Three}{4}{Four}{5}{Five}{6}{Six}{7}{Seven}{8}{Eight}{9}{Nine}{10}{Ten}{11}{Eleven}{12}{Twelve}}{#1}}
++\ExplSyntaxOff
++\newcommand\mTwentyTOCChapterPrefix[1]{%
++ \def\mTwentyTOCValue{#1}\def\mTwentyTOCA{A}\def\mTwentyTOCB{B}%
++ \ifx\mTwentyTOCValue\mTwentyTOCA Appendix A:\space
++ \else\ifx\mTwentyTOCValue\mTwentyTOCB Appendix B:\space
++ \else Chapter \mTwentyChapterWord{#1}:\space\fi\fi}
++\renewcommand*\l@chapter[2]{%
++ \ifnum\c@tocdepth>\m@ne
++  \addpenalty{-\@highpenalty}\vskip1em\@plus\p@
++  \begingroup\mTwentyHeadingFont\mdseries\let\textbf\@firstofone\fontsize{12bp}{14bp}\selectfont\color{m20purple}%
++   \let\numberline\mTwentyTOCChapterPrefix
++   \def\@pnumwidth{2em}% three-digit Abbess folios need their true width
++   \leftskip=0bp\rightskip=\@tocrmarg plus 1fil\parfillskip=-\@tocrmarg
++   \parindent=0bp\interlinepenalty=\@M\leavevmode
++   #1\nobreak\leaders\hbox{$\m@th\mkern\@dotsep mu\hbox{.}\mkern\@dotsep mu$}\hfill
++   \nobreak\hb@xt@\@pnumwidth{\hfil #2}\par
++  \endgroup
++ \fi}
+ \newdimen\mTwentyArtWidth
+ \newdimen\mTwentyArtHeight
++% Art uses a distinct native wide-float type so its edge constraint does not
++% reduce ordinary tables' ability to stack. Multicols supplies the wide-float
++% enqueue operation; no body region is ended merely to insert horizontal art.
++\def\ftype@mTwentyHorizontalArt{4}
++\newenvironment{mTwentyHorizontalArt}[1]{\@dblfloat{mTwentyHorizontalArt}[#1]}{\end@dblfloat}
++\let\mTwentyNativeAddTopOrBottom\@addtotoporbot
++\def\@addtotoporbot{%
++ \ifnum\@currtype=128\relax
++  \@getfpsbit\tw@
++  \ifodd\@tempcnta
++   \ifx\@toplist\@empty\mTwentyNativeAddTopOrBottom\fi
++  \else\mTwentyNativeAddTopOrBottom\fi
++ \else\mTwentyNativeAddTopOrBottom\fi}
++% Once bottom art is admitted, later bottom floats must wait rather than
++% pushing that illustration upward away from the page's bottom edge.
++\let\mTwentyNativeAddToBottom\@addtobot
++\def\@addtobot{%
++ \@bitor{128}\@botlist
++ \if@test\else\mTwentyNativeAddToBottom\fi}
++% Clearpage can build a forced float-only page even without a p specifier.
++% Reject art as a later float there too; its standalone page starts at the
++% existing zero fptop instead of underneath an earlier table.
++\let\mTwentyNativeFloatPageCandidate\@ztryfc
++\def\@ztryfc#1{%
++ \@tempcnta\count#1\divide\@tempcnta\@xxxii
++ \ifnum\@tempcnta=4\relax
++  \ifx\@flsucceed\@empty\mTwentyNativeFloatPageCandidate{#1}%
++  \else\@cons\@flfail#1\fi
++ \else\mTwentyNativeFloatPageCandidate{#1}\fi}
+ \newcommand\mTwentyArtBox{%
+  \begin{tikzpicture}[baseline=0bp]
+   \path[use as bounding box] (0,0) rectangle (\mTwentyArtWidth,\mTwentyArtHeight);
+-  \draw[line width=2bp,m20gold] (1bp,1bp) rectangle (\dimexpr\mTwentyArtWidth-1bp,\dimexpr\mTwentyArtHeight-1bp);
+-  \ifx\mTwentyArtImage\@empty\else
++  \def\mTwentyVertical{vertical}%
++  \ifx\mTwentyArtKind\mTwentyVertical
++   \node[inner sep=0bp,anchor=north west] at (-2.5bp,\dimexpr\mTwentyArtHeight+2.5399bp) {\includegraphics[width=\dimexpr\mTwentyArtWidth+14.0507bp,height=\dimexpr\mTwentyArtHeight+14.0798bp]{\mTwentyAssetPath art-vertical.original-template.pdf}};
++  \else
++   \node[inner sep=0bp,anchor=north west] at (-2.5bp,\mTwentyArtHeight) {\includegraphics[width=\dimexpr\mTwentyArtWidth+13.86bp,height=\mTwentyArtHeight]{\mTwentyAssetPath art-horizontal.original-template.pdf}};
++  \fi
++  \ifx\mTwentyArtImage\@empty
++   \node[inner sep=0bp,text width=\dimexpr\mTwentyArtWidth-20bp,align=center,text=\ifx\mTwentyArtKind\mTwentyVertical black\else white\fi] at (.5\mTwentyArtWidth,.5\mTwentyArtHeight) {\mTwentyFirstFont\fontsize{20bp}{24bp}\selectfont Place illustration here\par{\fontsize{11bp}{14bp}\selectfont (recommended full colour)}};
++  \else
+    \node[inner sep=0bp] at (.5\mTwentyArtWidth,.5\mTwentyArtHeight) {\includegraphics[width=\dimexpr\mTwentyArtWidth-14bp\relax,height=\dimexpr\mTwentyArtHeight-40bp\relax,keepaspectratio]{\mTwentyArtImage}};
+    \node[inner sep=0bp,anchor=south,text width=\dimexpr\mTwentyArtWidth-14bp\relax,align=center] at (.5\mTwentyArtWidth,7bp) {\fontsize{8bp}{10bp}\selectfont\mTwentyArtCaption\space\mTwentyArtCredit};
+   \fi
+@@ -85,30 +259,32 @@
+  \end{tikzpicture}%
+ }
+ \newcommand\mTwentyArtPDF{%
+- \mTwentyBodyEnd\par
++ \par
+  \def\mTwentyVertical{vertical}\def\mTwentyHere{here}\def\mTwentyNextPage{next-page}\def\mTwentyBottom{bottom}\def\mTwentyOuterPosition{outer}%
+- \ifx\mTwentyArtPlace\mTwentyNextPage\clearpage\fi
+- \mTwentyArtWidth=\textwidth\mTwentyArtHeight=.5\textheight
+- \ifx\mTwentyArtKind\mTwentyVertical\mTwentyArtWidth=\mTwentyColumnWidth\mTwentyArtHeight=\textheight\fi
+- \mTwentyRemaining\advance\mTwentyAvailable4bp
+- \ifdim\mTwentyAvailable<\mTwentyArtHeight
+-  \ifx\mTwentyArtPlace\mTwentyHere\PackageError{m20}{M20_E_PLACEMENT_UNAVAILABLE}{The art reservation does not fit at this exact anchor.}\else\clearpage\fi
+- \fi
++ \ifx\mTwentyArtPlace\mTwentyNextPage\newpage\fi
++ \mTwentyArtWidth=\textwidth\mTwentyArtHeight=341.28bp
+  \ifx\mTwentyArtKind\mTwentyVertical
+-  \mTwentyBodyBegin
+-  % Put the art first in the native stream. Reverse only this page's physical
+-  % columns when needed, leaving subsequent prose beside the reservation.
++  \mTwentyBodyEnd\clearpage
++  % The template's vertical frame is a full text-area column, not a shorter
++  % remainder box. Pending full-width floats must ship before this page.
++  \mTwentyArtWidth=\mTwentyColumnWidth\mTwentyArtHeight=\textheight
++  \global\mTwentyArtColumnActivetrue\mTwentyBodyBegin
++  % The outside default is left on verso and right on recto. Reverse this
++  % page only; shipout restores the ordinary column reading direction.
+   \ifodd\c@page
+    \ifx\mTwentyArtPosition\mTwentyOuterPosition\RLmulticolcolumns\global\mTwentyArtReversetrue\fi
+   \else\ifx\mTwentyArtPosition\mTwentyOuterPosition\else\RLmulticolcolumns\global\mTwentyArtReversetrue\fi\fi
+   \noindent\mTwentyArtBox\par\columnbreak
+  \else
+-  \begingroup\parskip=0bp
++  % Native t/b-only floats reserve the page edge. Deliberately omit p so
++  % interior art does not become a half-page on an otherwise empty float page.
+   \ifx\mTwentyArtPosition\mTwentyBottom
+-   \mTwentyRemaining\advance\mTwentyAvailable4bp
+-   \noindent\vbox to\mTwentyAvailable{\vfil\hbox{\mTwentyArtBox}}\par
+-  \else\noindent\mTwentyArtBox\par\fi
+-  \endgroup\mTwentyBodyBegin
++   \begin{mTwentyHorizontalArt}{!b}\noindent\mTwentyArtBox\par\end{mTwentyHorizontalArt}%
++  \else
++   \begin{mTwentyHorizontalArt}{!t}\noindent\mTwentyArtBox\par\end{mTwentyHorizontalArt}%
++  \fi
++  \mTwentyBodyBegin
+  \fi
+ }
++\InputIfFileExists{tex/m20-local-text-styles.sty}{}{}
+ \endinput
+--- a/tex/m20-pdf-sidebars.sty
++++ b/tex/m20-pdf-sidebars.sty
+@@ -4,16 +4,25 @@
+ \newbox\mTwentyLeft
+ \newbox\mTwentyRight
+ \newbox\mTwentyFrameContent
++\newbox\mTwentySidebarPageContent
+ \newdimen\mTwentyOuterWidth
+ \newdimen\mTwentyUsableWidth
+ \newdimen\mTwentyTextWidth
+ \newdimen\mTwentyAvailable
+ \newdimen\mTwentySplitHeight
++\newdimen\mTwentyFullSplitHeight
++\newdimen\mTwentyCurrentCapacity
+ \newdimen\mTwentyFrameHeight
+ \newcount\mTwentySegment
++\newcount\mTwentySidebarPageSegment
++\newdimen\mTwentySidebarBeforeGap
++\newdimen\mTwentySidebarAfterGap
++\mTwentySidebarBeforeGap=4bp
++\mTwentySidebarAfterGap=6bp
+ \newtoks\mTwentyNotes
+ \newbox\mTwentyAtomicSidebar
+ \newbox\mTwentyPendingGalley
++\newbox\mTwentySidebarTitleMeasure
+ \def\mTwentyFrameKind{sidebar}
+ \newif\ifmTwentyNarrow
+ \newif\ifmTwentyMoreContent
+@@ -21,6 +30,9 @@
+ \newcommand\mTwentyLocalNote[1]{\stepcounter{m20sidebarnote}\textsuperscript{\arabic{m20sidebarnote}}\begingroup\edef\mTwentyNewNote{\endgroup\noexpand\mTwentyAppendNote{\arabic{m20sidebarnote}}{\unexpanded{#1}}}\mTwentyNewNote}
+ \newcommand\mTwentyRemaining{%
+  \par
++ % Settle pending paragraph/page output before reading pagetotal. Otherwise
++ % a heading near the old column limit can force a break on the next page.
++ \ifmTwentyBodyActive\penalty0\fi
+  \ifmTwentyBodyActive
+   \mTwentyAvailable=\@colroom
+   \@tempdima=\pagetotal
+@@ -28,12 +40,24 @@
+   \advance\mTwentyAvailable-\@tempdima
+  \else
+   \ifdim\pagegoal=\maxdimen\mTwentyAvailable=\textheight\else
+-    \mTwentyAvailable=\pagegoal\advance\mTwentyAvailable-\pagetotal
+-  \fi
++    \mTwentyAvailable=\pagegoal
++  \fi
++  % A newly started native text page may still have pagegoal=maxdimen while
++  % admitted top/bottom floats already reduced colroom. Closing multicols
++  % must not restore a full-page budget for the following wide sidebar.
++  \ifdim\@colroom<\mTwentyAvailable\mTwentyAvailable=\@colroom\fi
++  \advance\mTwentyAvailable-\pagetotal
+  \fi
+  \advance\mTwentyAvailable-4bp
+ }
+ \newcommand\mTwentyAdvance{\ifmTwentyNarrow\ifmTwentyBodyActive\columnbreak\else\newpage\fi\else\newpage\fi}
++\newcommand\mTwentySidebarAdvance{%
++ \ifvoid\mTwentySidebarPageContent
++  \mTwentySidebarRegionAdvance
++ \else
++  % A continuation of this sidebar always starts on another physical page.
++  \mTwentyShipFrame\clearpage
++ \fi}
+ \newcommand\mTwentyPlacement{%
+  \def\mTwentyNextPage{next-page}\def\mTwentyHere{here}%
+  \ifx\mTwentySidebarPlace\mTwentyNextPage
+@@ -46,26 +70,97 @@
+   \else\mTwentyAdvance\mTwentyRemaining\fi
+  \fi}
+ \newcommand\mTwentyFrame{%
++ % Text columns and spanning tables are natural-height bands in one page
++ % frame. Global storage survives the contained-table formatting group.
++ \global\setbox\mTwentySidebarPageContent=\vbox{%
++  \hsize=\mTwentyUsableWidth\linewidth=\hsize
++  \ifvoid\mTwentySidebarPageContent\else\unvbox\mTwentySidebarPageContent\vskip4bp\fi
++  \ifnum\mTwentySegment>1\relax\ifvoid\mTwentyTableHeader\else\copy\mTwentyTableHeader\vskip4bp\fi\fi
++  \nointerlineskip\hbox{\box\mTwentyLeft\ifnum\mTwentySidebarColumns=2\hskip12bp\box\mTwentyRight\fi}}%
++}
++
++% Authentic page-6 sidebar paint. The complete border still occupies 7bp,
++% so galley widths, frame heights and legal fragment endpoints stay unchanged.
++% PGF maps 25..75 of a declared vertical shading onto the painted rectangle.
++\begingroup\selectcolormodel{cmyk}
++\pgfdeclareverticalshading{mTwentySidebarGold}{100bp}{%
++ cmyk(0bp)=(.2888,.4368,.8328,.0635);
++ cmyk(25bp)=(.2888,.4368,.8328,.0635);
++ cmyk(25.5525bp)=(.2888,.4368,.8328,.0635);
++ cmyk(75bp)=(.09,.06,.55,0);
++ cmyk(100bp)=(.09,.06,.55,0)}
++\endgroup
++\newcommand\mTwentySidebarShadowTile[5]{%
++ \node[inner sep=0bp,outer sep=0bp,anchor=south west] at (#2,#3)
++  {\includegraphics[width=#4,height=#5]{\mTwentyAssetPath sidebar-shadow-#1.reference-template.pdf}};}
++\newcommand\mTwentySidebarShadow{%
++ \IfFileExists{\mTwentyAssetPath sidebar-shadow-top-left.reference-template.pdf}{%
++  \begin{scope}[overlay]
++   \mTwentySidebarShadowTile{bottom-left}{-.94bp}{-9.86bp}{12bp}{12bp}
++   \mTwentySidebarShadowTile{bottom-middle}{11.06bp}{-9.86bp}{\dimexpr\mTwentyOuterWidth-12.97bp}{12bp}
++   \mTwentySidebarShadowTile{bottom-right}{\dimexpr\mTwentyOuterWidth-1.91bp}{-9.86bp}{12bp}{12bp}
++   \mTwentySidebarShadowTile{middle-left}{-.94bp}{2.14bp}{12bp}{\dimexpr\mTwentyFrameHeight-13.2bp}
++   \mTwentySidebarShadowTile{middle-middle}{11.06bp}{2.14bp}{\dimexpr\mTwentyOuterWidth-12.97bp}{\dimexpr\mTwentyFrameHeight-13.2bp}
++   \mTwentySidebarShadowTile{middle-right}{\dimexpr\mTwentyOuterWidth-1.91bp}{2.14bp}{12bp}{\dimexpr\mTwentyFrameHeight-13.2bp}
++   \mTwentySidebarShadowTile{top-left}{-.94bp}{\dimexpr\mTwentyFrameHeight-11.06bp}{12bp}{12bp}
++   \mTwentySidebarShadowTile{top-middle}{11.06bp}{\dimexpr\mTwentyFrameHeight-11.06bp}{\dimexpr\mTwentyOuterWidth-12.97bp}{12bp}
++   \mTwentySidebarShadowTile{top-right}{\dimexpr\mTwentyOuterWidth-1.91bp}{\dimexpr\mTwentyFrameHeight-11.06bp}{12bp}{12bp}
++  \end{scope}
++ }{}}
++\newcommand\mTwentySidebarTexture{%
++ \IfFileExists{\mTwentyAssetPath sidebar-texture.reference-template.pdf}{%
++  \begin{scope}[overlay]
++   \clip (0,0) rectangle (\mTwentyOuterWidth,\mTwentyFrameHeight);
++   \@tempdima=4.714048443\mTwentyFrameHeight
++   \ifdim\@tempdima>\mTwentyOuterWidth
++    \node[inner sep=0bp,outer sep=0bp] at (.5\mTwentyOuterWidth,.5\mTwentyFrameHeight)
++     {\includegraphics[height=\mTwentyFrameHeight]{\mTwentyAssetPath sidebar-texture.reference-template.pdf}};
++   \else
++    \node[inner sep=0bp,outer sep=0bp] at (.5\mTwentyOuterWidth,.5\mTwentyFrameHeight)
++     {\includegraphics[width=\mTwentyOuterWidth]{\mTwentyAssetPath sidebar-texture.reference-template.pdf}};
++   \fi
++  \end{scope}
++ }{%
++  \IfFileExists{\mTwentyAssetPath sidebar-background.original-template.pdf}{%
++   \begin{scope}[overlay]\clip (0,0) rectangle (\mTwentyOuterWidth,\mTwentyFrameHeight);
++    \node[inner sep=0bp,outer sep=0bp] at (.5\mTwentyOuterWidth,.5\mTwentyFrameHeight)
++     {\includegraphics[width=\mTwentyOuterWidth]{\mTwentyAssetPath sidebar-background.original-template.pdf}};
++   \end{scope}
++  }{}}}
++\newcommand\mTwentySidebarRules{%
++ \begin{scope}[even odd rule]
++  \clip
++   (0,0) rectangle (\mTwentyOuterWidth,\mTwentyFrameHeight)
++   (3.5bp,3.5bp) rectangle (\dimexpr\mTwentyOuterWidth-3.5bp,\dimexpr\mTwentyFrameHeight-3.5bp)
++   (5.831bp,5.831bp) rectangle (\dimexpr\mTwentyOuterWidth-5.831bp,\dimexpr\mTwentyFrameHeight-5.831bp)
++   (7bp,7bp) rectangle (\dimexpr\mTwentyOuterWidth-7bp,\dimexpr\mTwentyFrameHeight-7bp);
++  \shade[shading=mTwentySidebarGold] (0,0) rectangle (\mTwentyOuterWidth,\mTwentyFrameHeight);
++ \end{scope}}
++
++\newcommand\mTwentyShipFrame{%
++ \ifvoid\mTwentySidebarPageContent\else
++ \global\advance\mTwentySidebarPageSegment1
+  \setbox\mTwentyFrameContent=\vbox{%
+   \hsize=\mTwentyUsableWidth\linewidth=\hsize
+   \vskip7.2bp
+-  {\centering\mTwentyHeadingNarrowFont\fontsize{18bp}{18bp}\selectfont\color{m20gold}\mTwentySidebarTitle\ifnum\mTwentySegment>1\space(continued)\fi\par}%
++  {\centering\mTwentyHeadingControls\mTwentyHeadingNarrowFont\mdseries\let\textbf\@firstofone\fontsize{18bp}{18bp}\selectfont\color{m20gold}\mTwentySidebarTitle\ifnum\mTwentySidebarPageSegment>1\space(continued)\fi\par}%
+   \vskip5bp
+-  \ifnum\mTwentySegment>1\relax\ifvoid\mTwentyTableHeader\else\copy\mTwentyTableHeader\vskip4bp\fi\fi
+-  \nointerlineskip\hbox{\box\mTwentyLeft\ifnum\mTwentySidebarColumns=2\hskip12bp\box\mTwentyRight\fi}%
++  \unvbox\mTwentySidebarPageContent
+   \vskip10bp}
++ \global\setbox\mTwentySidebarPageContent=\box\voidb@x
+  \mTwentyFrameHeight=\ht\mTwentyFrameContent\advance\mTwentyFrameHeight\dp\mTwentyFrameContent\advance\mTwentyFrameHeight14bp
+- \par\noindent
++ \par\addvspace{\mTwentySidebarBeforeGap}\noindent
+  \begin{tikzpicture}[baseline=0bp]
+   \path[use as bounding box] (0,0) rectangle (\mTwentyOuterWidth,\mTwentyFrameHeight);
++  \mTwentySidebarShadow
+   \fill[m20purple] (0,0) rectangle (\mTwentyOuterWidth,\mTwentyFrameHeight);
+-  \IfFileExists{\mTwentyAssetPath sidebar_texture.png}{\node[inner sep=0bp,anchor=south west,opacity=.5] at (0,0) {\includegraphics[width=\mTwentyOuterWidth,height=\mTwentyFrameHeight]{\mTwentyAssetPath sidebar_texture.png}};}{}%
+-  \draw[line width=7bp,m20gold] (3.5bp,3.5bp) rectangle (\dimexpr\mTwentyOuterWidth-3.5bp,\dimexpr\mTwentyFrameHeight-3.5bp);
+-  \draw[line width=.7bp,black!75] (7bp,7bp) rectangle (\dimexpr\mTwentyOuterWidth-7bp,\dimexpr\mTwentyFrameHeight-7bp);
++  \mTwentySidebarTexture
++  \mTwentySidebarRules
+   \node[inner sep=0bp,anchor=north west,text=white] (m20content) at (25bp,\dimexpr\mTwentyFrameHeight-7bp) {\box\mTwentyFrameContent};
+-  \node[inner sep=0bp,anchor=north west] at (0,\mTwentyFrameHeight) {\mTwentyPosition{\mTwentySidebarID}{\mTwentyOuterWidth}{\mTwentyUsableWidth}{\mTwentySidebarColumns}{\mTwentyFrameKind}{\number\mTwentySegment}{\mTwentySidebarPlace}{\mTwentyFrameHeight}};
++  \node[inner sep=0bp,anchor=north west] at (0,\mTwentyFrameHeight) {\mTwentyPosition{\mTwentySidebarID}{\mTwentyOuterWidth}{\mTwentyUsableWidth}{\mTwentySidebarFrameColumns}{sidebar}{\number\mTwentySidebarPageSegment}{\mTwentySidebarPlace}{\mTwentyFrameHeight}};
+  \end{tikzpicture}\par
+- \vskip2.52bp\relax
++ \vskip\mTwentySidebarAfterGap\relax
++ \fi
+ }
+ \newcommand\mTwentyTypesetText[1]{%
+  \setbox\mTwentyGalley=\vbox{%
+@@ -75,7 +170,11 @@
+   % stack push in the galley would cross pages and turn later body text white.
+   \mTwentySidebarFont\fontsize{10bp}{10bp}\selectfont
+   \parindent=0bp\parskip=2.52bp\relax
+-  \emergencystretch=12bp\tolerance=2000
++  % These endpoint penalties become nodes before the galley is split. Native
++  % \vsplit honors them; a short region advances at the first legal block.
++  % Keep the assignments local, with natural-height (unstretched) frame boxes.
++  \clubpenalty=10000\widowpenalty=10000\displaywidowpenalty=10000
++  \pretolerance=-1\emergencystretch=24bp\tolerance=3000
+   \let\footnote\mTwentyLocalNote
+   \let\mTwentyNote\mTwentyLocalNote
+   #1\par}
+@@ -84,7 +183,10 @@
+ }
+ \newcommand\mTwentySetSplitHeight{%
+  \mTwentyRemaining
+- \mTwentySplitHeight=\mTwentyAvailable\advance\mTwentySplitHeight-70bp
++ \setbox\mTwentySidebarTitleMeasure=\vbox{\hsize=\mTwentyUsableWidth\parindent=0bp\centering\mTwentyHeadingControls\mTwentyHeadingNarrowFont\mdseries\let\textbf\@firstofone\fontsize{18bp}{18bp}\selectfont\mTwentySidebarTitle\ifnum\mTwentySidebarPageSegment>0\space(continued)\fi\par}%
++ \mTwentySplitHeight=\mTwentyAvailable\advance\mTwentySplitHeight-\ht\mTwentySidebarTitleMeasure\advance\mTwentySplitHeight-\dp\mTwentySidebarTitleMeasure\advance\mTwentySplitHeight-53bp
++ \advance\mTwentySplitHeight-\mTwentySidebarBeforeGap\advance\mTwentySplitHeight-\mTwentySidebarAfterGap
++ \ifvoid\mTwentySidebarPageContent\else\advance\mTwentySplitHeight-\ht\mTwentySidebarPageContent\advance\mTwentySplitHeight-\dp\mTwentySidebarPageContent\advance\mTwentySplitHeight-4bp\fi
+  \ifnum\mTwentySegment>0\relax\ifvoid\mTwentyTableHeader\else\advance\mTwentySplitHeight-\ht\mTwentyTableHeader\advance\mTwentySplitHeight-\dp\mTwentyTableHeader\advance\mTwentySplitHeight-4bp\fi\fi
+ }
+ \newcommand\mTwentyPaginateChunks{%
+@@ -92,9 +194,29 @@
+  \mTwentyPaginateGalley
+  \ifx\mTwentyManualMode\@empty\else
+   \def\mTwentyPageMode{page}%
+-  \ifx\mTwentyManualMode\mTwentyPageMode\clearpage\else\mTwentyAdvance\fi
++  \ifx\mTwentyManualMode\mTwentyPageMode\mTwentyShipFrame\clearpage\else\mTwentyAdvance\fi
+   \setbox\mTwentyGalley=\box\mTwentyPendingGalley
+   \expandafter\mTwentyPaginateChunks
++ \fi
++}
++\newcommand\mTwentyKeepGalleyTogether{%
++ % Measure the already-typeset galley only. Writes, labels and notes are not
++ % executed twice. A short flow block starts in a fresh region when needed;
++ % a block taller than a whole region continues through the native splitter.
++ \def\mTwentyHere{here}%
++ \ifvoid\mTwentySidebarPageContent
++ \ifx\mTwentySidebarPlace\mTwentyHere\else
++  \mTwentyFullSplitHeight=\dimexpr\textheight-4bp-\ht\mTwentySidebarTitleMeasure-\dp\mTwentySidebarTitleMeasure-53bp-\mTwentySidebarBeforeGap-\mTwentySidebarAfterGap\relax
++  \ifnum\mTwentySegment>0\relax\ifvoid\mTwentyTableHeader\else\advance\mTwentyFullSplitHeight-\ht\mTwentyTableHeader\advance\mTwentyFullSplitHeight-\dp\mTwentyTableHeader\advance\mTwentyFullSplitHeight-4bp\fi\fi
++  \mTwentyCurrentCapacity=\mTwentySplitHeight
++  \ifnum\mTwentySidebarColumns=2\multiply\mTwentyFullSplitHeight2\multiply\mTwentyCurrentCapacity2\fi
++  \@tempdima=\dimexpr\ht\mTwentyGalley+\dp\mTwentyGalley\relax
++  \ifdim\@tempdima>\mTwentyCurrentCapacity
++   \ifdim\@tempdima>\mTwentyFullSplitHeight\else
++    \mTwentyAdvance\mTwentySetSplitHeight
++   \fi
++  \fi
++ \fi
+  \fi
+ }
+ \newcommand\mTwentyPaginateGalley{%
+@@ -103,11 +225,13 @@
+  \ifdim\dimexpr\ht\mTwentyGalley+\dp\mTwentyGalley\relax<.1bp\relax\mTwentyMoreContentfalse\fi
+  \@whilesw\ifmTwentyMoreContent\fi{%
+   \mTwentySetSplitHeight
++  \mTwentyKeepGalleyTogether
+   \ifdim\mTwentySplitHeight<12bp
+-   \ifnum\mTwentySegment=0\relax\def\mTwentyHere{here}\ifx\mTwentySidebarPlace\mTwentyHere\PackageError{m20}{M20_E_PLACEMENT_UNAVAILABLE}{The required first segment does not fit at this anchor.}\fi\fi
++   \ifnum\mTwentySidebarPageSegment=0\relax\ifvoid\mTwentySidebarPageContent\ifnum\mTwentySegment=0\relax\def\mTwentyHere{here}\ifx\mTwentySidebarPlace\mTwentyHere\PackageError{m20}{M20_E_PLACEMENT_UNAVAILABLE}{The required first segment does not fit at this anchor.}\fi\fi\fi\fi
+    \mTwentyAdvance\mTwentySetSplitHeight
+   \fi
+-  \directlua{m20tables.check_first(\number\mTwentyGalley,\number\mTwentySplitHeight,"\mTwentySidebarPlace",\number\mTwentySegment,\number\dimexpr\textheight-74bp\relax)}
++  \@tempcnta=\mTwentySegment\advance\@tempcnta\mTwentySidebarPageSegment\ifvoid\mTwentySidebarPageContent\else\advance\@tempcnta1\fi
++  \directlua{m20tables.check_first(\number\mTwentyGalley,\number\mTwentySplitHeight,"\mTwentySidebarPlace",\number\@tempcnta,\number\dimexpr\textheight-84bp\relax)}
+   \ifnum\mTwentySidebarColumns=2
+    \@tempdima=\ht\mTwentyGalley\advance\@tempdima\dp\mTwentyGalley
+    \@tempdimb=2\mTwentySplitHeight
+@@ -173,13 +297,14 @@
+  \if\relax\detokenize\expandafter{\the\mTwentyNotes}\relax\else
+   \mTwentyTypesetText{\the\mTwentyNotes}
+  \fi
++ \mTwentyShipFrame
+ }
+ \cs_new_protected:Npn \mTwentyComposeOrAtomic:n #1 {
+  \bool_if:NTF \l_mtw_breakable_bool {\mTwentyComposeSidebar:n {#1}} {
+   \setbox\mTwentyAtomicSidebar=\vbox{
+    \hsize=\mTwentyOuterWidth
+    \renewcommand\mTwentyRemaining{\mTwentyAvailable=\dimexpr\textheight-4bp\relax}
+-   \renewcommand\mTwentyAdvance{\par}
++   \renewcommand\mTwentyAdvance{\mTwentyShipFrame\par}
+    \mTwentyComposeSidebar:n {#1}
+   }
+   \dim_compare:nNnT {\ht\mTwentyAtomicSidebar+\dp\mTwentyAtomicSidebar} > {\textheight-4bp} {
+@@ -197,12 +322,17 @@
+ \ExplSyntaxOff
+ \newcommand\mTwentySidebarPDF[3]{%
+  \global\mTwentyNotes={}%
++ \global\setbox\mTwentySidebarPageContent=\box\voidb@x
++ \global\mTwentySidebarPageSegment=0
+  \def\mTwentySidebarTitle{#2}%
+  \def\mTwentyNarrowName{narrow}\def\mTwentyKind{#1}%
+  \ifx\mTwentyKind\mTwentyNarrowName\mTwentyNarrowtrue\mTwentyOuterWidth=\mTwentyColumnWidth\else\mTwentyNarrowfalse\mTwentyOuterWidth=\textwidth\fi
+  \mTwentyUsableWidth=\mTwentyOuterWidth\advance\mTwentyUsableWidth-50bp
+  \mTwentyTextWidth=\mTwentyUsableWidth
+  \ifnum\mTwentySidebarColumns=2\advance\mTwentyTextWidth-12bp\divide\mTwentyTextWidth2\fi
++ \edef\mTwentySidebarFrameColumns{\mTwentySidebarColumns}%
++ \let\mTwentySidebarRegionAdvance\mTwentyAdvance
++ \let\mTwentyAdvance\mTwentySidebarAdvance
+  \mTwentySegment=0
+  \mTwentyPlacement
+  \csname mTwentyComposeOrAtomic:n\endcsname{#3}%
+--- a/tex/m20-pdf-tables.sty
++++ b/tex/m20-pdf-tables.sty
+@@ -1,6 +1,25 @@
+ \NeedsTeXFormat{LaTeX2e}
+ \ProvidesPackage{m20-pdf-tables}[2026/09/30 ordered fixed-width row blocks]
+-\RequirePackage{array}
++\RequirePackage{array,colortbl}
++% The layout's earlier begin-document hook has already opened a multicols
++% group when colortbl initializes @tabarray. Keep that initialization after
++% the columns close, otherwise nested native tables restore undefined colors.
++\AddToHook{begindocument/end}{\global\let\@tabarray\@tabarray}
++% The supplied M20 table reference uses Futura, bold headers, no rules and
++ % pale-purple alternating body bands. Sidebar tables instead alternate
++% gold/white text on their existing dark frame, as in the sidebar reference.
++% Exact pale-band pixel from the user-supplied table screenshot. The sidebar
++% text continues to use the template's existing CMYK m20gold/m20purple colors.
++\definecolor{m20tableband}{RGB}{237,232,241}
++\newcommand\mTwentyTableCellStyle{%
++ \mTwentySidebarFont\fontsize{10bp}{10bp}\selectfont
++ \ifnum\rownum>\mTwentyTableHeadingRows\relax
++  \ifmTwentySidebarActive
++   \ifodd\numexpr\rownum-\mTwentyTableHeadingRows\relax\color{m20gold}\else\color{white}\fi
++  \else\color{black}\fi
++ \else
++  \bfseries\mTwentyHeadingControls\ifmTwentySidebarActive\color{white}\else\color{black}\fi
++ \fi}
+ \newdimen\mTwentyTableWidth
+ \newdimen\mTwentyCellWidth
+ \newdimen\mTwentyTableOffset
+@@ -14,6 +33,50 @@
+ \newbox\mTwentyRowChunk
+ \newbox\mTwentyTableHeader
+ \newbox\mTwentyLocalTableHeader
++\newbox\mTwentyTableNotesBox
++\newbox\mTwentyTableFloatBox
++\newbox\mTwentyTableLeadBox
++\newif\ifmTwentyTableLeadActive
++% Short full-width alignments are genuine native top/bottom floats. Permit
++% several compact tables on a page, and stack float-only pages at their top.
++\setcounter{topnumber}{6}
++\setcounter{bottomnumber}{6}
++\setcounter{totalnumber}{12}
++\renewcommand\topfraction{.9}
++\renewcommand\bottomfraction{.8}
++\renewcommand\textfraction{.08}
++\renewcommand\floatpagefraction{.5}
++\setlength\floatsep{10bp plus2bp minus2bp}
++\setlength\textfloatsep{10bp plus2bp minus2bp}
++\setlength\@fptop{0bp}
++\setlength\@fpsep{10bp}
++\setlength\@fpbot{0bp plus1fil}
++% A bounded, render-only association: existing title/lead tokens and their
++% table are boxed once and move together. Labels, destinations and anchors
++% remain in that box, rather than in an unrelated preceding prose column.
++\NewDocumentEnvironment{m20tablelead}{+b}{%
++ \begingroup
++ \ifmTwentySidebarActive\PackageError{m20}{M20_E_TABLE_LEAD_CONTEXT}{A table lead float must be outside a sidebar.}\fi
++ \setbox\mTwentyTableLeadBox=\vbox{%
++  \mTwentyTableLeadActivetrue
++  \hsize=\textwidth\linewidth=\hsize\parindent=18bp\parskip=3bp
++  \rmfamily\fontsize{10bp}{12bp}\selectfont\color{black}%
++  \let\mTwentyBodyBegin\relax\let\mTwentyBodyEnd\relax
++  \let\mTwentyKeepHeading\@gobble
++  \@nobreakfalse\@noskipsecfalse\everypar{}%
++  % Table titles retain the profile-selected heading role; column labels
++  % independently use the genuine Goudy Old Style bold prose face.
++  \def\subsection{\@startsection{subsection}{2}{\z@}{0bp}{3bp}{\centering\mTwentyHeadingControls\mTwentyHeadingFont\mdseries\let\textbf\@firstofone\fontsize{11bp}{13bp}\selectfont\color{m20purple}}}%
++  #1\par}%
++ \ifdim\dimexpr\ht\mTwentyTableLeadBox+\dp\mTwentyTableLeadBox\relax>\dimexpr\textheight-60bp\relax
++  \PackageError{m20}{M20_E_TABLE_LEAD_TOO_TALL}{The bounded title/lead/table group must fit one page. Leave multipage tables in owner pagination.}%
++ \fi
++ \begin{table*}[tb]\noindent\box\mTwentyTableLeadBox\par\end{table*}%
++ \endgroup
++}{}
++% Table-lead floats stay inside the live body columns. Closing and restarting
++% them merely to enqueue a float creates ambiguous stacked reading bands.
++\AddToHook{env/m20tablelead/after}{\mTwentyBodyBegin}
+ \newif\ifmTwentyTableActive
+ \newdimen\mTwentyOriginalColumnWidth
+ \directlua{m20tables = dofile(kpse.find_file("tex/m20-table-nodes.lua", "tex"))}
+@@ -49,6 +112,7 @@
+ \tl_new:N \l_mtw_table_id_tl
+ \fp_new:N \l_mtw_table_scale_fp
+ \int_new:N \l_mtw_table_head_int
++\bool_new:N \l_mtw_table_float_bool
+ \seq_new:N \l_mtw_rows_seq
+ \seq_new:N \l_mtw_columns_seq
+ \tl_new:N \l_mtw_column_spec_tl
+@@ -74,6 +138,8 @@
+  \int_compare:nNnT {\l_mtw_table_head_int} < {0}{\PackageError{m20}{M20_E_TABLE_HEADERS}{head-rows~cannot~be~negative}}
+  \fp_compare:nNnT {\l_mtw_table_scale_fp} > {1}{\PackageError{m20}{M20_E_TABLE_SCALE}{Scale~must~be~in~0..1}}
+  \fp_compare:nNnF {\l_mtw_table_scale_fp} > {0}{\PackageError{m20}{M20_E_TABLE_SCALE}{Scale~must~be~in~0..1}}
++ % Four-point horizontal cell inset is the original IDML table default.
++ \tabcolsep=4bp
+  \str_case:VnF \l_mtw_table_width_tl {
+   {container}{\ifmTwentySidebarActive\mTwentyTableWidth=\mTwentyUsableWidth\else\mTwentyTableWidth=\linewidth\fi}
+   {column}{\ifmTwentySidebarActive\mTwentyTableWidth=\mTwentyOriginalColumnWidth\else\mTwentyTableWidth=\mTwentyColumnWidth\fi}
+@@ -102,6 +168,11 @@
+  \str_case:Vn \l_mtw_table_align_tl {{center}{\mTwentyTableOffset=\dimexpr\linewidth-\mTwentyTableWidth\relax\divide\mTwentyTableOffset2}{right}{\mTwentyTableOffset=\dimexpr\linewidth-\mTwentyTableWidth\relax}}
+ 
+  \tl_set:Nn \l_mtw_column_spec_tl {#2}
++ % The converted manuscript's empty edge directives remove cell padding and
++ % make shaded panels overhang the body. Retain the native column widths but
++ % restore the four-point inset on the two outer edges.
++ \regex_replace_once:nnN {\A@\{\}} {} \l_mtw_column_spec_tl
++ \regex_replace_once:nnN {@\{\}\Z} {} \l_mtw_column_spec_tl
+  \regex_match:nnT {\A[lcr|\s]+\Z}{#2} {
+   \tl_clear:N \l_mtw_column_spec_tl
+   \tl_map_inline:nn {#2}{\str_case:nn {##1}{
+@@ -111,6 +182,21 @@
+    {|}{\tl_put_right:Nn \l_mtw_column_spec_tl {|}}
+   }}
+  }
++ \edef\mTwentyTableHeadingRows{\int_use:N\l_mtw_table_head_int}
++ \mTwentySidebarFont\fontsize{10bp}{10bp}\selectfont
++ % Compact symmetric row breathing room matches the supplied visual target.
++ \setbox\strutbox=\hbox{\vrule width0bp height\dimexpr\ht\strutbox+2bp\relax depth\dimexpr\dp\strutbox+2bp\relax}
++ \let\mTwentyTableOriginalStartPbox\@startpbox
++ % Start the cell paragraph before its color declaration. A leading vertical
++ % color whatsit changes a vtop's reference point and adds a spurious strut.
++ \def\@startpbox##1{\mTwentyTableOriginalStartPbox{##1}\leavevmode\mTwentyTableCellStyle}
++ \ifmTwentySidebarActive
++  \rowcolors{1}{}{}
++ \else
++  \int_if_odd:nTF {\l_mtw_table_head_int}
++   {\rowcolors{\int_eval:n{\l_mtw_table_head_int+1}}{white}{m20tableband}}
++   {\rowcolors{\int_eval:n{\l_mtw_table_head_int+1}}{m20tableband}{white}}
++ \fi
+  \setbox\mTwentyNativeTable=\hbox{\exp_args:NnV \begin{tabular}\l_mtw_column_spec_tl #3\end{tabular}}
+  \ifdim\wd\mTwentyNativeTable>\dimexpr\mTwentyTableWidth+.5bp\relax
+   \PackageError{m20}{M20_E_TABLE_TOO_WIDE}{Explicit~native~columns~exceed~the~chosen~width.~Reduce~their~dimensions~or~use~l/c/r~columns.}\fi
+@@ -121,9 +207,43 @@
+  \str_case:Vn \l_mtw_table_align_tl {{center}{\mTwentyTableOffset=\dimexpr\linewidth-\mTwentyTableWidth\relax\divide\mTwentyTableOffset2}{right}{\mTwentyTableOffset=\dimexpr\linewidth-\mTwentyTableWidth\relax}}
+  \directlua{m20tables.extract(\number\mTwentyNativeTable,\number\mTwentyRowStream,\number\mTwentyLocalTableHeader,\int_use:N\l_mtw_table_head_int,\number\dimexpr\textheight-90bp\relax,\number\mTwentyTableOffset)}
+  \global\setbox\mTwentyTableHeader=\box\mTwentyLocalTableHeader
+- \par\noindent\hspace*{\mTwentyTableOffset}
+- \mTwentyPosition{\tl_use:N \l_mtw_table_id_tl}{\mTwentyTableWidth}{\mTwentyTableWidth}{1}{table}{0}{flow}{}
+- \par\ifmTwentySidebarActive\unvbox\mTwentyRowStream\else\mTwentyTablePassage\fi\par\the\mTwentyTableNotes\par
++ % Notes are typeset exactly once. Copies in an unused candidate float remain
++ % unshipped; the owner stream ships the original notes when the table is long.
++ \setbox\mTwentyTableNotesBox=\vbox{\hsize=\linewidth\the\mTwentyTableNotes\par}
++ \bool_set_false:N \l_mtw_table_float_bool
++ \ifmTwentySidebarActive\else\ifmTwentyTableLeadActive\else
++  \ifdim\mTwentyTableWidth>\dimexpr\textwidth-1bp\relax
++   \setbox\mTwentyTableFloatBox=\vbox{\hsize=\linewidth\parskip=0bp
++    \noindent\hspace*{\mTwentyTableOffset}
++    \mTwentyPosition{\tl_use:N \l_mtw_table_id_tl}{\mTwentyTableWidth}{\mTwentyTableWidth}{1}{table}{0}{float}{}
++    \copy\mTwentyNativeTable\par
++    \ifdim\dimexpr\ht\mTwentyTableNotesBox+\dp\mTwentyTableNotesBox\relax>0bp
++     \vskip4bp\copy\mTwentyTableNotesBox
++    \fi}
++   \ifdim\dimexpr\ht\mTwentyTableFloatBox+\dp\mTwentyTableFloatBox\relax<\dimexpr\textheight-60bp\relax
++    \begin{table}[tbp]\noindent\box\mTwentyTableFloatBox\par\end{table}
++    \bool_set_true:N \l_mtw_table_float_bool
++    \global\setbox\mTwentyTableHeader=\box\voidb@x
++   \fi
++  \fi
++ \fi\fi
++ \bool_if:NF \l_mtw_table_float_bool {
++  % Multipage alignments keep owner pagination with repeated page-top headers.
++  % Sidebar tables remain within their existing ordered frame stream.
++  \def\mTwentyTablePlacement{flow}
++  \ifmTwentyTableLeadActive\def\mTwentyTablePlacement{float}\else\ifmTwentySidebarActive\else
++   \ifdim\mTwentyTableWidth>\dimexpr\textwidth-1bp\relax
++    \def\mTwentyTablePlacement{top}
++    \par\ifdim\pagetotal>0bp\newpage\fi
++   \fi
++  \fi\fi
++  \par\noindent\hspace*{\mTwentyTableOffset}
++  \mTwentyPosition{\tl_use:N \l_mtw_table_id_tl}{\mTwentyTableWidth}{\mTwentyTableWidth}{1}{table}{0}{\mTwentyTablePlacement}{}
++  \par\ifmTwentyTableLeadActive
++   \unvbox\mTwentyRowStream\global\setbox\mTwentyTableHeader=\box\voidb@x
++  \else\ifmTwentySidebarActive\unvbox\mTwentyRowStream\else\mTwentyTablePassage\fi\fi
++  \par\unvbox\mTwentyTableNotesBox\par
++ }
+  \group_end:
+ }
+ \ExplSyntaxOff
+--- a/tex/m20-references.sty
++++ b/tex/m20-references.sty
+@@ -10,7 +10,7 @@
+  \renewcommand\mainmatter{\mTwentyBodyEnd\mTwentyNativeMainmatter\mTwentyBodyBegin}
+  \renewcommand\backmatter{\mTwentyBodyEnd\mTwentyNativeBackmatter\mTwentyBodyBegin}
+  \let\mTwentyNativeContents\tableofcontents
+- \renewcommand\tableofcontents{\mTwentyBodyEnd\mTwentyNativeContents\mTwentyBodyBegin}
++ \renewcommand\tableofcontents{\mTwentyBodyEnd\clearpage\global\mTwentyContentsOpeningPagetrue\mTwentyNativeContents\mTwentyBodyBegin}
+  \AddToHook{env/theindex/before}{\mTwentyBodyEnd}
+  \AddToHook{env/theindex/after}{\mTwentyBodyBegin}
+  \AddToHook{env/figure/before}{\ifmTwentySidebarActive\PackageError{m20}{M20_E_UNSUPPORTED_NESTING}{Use an inline diagram or art reservation inside a sidebar.}\else\mTwentyBodyEnd\fi}

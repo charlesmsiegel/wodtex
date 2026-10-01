@@ -1,0 +1,3 @@
+{
+  "environments": ["document","m20sidebar","m20sidebarwide","m20table","itemize","enumerate","description","quote","quotation","verse","center","flushleft","flushright","tabular","tabular*","table","figure","minipage","equation","equation*","align","align*","gather","gather*","split","cases","matrix","pmatrix","bmatrix","thebibliography","tikzpicture","verbatim","abstract"]
+}

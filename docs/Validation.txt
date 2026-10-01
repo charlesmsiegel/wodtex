@@ -1,0 +1,65 @@
+Validation scope and remaining differences (2026-09-30)
+
+The real LuaLaTeX layout proof builds to 20 pages. Native integration tests
+cover all three sidebar forms, continuations, mandatory placements and failure
+cases, side-effect conservation, long/repeated-header tables, atomic nested
+cells, fonts/math, chapter pairing, art bounds, navigation and index rebuilds.
+The shared stress specimen builds both PDF and EPUB using explicit script
+fonts. Independent checks cover media/body bounds, embedding, overflow, live
+EPUB resources/targets, semantic IDs, note backlinks and formula inventories.
+The specimen checks 251 unique occurrences, 240 complete passages, 246 ordered
+tokens, and four native MathML structural signatures. Those signatures verify
+the fixed specimen, not mathematical equivalence for arbitrary manuscripts.
+The native TikZ proof builds both outputs with vector glyph definitions and
+explicit alternative text. EPUB diagram labels use genuine mapped Latin Modern.
+EPUBCheck 5.3.0 is part of every EPUB build; a validation failure stops it.
+The final test inventory has 57 cases: 56 pass and the deferred automatic
+multilingual selection case is an expected failure. The complete inventory
+was checked in module groups, with the affected navigation module checked
+again after adding the front/main/back matter regression. A fresh source
+unpack prepares the runtime, imports separately supplied licensed inputs,
+and builds and verifies both starter-book outputs.
+
+Known deferred regression
+Automatic Babel font selection after the independent first-paragraph font
+switch can leave Greek, Cyrillic, Hebrew or Arabic in Goudy. The original
+reproducer is an expected-failure test at the user's request. Explicit
+\foreignlanguage{language}{\m20script{...}} preserves language and uses a genuine
+script face. Missing glyphs remain blocking build diagnostics; they are never
+ignored by the verifier.
+
+Visual discrepancy register
+Page/body/column/indent/glyph scales come from the supplied original IDML.
+Body region: 490.4496 x 657 bp; two columns: 239.2248 bp; gutter: 12 bp.
+Independent first paragraph: 100 percent vertical glyph scale; body: 98 percent
+with compensated horizontal width. Actual shipout coordinates are measured.
+Chapter opener body starts at 355.5 bp; the preceding fresh verso is empty.
+No original exported reference PDF was supplied. Exact reference overlays,
+baseline comparisons and an InDesign-equivalence claim therefore remain open.
+Chapter silk/gold decoration, fine gradients, character strokes, drop shadows
+and page-border cropping have not yet been calibrated to the original. Native
+text remains editable/searchable; these gaps are recorded rather than hidden
+by rasterizing it. CMYK artwork conversion also requires reference calibration.
+
+Reader scope
+EPUBCheck and independent link/structure tests are automated. Software reader
+rendering evidence is recorded separately with engine/version and viewport.
+Every page of the 31-page PDF was rendered and visually reviewed. PyMuPDF
+1.26.6 / MuPDF 1.26.11 rendered the EPUB at 360 x 640 and 800 x 1000, at
+16/18/24 point text sizes, in ordinary, enlarged, grayscale and dark previews.
+The narrow/wide/enlarged/grayscale/dark views reflowed to 55/19/153/71/71 pages.
+Sidebar/table/record/note/art cases were inspected. The enlarged viewport
+check found no text outside its width after responsive nested-table styling.
+Run scripts/render_review.py to regenerate page PNGs, contact sheets and the
+reader-review.json evidence. Native reference/link/backlink destinations are
+checked structurally; reader UI interaction has not been certified.
+Software grayscale/dark previews do not establish physical e-ink behavior.
+No physical e-reader testing or broad reader compatibility claim is made.
+
+Reproducibility
+Source packages have deterministic entry order/timestamps and per-file hashes.
+Dependency archives/fonts are pinned by SHA256; caches and formats are local.
+Build reports retain actual output hashes and engine versions. Native PDF
+byte equality may depend on tool/font versions; semantic and geometric
+verification must also pass. Licensed input files are supplied separately and
+are excluded from Git and the source archive.

@@ -1,0 +1,82 @@
+M20 command reference
+
+Class and setup (put setup in the preamble)
+  \documentclass{m20book}
+  \m20setup{profile=m20,running-title={My Book},math=legacy}
+output=pdf|epub is supplied by the driver. math=legacy uses native TeX math;
+math=unicode explicitly selects unicode-math and Latin Modern Math. Loading
+unicode-math while selecting legacy fails with M20_E_MATH_MODE. font-path and
+asset-path can override prepared resource locations. Oversized chapter titles
+need deliberate line breaks or chapter-title-size/chapter-title-leading in bp.
+
+All three sidebar recipes
+  \begin{m20sidebar}[id=my-aside,place=flow]{Title}
+  Narrow prose, labels, index entries, and \m20note{A local note.}
+  \end{m20sidebar}
+  \begin{m20sidebarwide}[id=wide-one,columns=1]{Title}
+  A single full-width text column.
+  \end{m20sidebarwide}
+  \begin{m20sidebarwide}[id=wide-two,columns=2,balance=true]{Title}
+  Two internal text columns. \m20sidebarbreak[page] Continuation.
+  \end{m20sidebarwide}
+breakable=true is the default. breakable=false keeps the complete sidebar
+atomic and fails when it is too tall. balance controls the final two-column
+segment. Manual page/column breaks are valid only inside breakable sidebars.
+Nesting a sidebar inside another sidebar is unsupported and diagnosed.
+
+Mandatory placement
+place=flow advances when necessary. place=here must begin at the source anchor;
+if its first required block cannot fit, M20_E_PLACEMENT_UNAVAILABLE stops the
+build. place=next-page begins on the next page. The same choices apply to art.
+\m20anchor{id} records a PDF source position for verification. \m20newpage ends
+the active body columns, starts a new page, and resumes ordinary body flow.
+
+Tables
+  \begin{m20table}[id=terms,head-rows=1,width=container,scale=1,align=center]{ll}
+  Term & Description \\ Example & A value. \\
+  \end{m20table}
+width=container uses the owner's usable width. width=column uses its text
+column width. A native dimension such as width=180bp is also accepted. scale
+multiplies that width and must be greater than 0 and at most 1. align chooses
+left, center or right. l/c/r columns wrap to equal widths; explicit native p
+specifications retain their declared cell widths within the chosen budget.
+Rows are atomic; M20_E_ROW_TOO_TALL means a row or nested cell needs splitting
+or different dimensions. Use an atomic native tabular inside a cell for a
+nested table. Multipage m20table nesting is unsupported. head-rows=N repeats
+the first N heading rows without repeating semantic writes. Wide sidebar
+tables span the internal columns and prose resumes afterward. \m20note inside
+a table belongs to the table end. Tables outside sidebars use full-width flow.
+epub=table is a semantic responsive table. epub=records requires head-rows and
+produces labeled records while retaining cells and associations. Rowspans in
+records mode require table mode and produce a diagnostic.
+
+Art
+  \m20artreserve[kind=horizontal,position=top,place=next-page,
+    image=examples/content/diagram.png,alt={Three connected panels},
+    caption={A diagram},credit={WodTeX fixture}]{diagram}
+Horizontal art is 490.4496 by 328.5 bp, at top or bottom. Vertical art is
+239.2248 by 657 bp, at inner or outer. Swapping the image preserves reserved
+bounds. Meaningful images need unique IDs, a file and alternative text; their
+caption, credit and original image bytes remain in EPUB. Empty reservations
+default to decorative and disappear from EPUB. role=decorative explicitly
+classifies supplied art as print-only. Missing images are build errors.
+
+Fonts, navigation and custom content
+Native TikZ diagrams work in both outputs. Load tikz in the manuscript, use
+\m20diagramalt{An arrow from Start to Finish} before the picture, and supply a
+normal figure caption. EPUB uses a mapped genuine Latin Modern vector font for
+diagram labels; arbitrary OpenType diagram fonts need separate conversion
+support. Native figure/table floats outside sidebars suspend body columns;
+inside a sidebar, use an inline diagram or m20table instead of a float.
+Goudy/Abbess/Futura use genuine supplied faces; missing emphasis uses declared
+genuine Noto faces. Automatic Babel script-font selection has a deferred bug.
+Use explicit fonts with language semantics, for example:
+  \foreignlanguage{arabic}{\m20script{مرحبا}}
+\m20script also supports Greek, Cyrillic, Hebrew and combining marks with an
+explicit DejaVu font. Native \label, \ref, \pageref, \tableofcontents, \makeindex,
+\index and \printindex work through the driver. EPUB \pageref links to the
+logical destination rather than inventing a printed page number. For formulas
+in headings, provide a plain bookmark/contents variant with an optional title
+and/or \texorpdfstring. \m20epubsafe{command,environment} explicitly declares
+author-defined expansions safe; it does not provide an adapter or validate
+arbitrary TeX. Unknown custom definitions/environments stop EPUB conversion.

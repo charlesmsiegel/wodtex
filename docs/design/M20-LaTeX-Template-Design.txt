@@ -1,0 +1,125 @@
+M20 LaTeX Template Design
+30 September 2026
+Revised design for review before implementation
+
+Purpose and success criteria
+
+Create a reusable LaTeX class and starter document that produce both PDF and reflowable EPUB from one source, without needing InDesign for ordinary authoring and typesetting. Keep normal LaTeX source editing, mathematics, references, contents and indexing.
+
+For PDF, success means the same visual identity as the supplied InDesign template. Complete success means output that cannot be visually distinguished from it. Match InDesign spacing wherever possible, including leading, indents, paragraph gaps, heading rules, internal padding, first baselines and image placement. The implementation must pursue this higher target through measured comparison, rather than treating approximate spacing as sufficient. Identical line breaks, pagination or visual equivalence must only be claimed after comparison; differences between composition engines are a calibration issue to investigate and report.
+
+For EPUB, success means preserving all information and meaningful art in a reflowable, pleasant reading experience, including on black-and-white e-ink screens. Print-only backgrounds and empty reservations must not compromise readability.
+
+Most PDF matching work belongs in the class, once. Ordinary prose should then reflow automatically. Retain explicit overrides for deliberate print composition, including forced placement of every sidebar type and art reservation.
+
+1. Scope and structure
+
+Deliver one M20 class, a starter book, a shared stress specimen with both PDF and EPUB outputs, prepared artwork, font configuration, PDF and EPUB build configurations, and an expert-oriented command reference. Include TeX4ht environment mappings and a restrained EPUB stylesheet. Separate manuscript, appearance settings and assets. Leave other visual profiles possible without building another application or converting the whole book collection now.
+
+Use the standard book class as the semantic foundation and LuaLaTeX as the PDF target engine. Use tex4ebook/TeX4ht for EPUB 3 conversion, with explicit mappings for the custom class and environments. Text, mathematics and counters remain source-native. Keep a single manuscript: output-specific adapters interpret the same content and metadata. Isolate the column/placement machinery behind the class interface. Its first implementation tests must prove two-column body flow, spanning headings, all three sidebar layouts and forced placement together. Do not restrict the implementation to untouched standard twocolumn if that prevents matching the supplied layout; equally, do not stack competing output routines without testing their interactions.
+
+2. Measured PDF visual baseline
+
+Use the original IDML styles, inherited settings, local overrides and reference PDF as the authority. The earlier reduced profile is a useful starting point, not a complete style specification. Measurements below use LaTeX bp, matching InDesign's 72 points per inch rather than TeX's slightly different pt.
+
+- Page: US Letter, 612 by 792 bp. Body region: 490.4496 by 657 bp, top 63 bp, inner margin 54 bp, outer margin 67.5504 bp. Two 239.2248 bp columns, 12 bp gutter
+- Body style n: Goudy Old Style 10/12, 18 bp first-line indent, 1.44 bp before and after, and 98 percent vertical glyph scale. The unindented first-paragraph style has its own settings and must not inherit that scaling accidentally
+- Heading 1: Abbess 24/25, centered, spanning two columns; 7.2 bp before, 2.1528 bp after, 1.25 bp rule at 1.8 bp offset, and 13.5 bp before/after-span settings
+- Heading 2: Abbess 18/18 at 97 percent horizontal scale, left aligned; heading 3: Abbess 12/14. Both use 7.2 bp before and zero after
+- Chapter title: Abbess 60/54, centered, 6 bp before/after, source gold gradient and the supplied silk/frame artwork
+- Sidebar title: Abbess 18/18 at 97 percent horizontal scale, centered, gold with the source 0.25 bp black text stroke; 7.2 bp before
+- Sidebar body: Futura PT Book 10/10, white with the source 0.25 bp black text stroke, 18 bp side indents and 2.52 bp before/after. Preserve the separate bullet indents and hanging offsets
+- Sidebar frame: original texture, 7 bp inside-aligned thick/thin gold gradient border and source shadow. Reproduce the measured relationship between background, text frame and first baseline, rather than adding generic box padding
+
+Translate active settings by their actual composition behavior. For example, paragraph gaps and span gaps must be measured together; blindly adding every stored value could double spacing. Preserve source metrics kerning, tracking, ligatures, hyphenation, justification ranges and absence of optical margin alignment. Do not enable generic font expansion or protrusion simply because it is a common LaTeX default. Match mirrored borders, footer baselines, quote styles and TOC styles as well.
+
+Load supplied font files by path and map genuine faces explicitly. Declare any supplemental script/emphasis face; never substitute silently. Keep original licensing restrictions. Convert the original artwork to appropriate PDF or lossless PNG assets without rasterizing manuscript text. Preserve color, crop, transparency and effective resolution. Report an oversized title rather than silently shrinking it; offer author-controlled breaks and size overrides.
+
+3. Author interface and PDF sidebar layouts
+
+Retain normal \title, \author, \chapter, \section, \subsection, \label, \ref, \pageref, \footnote, \tableofcontents, \index and mathematical environments.
+
+Provide a small additional interface:
+
+- \m20setup{...}: profile, asset/font locations, running title and documented appearance overrides
+- m20sidebar: one body-column wide, always one internal text column
+- m20sidebarwide[columns=1]: two body-columns wide, one internal text column
+- m20sidebarwide[columns=2]: two body-columns wide, two internal text columns
+- m20table: styled table with width, alignment, heading and continuation options
+- \m20artreserve[...]{identifier}: horizontal or vertical half-page reservation, optionally filled by an image
+
+Sidebar width, internal column count, pagination and placement are separate settings. All three layouts support short and long content. A long narrow sidebar stays narrow; it is not automatically widened. The wide variants share an outer frame. Their internal gutter and text insets are explicit, configurable dimensions derived from the source where applicable.
+
+All three provide forced placement at a source anchor and a forced next-page placement, with documented region choices. Forced placement must never silently become a float suggestion. When the requested region cannot fit even the required first segment, issue a useful diagnostic so the author can choose another anchor or break. Optional floating placement is only for boxes that fit as a unit. Standard page breaks and explicit sidebar continuation breaks remain available.
+
+4. PDF sidebar and table composition
+
+One-column-wide sidebars use a breakable single-column stream, continuing through available columns/pages. A two-column-wide sidebar with one text column uses a full-width stream with consistent continuation framing. A two-column-wide sidebar with two text columns flows left to right within each framed segment, then continues on the next segment/page. Its final segment may balance its internal columns; provide an explicit unbalanced option for controlled composition.
+
+The wide two-text-column form must not be implemented by nesting a multipage multicols environment inside a boxed tcolorbox. Use a managed live column region with decoration outside its breakable content, or explicitly split and assemble column segments under one sidebar paginator. Short boxes may use a simpler boxed path only when the same geometry and content behavior are preserved. Continuation titles, borders, tables and notes are owned by that paginator rather than by independently nested page-breaking boxes.
+
+Tables default to the full usable inner width of their sidebar. Allow a narrower dimension or fraction with left, center or right alignment. Within the wide two-text-column sidebar, also allow a table restricted to one internal text column. A full-sidebar-width table there is an explicit spanning block: finish the preceding column-flow segment, place the table across the inner width, then resume two-column text. Preserve source order and the enclosing sidebar appearance. Do not hide it in an unrelated float.
+
+For long tables within a sidebar, emit independently breakable row blocks with fixed column widths; the enclosing paginator controls breaks and repeated headings. Do not put ordinary longtable inside tcolorbox or an active multicolumn region. A separate full-width table passage may use longtable outside those containers when the author chooses that layout. Long table length alone must not force that choice.
+
+Nested ordinary tables remain allowed inside a cell when the outer row fits. Rows and nested tables are atomic: overheight rows need an author-chosen semantic split or a width change. Independently multipage tables inside cells and independently breakable boxes nested inside breakable boxes are outside the contract. Diagnose unsupported cases without omitting content.
+
+Body footnotes remain native and must be tested across column and spanning-block transitions. Sidebar notes are local to the end of their sidebar; table notes are local to the table. Do not imply same-page note placement where the underlying break mechanism cannot guarantee it.
+
+5. PDF chapter openings and artwork
+
+Every chapter gets a fresh blank even-numbered verso immediately facing its odd-numbered opener. Suppress manuscript, running text and folio on the verso; it can later hold full-page art. Ordinary openright is insufficient: after an even-numbered chapter ending, insert an odd filler and the fresh even verso before the opener. Count these pages normally for references. Preserve the source opener's title/frame positioning and body start.
+
+Art reservations have both ordinary and mandatory forced placement controls. Match the original horizontal and vertical half-page variants, border and shadow. Reserve the region before composing text around it. Replacing a placeholder with an image must preserve its geometry. An impossible forced reservation produces a diagnostic, never an overlap or silent relocation.
+
+6. Contents, index, language and mathematics
+
+Generate contents, PDF bookmarks and page references from LaTeX counters. Allow short/plain variants of mathematical titles in running matter and bookmarks while preserving the printed title. Index terms are deliberately authored with \index; do not invent editorial tags. Support subentries, sort keys, ranges and cross-references, and rebuild the index after pagination changes.
+
+Use makeindex for the initial English specimen, including explicit sort keys for accented display terms. Language-specific or non-Latin collation uses a separately validated xindy configuration. Invoke index processing through the build driver rather than requiring unrestricted TeX shell escape.
+
+Use fontspec and Babel with declared script fonts. Check actual glyph coverage, shaping and hyphenation. Provide native amsmath support and a mathematical font configuration; make unicode-math an explicit choice so existing legacy math packages are not silently displaced. Keep formulas and TikZ diagrams native.
+
+7. Reflowable EPUB
+
+Separate semantic content from PDF-only placement and decoration. Convert all three sidebar layouts to single-column semantic asides in their logical reading order. Preserve their titles, paragraphs, lists, tables and notes. Use reader-default foreground/background colors, a clear heading and a simple border or separator; omit purple textures, gold fills, text outlines and shadows. Do not lock font size, line height or page dimensions. Enlarging text must enlarge the sidebar normally.
+
+Preserve every meaningful illustration, diagram, caption and credit, with responsive sizing, appropriate resolution and useful alternative text. Keep original color art in the EPUB even when a device displays it in grayscale. Omit purely decorative print borders, empty art placeholders, running furniture and blank versos. An illustration that later fills a reservation is meaningful content and must be included at its semantic anchor. Record these classifications so a conversion cannot silently discard art.
+
+Retain real table structure, column/row headings and cell relationships. Wide tables may use an explicitly selected labeled-row presentation when necessary for a small screen, retaining every cell and its association. Do not shrink a table to unreadable text or rasterize ordinary tables. Preserve nested-table meaning; flag a structure the converter cannot faithfully represent.
+
+Map contents and index entries to live destinations, and notes to links with backlinks. Preserve heading hierarchy, language information, emphasis and source order. Cross-references use stable anchors and appropriate destination labels; do not pretend fixed print page numbers describe an independently reflowed EPUB.
+
+Use MathML where the tested reading systems support it, with verified SVG alternatives for unsupported or complex formulas and diagrams. Preserve exact mathematical meaning and provide accessible text alternatives; do not use tiny formula screenshots. Test formula scaling, baseline alignment and contrast in light/dark modes. The build must diagnose unmapped custom commands or environments instead of silently dropping them.
+
+8. Runtime and acceptance
+
+The first approved implementation step verifies the complete LuaLaTeX runtime, font loader, format, packages, fonts and index executable. Current engine binaries alone do not establish readiness: the inspected trees lack luaotfload and a prebuilt lualatex format, while prior verified builds used XeLaTeX/pdfLaTeX. Prepare and pin official dependencies, including tex4ebook/TeX4ht and EPUBCheck for the EPUB build. Prove representative custom-environment conversion early. If the PDF engine must change, explain concrete capability/layout differences and obtain approval before switching.
+
+The shared stress specimen must cover all three PDF sidebar layouts, each short and spanning multiple columns/pages; full-width and narrower tables; a one-internal-column table and a spanning table inside the wide two-text-column sidebar; nested cells; forced placement for all layouts; an expected overheight-row diagnostic; body/sidebar/table notes; and both art orientations on both page parities. Also include spanning headings, dense prose, lists, quotes, genuine emphasis, long/math-bearing titles, multilingual text, native diagrams, contents, index and references. Test both parities before chapter openings.
+
+Insert material near the beginning and rebuild both outputs to prove reflow and regenerated references/index. Compile until auxiliary files settle. Require no missing glyphs, unintended substitutions, unresolved references, missing/duplicated specimen content or unreviewed overfull boxes. Inspect every rendered specimen page for clipping, collisions, broken continuations, note placement, texture seams and forced-placement compliance. Verify font embedding.
+
+Use matching reference passages for visual calibration. Compare at print size and high resolution; use overlay and measured baselines/bounds to find discrepancies in geometry, spacing, glyph scale, rules, colors and art crops. Record remaining differences. Claim the minimum success level or complete visual equivalence only to the extent demonstrated by these comparisons; an unchecked resemblance is not complete success.
+
+For EPUB, compare a semantic inventory against the source: all prose, tables/cells, notes, formula occurrences, references, index destinations and meaningful art must be accounted for. Run EPUBCheck with no errors and review every warning. Inspect the specimen in at least one actual EPUB reading application, preferably two different rendering systems, at narrow and wider widths, enlarged text, grayscale and dark mode. Check reading order, navigation/backlinks, table usability and art/math legibility. A grayscale software preview is a useful e-ink-oriented check, but do not claim validation on physical e-ink hardware unless it was actually tested. EPUBCheck success alone is not visual or accessibility approval.
+
+Review decision
+
+Approve or revise this updated two-output design: PDF as close to the InDesign original as possible, and EPUB preserving information and meaningful art with reader-friendly reflow. This includes the three print sidebar layouts, width-independent long-content handling, table width options, mandatory PDF forced placement and closer PDF spacing target. Implementation planning follows approval of this written revision.
+
+Technical references
+
+Longtable restrictions: https://ctan.org/pkg/longtable
+Tcolorbox breaking, nesting and stored segments: https://tug.ctan.org/macros/latex/contrib/tcolorbox/tcolorbox.pdf
+Row-oriented table flow: https://ctan.org/pkg/multicoltab
+Mixed-width column regions: https://ctan.org/pkg/cuted
+InDesign spanning and text alignment: https://helpx.adobe.com/ie/indesign/using/aligning-text.html
+Fontspec: https://ctan.org/pkg/fontspec
+Babel: https://ctan.org/pkg/babel
+Index processing: https://ctan.org/pkg/imakeidx and https://ctan.org/pkg/xindy
+
+EPUB conversion: https://ctan.org/pkg/tex4ebook
+EPUB specification: https://www.w3.org/TR/epub-33/
+EPUB conformance validation: https://www.w3.org/publishing/epubcheck/
+EPUB accessibility: https://www.w3.org/TR/epub-a11y-11/

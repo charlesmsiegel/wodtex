@@ -1,0 +1,68 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{m20-art}[2026/09/30 stable art reservations and metadata]
+\ExplSyntaxOn
+\tl_new:N \l_mtw_art_kind_tl
+\tl_new:N \l_mtw_art_place_tl
+\tl_new:N \l_mtw_art_position_tl
+\tl_new:N \l_mtw_art_image_tl
+\tl_new:N \l_mtw_art_alt_tl
+\tl_new:N \l_mtw_art_caption_tl
+\tl_new:N \l_mtw_art_credit_tl
+\tl_new:N \l_mtw_art_role_tl
+\keys_define:nn {m20/art} {
+ kind .choices:nn = {horizontal,vertical}{\tl_set_eq:NN \l_mtw_art_kind_tl \l_keys_choice_tl},
+ place .choices:nn = {flow,here,next-page}{\tl_set_eq:NN \l_mtw_art_place_tl \l_keys_choice_tl},
+ position .choices:nn = {top,bottom,inner,outer}{\tl_set_eq:NN \l_mtw_art_position_tl \l_keys_choice_tl},
+ image .tl_set:N = \l_mtw_art_image_tl,
+ alt .tl_set:N = \l_mtw_art_alt_tl,
+ caption .tl_set:N = \l_mtw_art_caption_tl,
+ credit .tl_set:N = \l_mtw_art_credit_tl,
+ role .choices:nn = {meaningful,decorative}{\tl_set_eq:NN \l_mtw_art_role_tl \l_keys_choice_tl},
+ unknown .code:n = \PackageError{m20}{M20_E_UNKNOWN_ART:~\l_keys_key_str}{Unknown~art~key}
+}
+\NewDocumentCommand\mTwentyArtReserve{O{}m}{
+ \ifmTwentySidebarActive\PackageError{m20}{M20_E_UNSUPPORTED_NESTING}{Art~reservations~cannot~be~nested~inside~sidebars.}\fi
+ % Leave the live region before setting options: ending multicols restores
+ % its group, so options set inside that group would disappear at placement.
+ \ifmTwentyEpub\else\mTwentyBodyEnd\fi
+ \mTwentyRegisterID:n {#2}
+ \tl_set:Nn \l_mtw_art_kind_tl {horizontal}
+ \tl_set:Nn \l_mtw_art_place_tl {flow}
+ \tl_clear:N \l_mtw_art_position_tl
+ \tl_clear:N \l_mtw_art_image_tl
+ \tl_clear:N \l_mtw_art_alt_tl
+ \tl_clear:N \l_mtw_art_caption_tl
+ \tl_clear:N \l_mtw_art_credit_tl
+ \tl_clear:N \l_mtw_art_role_tl
+ \keys_set:nn {m20/art}{#1}
+ \tl_if_empty:NT \l_mtw_art_position_tl {
+  \str_if_eq:VnTF \l_mtw_art_kind_tl {horizontal}{\tl_set:Nn \l_mtw_art_position_tl {top}}{\tl_set:Nn \l_mtw_art_position_tl {outer}}
+ }
+ \tl_if_empty:NTF \l_mtw_art_image_tl {
+  \tl_if_empty:NT \l_mtw_art_role_tl {\tl_set:Nn \l_mtw_art_role_tl {decorative}}
+ }{
+  \tl_if_empty:NT \l_mtw_art_role_tl {\tl_set:Nn \l_mtw_art_role_tl {meaningful}}
+  \file_if_exist:VTF \l_mtw_art_image_tl {}{\PackageError{m20}{M20_E_IMAGE_MISSING:~\l_mtw_art_image_tl}{Supply~the~image~at~its~source~path.}}
+ }
+ \str_if_eq:VnT \l_mtw_art_role_tl {meaningful} {
+  \tl_if_empty:NT \l_mtw_art_image_tl {\PackageError{m20}{M20_E_MEANINGFUL_ART_EMPTY}{Meaningful~art~requires~an~image.}}
+  \tl_if_empty:NT \l_mtw_art_alt_tl {\PackageError{m20}{M20_E_ART_ALT}{Meaningful~images~require~alternative~text.}}
+ }
+ \str_if_eq:VnTF \l_mtw_art_kind_tl {horizontal}
+  {\clist_if_in:nVF {top,bottom}\l_mtw_art_position_tl {\PackageError{m20}{M20_E_ART_POSITION}{Horizontal~art~uses~top~or~bottom.}}}
+  {\clist_if_in:nVF {inner,outer}\l_mtw_art_position_tl {\PackageError{m20}{M20_E_ART_POSITION}{Vertical~art~uses~inner~or~outer.}}}
+ \edef\mTwentyArtID{#2}
+ \edef\mTwentyArtKind{\l_mtw_art_kind_tl}
+ \edef\mTwentyArtPlace{\l_mtw_art_place_tl}
+ \edef\mTwentyArtPosition{\l_mtw_art_position_tl}
+ \edef\mTwentyArtImage{\l_mtw_art_image_tl}
+ \edef\mTwentyArtRole{\l_mtw_art_role_tl}
+ \cs_set:Npn \mTwentyArtAlt {\tl_use:N \l_mtw_art_alt_tl}
+ \cs_set:Npn \mTwentyArtCaption {\tl_use:N \l_mtw_art_caption_tl}
+ \cs_set:Npn \mTwentyArtCredit {\tl_use:N \l_mtw_art_credit_tl}
+ \ifmTwentyEpub\mTwentyArtEpub\else\mTwentyArtPDF\fi
+}
+\cs_new_protected:cpn {mTwentyPublicartreserve}{\mTwentyArtReserve}
+\ExplSyntaxOff
+\providecommand\mTwentyArtEpub{}
+\endinput

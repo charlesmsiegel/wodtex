@@ -1,0 +1,33 @@
+Supported source and conversion scope
+
+Use native LaTeX book structure, headings, ordinary prose/emphasis, standard
+lists/quotes, mathematics, contents, references, index, and the M20 sidebar,
+table, art and note interfaces. EPUB is generated directly from that source
+through TeX4ht; it is never extracted from PDF. Custom content must have an
+adapter or a deliberate \m20epubsafe declaration. The supported environment
+list is epub/supported-content.json. This is a documented authoring framework,
+not a general converter for every LaTeX class or package.
+
+The PDF engine is LuaLaTeX. EPUB 3 uses LuaLaTeX DVI with tex4ebook. Native
+legacy mathematics remains the default; unicode math is an explicit option.
+EPUB retains namespaced MathML and a vector SVG fallback with textual labels.
+Plain bookmark alternatives remain the author's responsibility for formulas.
+
+PDF guarantees cover native two-column flow, spanning headings, three sidebar
+layouts with long continuations, atomic rows/nested tabular cells, mandatory
+placement diagnostics, chapter blank-verso pairing, bounded art reservations,
+and native navigation/index regeneration. Content is typeset once before node
+pagination so measurement does not duplicate counters, notes or semantic writes.
+
+EPUB guarantees cover single-column semantic asides, tables/header associations
+or explicitly requested labeled records, notes/backlinks, live index/reference
+targets, meaningful art metadata and original image resources. Print textures,
+empty art regions and paired blank versos are omitted. Reader colors and text
+size remain responsive. A declared safe command must still expand to supported
+content; the declaration is not a promise that arbitrary packages convert.
+
+Known limits: automatic multilingual font-family switching is deferred; use
+the explicit \m20script recipe. Records mode does not silently flatten rowspans.
+Original InDesign visual equivalence and physical e-ink behavior are separate
+from successful content builds; see Validation.txt. No book-corpus conversion
+or separate application is included in this template implementation.

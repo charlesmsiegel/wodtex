@@ -1,0 +1,130 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{m20-pdf-tables}[2026/09/30 ordered fixed-width row blocks]
+\RequirePackage{array}
+\newdimen\mTwentyTableWidth
+\newdimen\mTwentyCellWidth
+\newdimen\mTwentyTableOffset
+\newtoks\mTwentyTableNotes
+\newcounter{m20tablenote}
+\newcommand\mTwentyAppendTableNote[2]{\global\mTwentyTableNotes=\expandafter{\the\mTwentyTableNotes\par\noindent\textsuperscript{#1}#2}}
+\newcommand\mTwentyTableNote[1]{\stepcounter{m20tablenote}\textsuperscript{\alph{m20tablenote}}\begingroup\edef\mTwentyNewNote{\endgroup\noexpand\mTwentyAppendTableNote{\alph{m20tablenote}}{\unexpanded{#1}}}\mTwentyNewNote}
+\newbox\mTwentyTableRow
+\newbox\mTwentyNativeTable
+\newbox\mTwentyRowStream
+\newbox\mTwentyRowChunk
+\newbox\mTwentyTableHeader
+\newbox\mTwentyLocalTableHeader
+\newif\ifmTwentyTableActive
+\newdimen\mTwentyOriginalColumnWidth
+\directlua{m20tables = dofile(kpse.find_file("tex/m20-table-nodes.lua", "tex"))}
+\newcount\mTwentyTableColumns
+\newcount\mTwentyTableRules
+\newcount\mTwentyTableDoubleRules
+\newif\ifmTwentyPreviousRule
+\newcommand\mTwentyTableSplitHeight{%
+ \mTwentyRemaining\mTwentySplitHeight=\mTwentyAvailable
+ \ifnum\mTwentySegment>0\advance\mTwentySplitHeight-\ht\mTwentyTableHeader\advance\mTwentySplitHeight-\dp\mTwentyTableHeader\fi
+}
+\newcommand\mTwentyTablePassage{%
+ \let\mTwentySetSplitHeight\mTwentyTableSplitHeight
+ \def\mTwentyAdvance{\newpage}%
+ \setbox\mTwentyGalley=\box\mTwentyRowStream
+ \mTwentySegment=0\splittopskip=0bp\splitmaxdepth=3bp
+ \mTwentyMoreContenttrue
+ \@whilesw\ifmTwentyMoreContent\fi{%
+  \mTwentyTableSplitHeight
+  \ifdim\mTwentySplitHeight<12bp\newpage\mTwentyTableSplitHeight\fi
+  \directlua{m20tables.check_first(\number\mTwentyGalley,\number\mTwentySplitHeight,"flow",\number\mTwentySegment,\number\textheight)}%
+  \ifnum\mTwentySegment>0\copy\mTwentyTableHeader\fi
+  \setbox\mTwentyRowChunk=\vsplit\mTwentyGalley to\mTwentySplitHeight
+  \unvbox\mTwentyRowChunk
+  \advance\mTwentySegment1
+  \ifvoid\mTwentyGalley\mTwentyMoreContentfalse\else\newpage\fi
+ }
+ \global\setbox\mTwentyTableHeader=\box\voidb@x
+}
+\ExplSyntaxOn
+\tl_new:N \l_mtw_table_width_tl
+\tl_new:N \l_mtw_table_align_tl
+\tl_new:N \l_mtw_table_id_tl
+\fp_new:N \l_mtw_table_scale_fp
+\int_new:N \l_mtw_table_head_int
+\seq_new:N \l_mtw_rows_seq
+\seq_new:N \l_mtw_columns_seq
+\tl_new:N \l_mtw_column_spec_tl
+\keys_define:nn {m20/table} {
+ id .tl_set:N = \l_mtw_table_id_tl,
+ width .tl_set:N = \l_mtw_table_width_tl,
+ scale .fp_set:N = \l_mtw_table_scale_fp,
+ align .choices:nn = {left,center,right}{\tl_set:Nx \l_mtw_table_align_tl{\l_keys_choice_tl}},
+ head-rows .int_set:N = \l_mtw_table_head_int,
+ epub .choices:nn = {table,records}{},
+ unknown .code:n = \PackageError{m20}{M20_E_UNKNOWN_TABLE:~\l_keys_key_str}{Unknown~table~key}
+}
+\cs_new_protected:Npn \mTwentyTablePDF #1#2#3 {
+ \group_begin:
+ \stepcounter{m20table}
+ \tl_set:Nn \l_mtw_table_width_tl {container}
+ \tl_set:Nn \l_mtw_table_align_tl {center}
+ \tl_set:Nx \l_mtw_table_id_tl {table-\arabic{m20table}}
+ \fp_set:Nn \l_mtw_table_scale_fp {1}
+ \int_zero:N \l_mtw_table_head_int
+ \keys_set:nn {m20/table}{#1}
+ \exp_args:NV \mTwentyRegisterID:n \l_mtw_table_id_tl
+ \int_compare:nNnT {\l_mtw_table_head_int} < {0}{\PackageError{m20}{M20_E_TABLE_HEADERS}{head-rows~cannot~be~negative}}
+ \fp_compare:nNnT {\l_mtw_table_scale_fp} > {1}{\PackageError{m20}{M20_E_TABLE_SCALE}{Scale~must~be~in~0..1}}
+ \fp_compare:nNnF {\l_mtw_table_scale_fp} > {0}{\PackageError{m20}{M20_E_TABLE_SCALE}{Scale~must~be~in~0..1}}
+ \str_case:VnF \l_mtw_table_width_tl {
+  {container}{\ifmTwentySidebarActive\mTwentyTableWidth=\mTwentyUsableWidth\else\mTwentyTableWidth=\linewidth\fi}
+  {column}{\ifmTwentySidebarActive\mTwentyTableWidth=\mTwentyOriginalColumnWidth\else\mTwentyTableWidth=\mTwentyColumnWidth\fi}
+ }{\mTwentyTableWidth=\l_mtw_table_width_tl\relax}
+ \mTwentyTableWidth=\fp_to_decimal:N \l_mtw_table_scale_fp\mTwentyTableWidth
+ \ifdim\mTwentyTableWidth>\linewidth\PackageError{m20}{M20_E_TABLE_TOO_WIDE}{Choose~a~width~within~the~owner's~usable~region.}\fi
+ \ifdim\mTwentyTableWidth<1bp\PackageError{m20}{M20_E_TABLE_WIDTH}{Choose~a~positive~usable~table~width.}\fi
+ \mTwentyTableColumns=0
+ \tl_map_inline:nn {#2} {\str_case:nn {##1} {{l}{\advance\mTwentyTableColumns1}{c}{\advance\mTwentyTableColumns1}{r}{\advance\mTwentyTableColumns1}{p}{\advance\mTwentyTableColumns1}}}
+ \ifnum\mTwentyTableColumns<1 \PackageError{m20}{M20_E_TABLE_COLUMN_SPEC}{Use~native~l/c/r/p~column~specification}\fi
+ \mTwentyTableRules=0
+ \mTwentyTableDoubleRules=0\mTwentyPreviousRulefalse
+ \tl_map_inline:nn {#2}{\str_if_eq:nnTF {##1}{|}{\advance\mTwentyTableRules1\ifmTwentyPreviousRule\advance\mTwentyTableDoubleRules1\fi\mTwentyPreviousRuletrue}{\mTwentyPreviousRulefalse}}
+ \mTwentyCellWidth=\mTwentyTableWidth\advance\mTwentyCellWidth-\mTwentyTableRules\arrayrulewidth\advance\mTwentyCellWidth-\mTwentyTableDoubleRules\doublerulesep\divide\mTwentyCellWidth\mTwentyTableColumns
+ \advance\mTwentyCellWidth-2\tabcolsep
+
+ \ifmTwentyTableActive
+  \PackageError{m20}{M20_E_UNSUPPORTED_NESTING}{A multipage table cannot be nested inside another table. Use an atomic native tabular inside its cell.}
+ \fi
+ \mTwentyTableActivetrue
+ \setcounter{m20tablenote}{0}
+ \global\mTwentyTableNotes={}
+ \let\footnote\mTwentyTableNote
+ \let\mTwentyNote\mTwentyTableNote
+ \mTwentyTableOffset=0bp
+ \str_case:Vn \l_mtw_table_align_tl {{center}{\mTwentyTableOffset=\dimexpr\linewidth-\mTwentyTableWidth\relax\divide\mTwentyTableOffset2}{right}{\mTwentyTableOffset=\dimexpr\linewidth-\mTwentyTableWidth\relax}}
+
+ \tl_set:Nn \l_mtw_column_spec_tl {#2}
+ \regex_match:nnT {\A[lcr|\s]+\Z}{#2} {
+  \tl_clear:N \l_mtw_column_spec_tl
+  \tl_map_inline:nn {#2}{\str_case:nn {##1}{
+   {l}{\tl_put_right:Nn \l_mtw_column_spec_tl {>{\raggedright\arraybackslash}p{\mTwentyCellWidth}}}
+   {c}{\tl_put_right:Nn \l_mtw_column_spec_tl {>{\centering\arraybackslash}p{\mTwentyCellWidth}}}
+   {r}{\tl_put_right:Nn \l_mtw_column_spec_tl {>{\raggedleft\arraybackslash}p{\mTwentyCellWidth}}}
+   {|}{\tl_put_right:Nn \l_mtw_column_spec_tl {|}}
+  }}
+ }
+ \setbox\mTwentyNativeTable=\hbox{\exp_args:NnV \begin{tabular}\l_mtw_column_spec_tl #3\end{tabular}}
+ \ifdim\wd\mTwentyNativeTable>\dimexpr\mTwentyTableWidth+.5bp\relax
+  \PackageError{m20}{M20_E_TABLE_TOO_WIDE}{Explicit~native~columns~exceed~the~chosen~width.~Reduce~their~dimensions~or~use~l/c/r~columns.}\fi
+ % Explicit native widths take precedence within the selected maximum. Record
+ % and align the actual box rather than pretending it fills that maximum.
+ \mTwentyTableWidth=\wd\mTwentyNativeTable
+ \mTwentyTableOffset=0bp
+ \str_case:Vn \l_mtw_table_align_tl {{center}{\mTwentyTableOffset=\dimexpr\linewidth-\mTwentyTableWidth\relax\divide\mTwentyTableOffset2}{right}{\mTwentyTableOffset=\dimexpr\linewidth-\mTwentyTableWidth\relax}}
+ \directlua{m20tables.extract(\number\mTwentyNativeTable,\number\mTwentyRowStream,\number\mTwentyLocalTableHeader,\int_use:N\l_mtw_table_head_int,\number\dimexpr\textheight-90bp\relax,\number\mTwentyTableOffset)}
+ \global\setbox\mTwentyTableHeader=\box\mTwentyLocalTableHeader
+ \par\noindent\hspace*{\mTwentyTableOffset}
+ \mTwentyPosition{\tl_use:N \l_mtw_table_id_tl}{\mTwentyTableWidth}{\mTwentyTableWidth}{1}{table}{0}{flow}{}
+ \par\ifmTwentySidebarActive\unvbox\mTwentyRowStream\else\mTwentyTablePassage\fi\par\the\mTwentyTableNotes\par
+ \group_end:
+}
+\ExplSyntaxOff
+\endinput

@@ -1,0 +1,45 @@
+% Actual path-loaded supplied font/spacing smoke. No synthesized emphasis.
+\documentclass[10pt,letterpaper]{article}
+\usepackage{fontspec}
+\usepackage[paperwidth=612bp,paperheight=792bp,top=63bp,inner=54bp,outer=67.5504bp,bottom=72bp]{geometry}
+\usepackage{graphicx}
+\setmainfont{GOUDOS.TTF}[Path=fonts/,BoldFont=GOUDOSB_0.TTF,ItalicFont=GOUDOSI_0.TTF,BoldItalicFont=NotoSerif-BoldItalic.ttf,Ligatures=TeX]
+\newfontfamily\abbess{abbess-regular.ttf}[Path=fonts/]
+\newfontfamily\futura{FuturaPTBook.otf}[Path=fonts/,BoldFont=NotoSans-Bold.ttf,ItalicFont=NotoSans-Italic.ttf,BoldItalicFont=NotoSans-BoldItalic.ttf]
+\newfontfamily\supplement{NotoSerif-Regular.ttf}[Path=fonts/]
+\newfontfamily\bodycompressed{GOUDOS.TTF}[Path=fonts/,BoldFont=GOUDOSB_0.TTF,ItalicFont=GOUDOSI_0.TTF,BoldItalicFont=NotoSerif-BoldItalic.ttf,Scale=0.98,RawFeature={extend=1.0204081632653061}]
+\parindent=18bp
+\parskip=1.44bp
+\begin{document}
+\thispagestyle{empty}
+{\abbess\fontsize{24bp}{25bp}\selectfont M20 runtime and spacing smoke\par}
+\vspace{7.2bp}
+{\abbess\fontsize{18bp}{18bp}\selectfont Actual supplied Abbess\par}
+{\abbess\fontsize{12bp}{14bp}\selectfont Mage: The Ascension 20th Anniversary\par}
+\vspace{12bp}
+\noindent First paragraph, Goudy 10/12 bp, source vertical scale 100\par
+{\fontsize{10bp}{12bp}\selectfont\noindent The first paragraph is independently unindented. Genuine \textbf{Goudy Bold} and \textit{Goudy Italic} faces are loaded by their exact source files.\par}
+\vspace{6bp}
+\noindent Body paragraph, Goudy 10/12 bp, vertical glyph scale 98\par
+{\bodycompressed\fontsize{10bp}{12bp}\selectfont This paragraph has the measured eighteen bp first-line indent and the source ninety-eight percent vertical glyph scale, with independent horizontal scale one hundred. The face is Goudy Old Style. Its genuine \textbf{bold} and \textit{italic} are supplied.\par}
+\vspace{6bp}
+\noindent Declared body bold italic fallback: {\textbf{\textit{Noto Serif Bold Italic}}}\par
+\vspace{12bp}
+{\futura\fontsize{10bp}{10bp}\selectfont\noindent Futura PT Book 10/10 bp, actual supplied source\par
+\textbf{Sidebar bold: genuine Noto Sans Bold}\par
+\textit{Sidebar italic: genuine Noto Sans Italic}\par
+\textbf{\textit{Sidebar bold italic: genuine Noto Sans Bold Italic}}\par}
+\vspace{12bp}
+\noindent Representative script fallback, explicit Noto Serif\par
+{\supplement\fontsize{10bp}{12bp}\selectfont\noindent Ελληνικά: κόσμος και μαγεία. Русский: мир и магия.\par}
+\vspace{12bp}
+\noindent Measurement control: equal natural and vertical-scaled line widths\par
+\newbox\mNatural\newbox\mCompressed
+\setbox\mNatural=\hbox{\fontsize{10bp}{12bp}\selectfont HAMBURGEFONS 0123456789}
+\setbox\mCompressed=\hbox{\bodycompressed\fontsize{10bp}{12bp}\selectfont HAMBURGEFONS 0123456789}
+\typeout{M20-METRIC natural-width=\the\wd\mNatural natural-height=\the\ht\mNatural scaled-width=\the\wd\mCompressed scaled-height=\the\ht\mCompressed}
+\noindent\box\mNatural\par
+\noindent\box\mCompressed\par
+\vspace{12bp}
+{\abbess\fontsize{60bp}{54bp}\selectfont Mage\par}
+\end{document}

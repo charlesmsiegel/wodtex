@@ -1,0 +1,141 @@
+{
+  "schema_version": 1,
+  "pdf_engine": "lualatex",
+  "binary_dependencies": [
+    {"name":"dvisvgm","platform":"x86_64-linux","version":"3.6","archive":"dvisvgm.x86_64-linux.tar.xz","url":"https://mirror.ox.ac.uk/sites/ctan.org/systems/texlive/tlnet/archive/dvisvgm.x86_64-linux.tar.xz","sha256":"d06f6ab32aec34a40f0be0252ee8e6fb1afa8f4a5105fce0e566885b88306612","license":"GPL; original official TeX Live archive retained"}
+  ],
+  "dependencies": [
+    {
+      "name": "luaotfload",
+      "archive": "luaotfload.zip",
+      "sha256": "21e08eef057c9e2e52767aaf7f7d8d80a8d9a278346a2067b5cba07f0c4256da",
+      "url": "https://mirror.ox.ac.uk/sites/ctan.org/macros/luatex/generic/luaotfload.zip?source=runtime",
+      "license": "LPPL 1.3c / GPL as provided in original archive; source archive retained"
+    },
+    {
+      "name": "lualibs",
+      "archive": "lualibs.zip",
+      "sha256": "f6e59d4455b3af2bcee2fa4ae35f3a56d7247351852b9d1880cba4e5bff271e3",
+      "url": "https://mirror.ox.ac.uk/sites/ctan.org/macros/luatex/generic/lualibs.zip?source=runtime",
+      "license": "LPPL 1.3c / GPL as provided in original archive; source archive retained"
+    },
+    {
+      "name": "luatexbase",
+      "archive": "luatexbase.zip",
+      "sha256": "1108e8883668722f70c73ad6e4cbf4d946128a0e44bfc794968bfe88252fffe0",
+      "url": "https://mirror.ox.ac.uk/sites/ctan.org/macros/luatex/generic/luatexbase.zip?source=runtime",
+      "license": "LPPL 1.3c / GPL as provided in original archive; source archive retained"
+    },
+    {
+      "name": "make4ht",
+      "archive": "make4ht.zip",
+      "sha256": "e9f01cccd7b470f566d05f76267602a6b9b2e5721f8c9b39036f5e4691549fd6",
+      "url": "https://mirror.ox.ac.uk/sites/ctan.org/support/make4ht.zip?source=runtime",
+      "license": "LPPL 1.3c / GPL as provided in original archive; source archive retained"
+    },
+    {
+      "name": "tex4ebook",
+      "archive": "tex4ebook.zip",
+      "sha256": "d03e3ad1eb2d17e4e69e4f4935cc4bb0c075ede582cac606435e8562eb28bb7d",
+      "url": "https://mirror.ox.ac.uk/sites/ctan.org/support/tex4ebook.zip?source=runtime",
+      "license": "LPPL 1.3c / GPL as provided in original archive; source archive retained"
+    },
+    {
+      "name": "tex4ht",
+      "archive": "tex4ht.tar.xz",
+      "sha256": "be3664ab3683e744731e47c14ed009d9160c31e07a3a48b8a11667d4f5d74a2e",
+      "url": "https://mirror.ox.ac.uk/sites/ctan.org/systems/texlive/tlnet/archive/tex4ht.tar.xz?source=runtime",
+      "license": "Original official TeX Live archive notices retained"
+    },
+    {
+      "name": "lua-uni-algos",
+      "archive": "lua-uni-algos.tar.xz",
+      "sha256": "a7f9a14f2cb5dedd3d67997d9db3de9cfdef7003a797b33892fa8728578dfb95",
+      "url": "https://mirror.ox.ac.uk/sites/ctan.org/systems/texlive/tlnet/archive/lua-uni-algos.tar.xz?source=runtime",
+      "license": "Original official TeX Live archive notices retained"
+    },
+    {
+      "name": "epubcheck",
+      "archive": "epubcheck.zip",
+      "sha256": "6c07e68584b2e2ce2f89fe06e1246dfead3eb36b46b340e7d93524f29dcff6c5",
+      "url": "https://github.com/w3c/epubcheck/releases/download/v5.3.0/epubcheck-5.3.0.zip?source=runtime",
+      "version": "5.3.0",
+      "license": "BSD 3-Clause and bundled notices"
+    },
+    {
+      "name": "luaxml",
+      "archive": "luaxml.tar.xz",
+      "sha256": "956006bd3045b5e949610371604008003554f17ae9daeb17e57952c901313207",
+      "url": "https://mirror.ox.ac.uk/sites/ctan.org/systems/texlive/tlnet/archive/luaxml.tar.xz?source=runtime",
+      "license": "MIT; original official TeX Live archive retained"
+    },
+    {
+      "name": "ctablestack",
+      "archive": "ctablestack.tar.xz",
+      "url": "https://mirror.ox.ac.uk/sites/ctan.org/systems/texlive/tlnet/archive/ctablestack.tar.xz?source=runtime",
+      "sha256": "acf569fb4652f87c01068d6cc29f7d57989a3e00afe0bc1d1f641bd50599713d",
+      "license": "LPPL; original archive retained"
+    },
+    {
+      "name": "luacode",
+      "archive": "luacode.tar.xz",
+      "url": "https://mirror.ox.ac.uk/sites/ctan.org/systems/texlive/tlnet/archive/luacode.tar.xz?source=runtime",
+      "sha256": "f8ce2e985588f4b0f708f6e3b13cff8e4f67c5930a8ee9abf6fa888fb81682d1",
+      "license": "LPPL; original archive retained"
+    },
+    {"name":"lualatex-math","archive":"lualatex-math.tar.xz","url":"https://mirror.ox.ac.uk/sites/ctan.org/systems/texlive/tlnet/archive/lualatex-math.tar.xz","sha256":"244c0a4256ddcfdf3475f798eb98afb7e175c5c7232b4a83b302b8d9bafbcf63","license":"LPPL; original archive retained"}
+  ],
+  "node_packages": [
+    {"name":"mathjax-full","version":"3.2.2","archive":"mathjax-full-3.2.2.tgz","url":"https://registry.npmjs.org/mathjax-full/-/mathjax-full-3.2.2.tgz","sha256":"d8f080d2e4bdfb75284aac34d5eff155002eca47798b1d4e4bde31453e653f87","license":"Apache 2.0; source and notices retained"}
+  ],
+  "font_archives": [
+    {"name":"dejavu","archive":"dejavu.zip","url":"https://mirror.ox.ac.uk/sites/ctan.org/fonts/dejavu.zip","sha256":"c3098f83ecdb414be7c65e35caa7a4b474156999ae06c4e663f03d440e7925d7","license":"Bitstream Vera / DejaVu; original bundled notices retained"}
+  ],
+  "supplemental_fonts": [
+    {
+      "file": "NotoSans-Bold.ttf",
+      "url": "https://raw.githubusercontent.com/notofonts/noto-fonts/main/hinted/ttf/NotoSans/NotoSans-Bold.ttf",
+      "sha256": "c976e4b1b99edc88775377fcc21692ca4bfa46b6d6ca6522bfda505b28ff9d6a",
+      "license": "SIL Open Font License 1.1"
+    },
+    {
+      "file": "NotoSans-BoldItalic.ttf",
+      "url": "https://raw.githubusercontent.com/notofonts/noto-fonts/main/hinted/ttf/NotoSans/NotoSans-BoldItalic.ttf",
+      "sha256": "6edf4227ef0fa846aca70e86a307804ca4401741830f5b3af0f2554abe2b8466",
+      "license": "SIL Open Font License 1.1"
+    },
+    {
+      "file": "NotoSans-Italic.ttf",
+      "url": "https://raw.githubusercontent.com/notofonts/noto-fonts/main/hinted/ttf/NotoSans/NotoSans-Italic.ttf",
+      "sha256": "36cff144df01309dab648bea71baff9bb074026914afe63aeacc8bc90b67a28b",
+      "license": "SIL Open Font License 1.1"
+    },
+    {
+      "file": "NotoSans-Regular.ttf",
+      "url": "https://raw.githubusercontent.com/notofonts/noto-fonts/main/hinted/ttf/NotoSans/NotoSans-Regular.ttf",
+      "sha256": "b85c38ecea8a7cfb39c24e395a4007474fa5a4fc864f6ee33309eb4948d232d5",
+      "license": "SIL Open Font License 1.1"
+    },
+    {
+      "file": "NotoSerif-BoldItalic.ttf",
+      "url": "https://raw.githubusercontent.com/notofonts/noto-fonts/main/hinted/ttf/NotoSerif/NotoSerif-BoldItalic.ttf",
+      "sha256": "4fb8737145b4a503d548af4b517afdfc532e44a96ac15378257e825741334eec",
+      "license": "SIL Open Font License 1.1"
+    },
+    {
+      "file": "NotoSerif-Regular.ttf",
+      "url": "https://raw.githubusercontent.com/notofonts/noto-fonts/main/hinted/ttf/NotoSerif/NotoSerif-Regular.ttf",
+      "sha256": "c8f669ceb2c9c60ccf55198b305e08a997ffca79a38cc7eeb551e643cbe66505",
+      "license": "SIL Open Font License 1.1"
+    }
+  ],
+  "source_files": [
+    {
+      "name": "binhex",
+      "file": "binhex.dtx",
+      "url": "https://mirror.ox.ac.uk/sites/ctan.org/macros/generic/kastrup/binhex.dtx?source=runtime",
+      "sha256": "03e29d2af7095678facf0b0da4655ec5d938d6f8370b0208c8aadb2533f2886c",
+      "license": "David Kastrup: use permitted with original copyright notice"
+    }
+  ]
+}
