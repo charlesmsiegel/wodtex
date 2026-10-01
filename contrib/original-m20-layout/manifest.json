@@ -1,6 +1,6 @@
 {
   "schema": "wodtex-opt-in-source-patch-v1",
-  "base_commit": "906befdcc77ee47093c1c6d469da5c34be988438",
+  "base_commit": "b95576a231c78659212c842a4a60243b056db1e0",
   "local_correction_base": "4c2f12d017ef5a0d93a7a6f524ef8085efdac644",
   "files": [
     {
@@ -21,7 +21,7 @@
     {
       "path": "tests/test_art_edges.py",
       "base_sha256": null,
-      "sha256": "8a700aeb7e000d93fd55215982c4c180c3dbbc939ff53b47bb8628a47b0f0ea5"
+      "sha256": "a972c9ec6bf1edee5d552bface72bc24955a61c07ff008e0e5e2daa2519bb1f3"
     },
     {
       "path": "tests/test_sidebar_breaks.py",
@@ -51,7 +51,7 @@
     {
       "path": "tex/m20-pdf-layout.sty",
       "base_sha256": "4773dad3be907b3eb08c18b1729131e00422420217e9d3202f9d09043184cb22",
-      "sha256": "ad1269638414b35595cfd1817fc9cd777bf4eb329add2b1256ae28ab6e6b42c8"
+      "sha256": "6e77861cbb8ffc537a78eb977bf11f41fd0ef06514d47a0afb99b20fcbedbcae"
     },
     {
       "path": "tex/m20-pdf-sidebars.sty",

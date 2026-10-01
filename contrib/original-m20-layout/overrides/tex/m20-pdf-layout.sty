@@ -22,6 +22,7 @@
 \newcount\mTwentyChapterArtCount
 \def\mTwentyChapterRunningTitle{}
 \newif\ifmTwentyArtReverse
+\newif\ifmTwentyArtColumnActive
 % Strong endpoint protection is reapplied after each body region and heading.
 \newcommand\mTwentyParagraphControls{%
  \clubpenalty=10000\widowpenalty=10000\displaywidowpenalty=10000\@clubpenalty=10000%
@@ -47,7 +48,22 @@
 \renewcommand\section{\@startsection{section}{1}{\z@}{7.2bp}{2.1528bp}{\centering\mTwentyHeadingControls\mTwentyHeadingFont\fontsize{24bp}{25bp}\selectfont}}
 % Wrap the styled native section only after defining its style.
 \let\mTwentyStyledSection\section
-\RenewDocumentCommand\section{s o m}{\mTwentyBodyEnd\mTwentyRemaining\ifdim\mTwentyAvailable<108bp\relax\newpage\fi\addvspace{13.5bp}\noindent\mTwentyPosition{span-heading}{\textwidth}{\textwidth}{2}{heading}{0}{flow}{}\IfBooleanTF{#1}{\mTwentyStyledSection*{#3}}{\IfNoValueTF{#2}{\mTwentyStyledSection{#3}}{\mTwentyStyledSection[#2]{#3}}}\vspace{1.8bp}\hrule height1.25bp\vspace{13.5bp}\mTwentyBodyBegin\@afterindentfalse\@afterheading}
+\newcommand\mTwentySectionBody[3]{%
+ \IfBooleanTF{#1}{\mTwentyStyledSection*{#3}}{\IfNoValueTF{#2}{\mTwentyStyledSection{#3}}{\mTwentyStyledSection[#2]{#3}}}%
+}
+\RenewDocumentCommand\section{s o m}{%
+ \ifmTwentyArtColumnActive
+  % A full-height side reserve owns the other column on this page. Keep the
+  % section and its following text in the live narrative column beside it.
+  \mTwentyKeepHeading{90bp}\addvspace{13.5bp}\noindent
+  \mTwentyPosition{span-heading}{\linewidth}{\linewidth}{1}{heading}{0}{flow}{}%
+  \mTwentySectionBody{#1}{#2}{#3}\vspace{1.8bp}\hrule width\linewidth height1.25bp\vspace{13.5bp}%
+ \else
+  \mTwentyBodyEnd\mTwentyRemaining\ifdim\mTwentyAvailable<108bp\relax\newpage\fi
+  \addvspace{13.5bp}\noindent\mTwentyPosition{span-heading}{\textwidth}{\textwidth}{2}{heading}{0}{flow}{}%
+  \mTwentySectionBody{#1}{#2}{#3}\vspace{1.8bp}\hrule height1.25bp\vspace{13.5bp}\mTwentyBodyBegin
+ \fi
+ \@afterindentfalse\@afterheading}
 \newcommand\mTwentyKeepHeading[1]{\mTwentyRemaining\ifdim\mTwentyAvailable<#1\relax\ifmTwentyBodyActive\columnbreak\else\newpage\fi\fi}
 \renewcommand\subsection{\mTwentyKeepHeading{54bp}\@startsection{subsection}{2}{\z@}{7.2bp}{0.01bp}{\raggedright\mTwentyHeadingControls\mTwentyHeadingNarrowFont\fontsize{18bp}{18bp}\selectfont}}
 \renewcommand\subsubsection{\mTwentyKeepHeading{42bp}\@startsection{subsubsection}{3}{\z@}{7.2bp}{0.01bp}{\raggedright\mTwentyHeadingControls\mTwentyHeadingFont\fontsize{12bp}{14bp}\selectfont}}
@@ -115,7 +131,7 @@
  \else
   \put(0,-\paperheight){\includegraphics[page=\ifodd\c@page2\else1\fi]{\mTwentyAssetPath spread-border.original-template.pdf}}%
  \fi\fi\fi}
-\AddToHook{shipout/after}{\global\mTwentyBlankPagefalse\global\mTwentyOpenerPagefalse\global\mTwentyInteriorTitlePagefalse\ifmTwentyArtReverse\global\let\mc@align@columns\LR@column@boxes\global\mTwentyArtReversefalse\fi}
+\AddToHook{shipout/after}{\global\mTwentyBlankPagefalse\global\mTwentyOpenerPagefalse\global\mTwentyInteriorTitlePagefalse\global\mTwentyArtColumnActivefalse\ifmTwentyArtReverse\global\let\mc@align@columns\LR@column@boxes\global\mTwentyArtReversefalse\fi}
 \newcommand\mTwentyInteriorTitle[2]{%
  \hypersetup{pdfpagelayout=TwoPageRight,pdftitle={#1}}%
  \mTwentyBodyEnd\clearpage\global\mTwentyInteriorTitlePagetrue\thispagestyle{empty}%
@@ -154,18 +170,11 @@
  \ifx\mTwentyArtPlace\mTwentyNextPage\newpage\fi
  \mTwentyArtWidth=\textwidth\mTwentyArtHeight=341.28bp
  \ifx\mTwentyArtKind\mTwentyVertical
-  \mTwentyBodyEnd
-  \mTwentyArtWidth=\mTwentyColumnWidth
-  % Use a substantial remaining side region where it exists; a tall reserve
-  % need not strand a preceding paragraph merely to recover the full 657bp.
-  \mTwentyRemaining
-  \ifdim\mTwentyAvailable<360bp
-   \ifx\mTwentyArtPlace\mTwentyHere\PackageError{m20}{M20_E_PLACEMENT_UNAVAILABLE}{A vertical art reserve needs at least 360bp here.}\else\newpage\fi
-  \fi
-  \mTwentyBodyBegin
-  % Multicol has now removed any real top/bottom float space. Reserve only
-  % that page's live column height, leaving the original frame's shadow clear.
-  \mTwentyArtHeight=\dimexpr\@colroom-14bp\relax
+  \mTwentyBodyEnd\clearpage
+  % The template's vertical frame is a full text-area column, not a shorter
+  % remainder box. Pending full-width floats must ship before this page.
+  \mTwentyArtWidth=\mTwentyColumnWidth\mTwentyArtHeight=\textheight
+  \global\mTwentyArtColumnActivetrue\mTwentyBodyBegin
   % The outside default is left on verso and right on recto. Reverse this
   % page only; shipout restores the ordinary column reading direction.
   \ifodd\c@page

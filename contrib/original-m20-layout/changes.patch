@@ -11,7 +11,7 @@
                              width=int(p[4])/unit,usable=int(p[5])/unit,columns=int(p[6]),
 --- a/tests/test_art_edges.py
 +++ b/tests/test_art_edges.py
-@@ -0,0 +1,18 @@
+@@ -0,0 +1,35 @@
 +"""PDF-local art reservations must use page edges and preserve text flow."""
 +import unittest
 +import fitz
@@ -28,6 +28,23 @@
 +        self.assertLess(art['y'], 85, art)
 +        with fitz.open(path.with_suffix('.pdf')) as pdf:
 +            self.assertGreater(pdf[art['page'] - 1].get_text().count('narrative'), 3)
++
++    def test_vertical_reserve_is_full_height_with_single_column_section(self):
++        prose = ('The section text flows beside a full-height column illustration. Its heading must not shorten the art. ' * 8 + '\\par\n')
++        source = (r'\documentclass{m20book}\begin{document}' + prose * 2
++                  + r'\m20artreserve[kind=vertical,position=outer]{edge-vertical}'
++                  + r'\section{A Section Beside Art}' + prose * 12
++                  + r'\end{document}')
++        _, path = compile_source(source, 'edge-vertical-proof')
++        records = positions(path)
++        art = next(p for p in records if p['id'] == 'edge-vertical')
++        heading = next(p for p in records if p['kind'] == 'heading')
++        self.assertAlmostEqual(art['height'], 657, places=2)
++        self.assertLess(art['y'], 85, art)
++        self.assertAlmostEqual(art['x'], 305.2248 if art['page'] % 2 else 67.5504, places=2)
++        self.assertEqual(heading['page'], art['page'])
++        self.assertEqual(heading['columns'], 1)
++        self.assertAlmostEqual(heading['width'], 239.2248, places=2)
 +
 +if __name__ == '__main__': unittest.main()
 --- a/tests/test_sidebar_breaks.py
@@ -355,7 +372,7 @@
 +\endinput
 --- a/tex/m20-pdf-layout.sty
 +++ b/tex/m20-pdf-layout.sty
-@@ -1,27 +1,39 @@
+@@ -1,27 +1,40 @@
  \NeedsTeXFormat{LaTeX2e}
  \ProvidesPackage{m20-pdf-layout}[2026/09/30 isolated live body regions]
  \RequirePackage{fontspec,geometry,multicol,xcolor,tikz}
@@ -385,6 +402,7 @@
  \newif\ifmTwentyArtReverse
 -\renewcommand\mTwentyBodyBegin{\color{black}\ifmTwentyBodyActive\else\par\ifdim\pagetotal>\dimexpr\textheight-24bp\relax\clearpage\fi\global\mTwentyBodyActivetrue\begin{multicols}{2}\raggedcolumns\fi}
 -\renewcommand\mTwentyBodyEnd{\ifmTwentyBodyActive\par\end{multicols}\global\mTwentyBodyActivefalse\fi}
++\newif\ifmTwentyArtColumnActive
 +% Strong endpoint protection is reapplied after each body region and heading.
 +\newcommand\mTwentyParagraphControls{%
 + \clubpenalty=10000\widowpenalty=10000\displaywidowpenalty=10000\@clubpenalty=10000%
@@ -401,7 +419,7 @@
  \AtEndDocument{\mTwentyBodyEnd\clearpage\immediate\closeout\mTwentyPositionStream}
  % Values are frozen now; page and position primitives are evaluated at shipout.
  \newcommand\mTwentyPosition[8]{%
-@@ -29,28 +41,50 @@
+@@ -29,28 +42,65 @@
   \begingroup
   \edef\mTwentyWrite{\write\mTwentyPositionStream{#1|\noexpand\the\noexpand\ReadonlyShipoutCounter|\noexpand\the\noexpand\lastxpos|\noexpand\the\noexpand\lastypos|\number\dimexpr#2\relax|\number\dimexpr#3\relax|#4|#5|#6|#7|\number\dimexpr#8+0bp\relax|\noexpand\thepage|\noexpand\number\noexpand\c@page}}%
   \mTwentyWrite\endgroup}
@@ -416,7 +434,22 @@
 -\RenewDocumentCommand\section{s o m}{\mTwentyBodyEnd\addvspace{13.5bp}\noindent\mTwentyPosition{span-heading}{\textwidth}{\textwidth}{2}{heading}{0}{flow}{}\IfBooleanTF{#1}{\mTwentyStyledSection*{#3}}{\IfNoValueTF{#2}{\mTwentyStyledSection{#3}}{\mTwentyStyledSection[#2]{#3}}}\vspace{1.8bp}\hrule height1.25bp\vspace{13.5bp}\mTwentyBodyBegin\@afterindentfalse\@afterheading}
 -\renewcommand\subsection{\@startsection{subsection}{2}{\z@}{7.2bp}{0bp}{\mTwentyHeadingNarrowFont\fontsize{18bp}{18bp}\selectfont}}
 -\renewcommand\subsubsection{\@startsection{subsubsection}{3}{\z@}{7.2bp}{0bp}{\mTwentyHeadingFont\fontsize{12bp}{14bp}\selectfont}}
-+\RenewDocumentCommand\section{s o m}{\mTwentyBodyEnd\mTwentyRemaining\ifdim\mTwentyAvailable<108bp\relax\newpage\fi\addvspace{13.5bp}\noindent\mTwentyPosition{span-heading}{\textwidth}{\textwidth}{2}{heading}{0}{flow}{}\IfBooleanTF{#1}{\mTwentyStyledSection*{#3}}{\IfNoValueTF{#2}{\mTwentyStyledSection{#3}}{\mTwentyStyledSection[#2]{#3}}}\vspace{1.8bp}\hrule height1.25bp\vspace{13.5bp}\mTwentyBodyBegin\@afterindentfalse\@afterheading}
++\newcommand\mTwentySectionBody[3]{%
++ \IfBooleanTF{#1}{\mTwentyStyledSection*{#3}}{\IfNoValueTF{#2}{\mTwentyStyledSection{#3}}{\mTwentyStyledSection[#2]{#3}}}%
++}
++\RenewDocumentCommand\section{s o m}{%
++ \ifmTwentyArtColumnActive
++  % A full-height side reserve owns the other column on this page. Keep the
++  % section and its following text in the live narrative column beside it.
++  \mTwentyKeepHeading{90bp}\addvspace{13.5bp}\noindent
++  \mTwentyPosition{span-heading}{\linewidth}{\linewidth}{1}{heading}{0}{flow}{}%
++  \mTwentySectionBody{#1}{#2}{#3}\vspace{1.8bp}\hrule width\linewidth height1.25bp\vspace{13.5bp}%
++ \else
++  \mTwentyBodyEnd\mTwentyRemaining\ifdim\mTwentyAvailable<108bp\relax\newpage\fi
++  \addvspace{13.5bp}\noindent\mTwentyPosition{span-heading}{\textwidth}{\textwidth}{2}{heading}{0}{flow}{}%
++  \mTwentySectionBody{#1}{#2}{#3}\vspace{1.8bp}\hrule height1.25bp\vspace{13.5bp}\mTwentyBodyBegin
++ \fi
++ \@afterindentfalse\@afterheading}
 +\newcommand\mTwentyKeepHeading[1]{\mTwentyRemaining\ifdim\mTwentyAvailable<#1\relax\ifmTwentyBodyActive\columnbreak\else\newpage\fi\fi}
 +\renewcommand\subsection{\mTwentyKeepHeading{54bp}\@startsection{subsection}{2}{\z@}{7.2bp}{0.01bp}{\raggedright\mTwentyHeadingControls\mTwentyHeadingNarrowFont\fontsize{18bp}{18bp}\selectfont}}
 +\renewcommand\subsubsection{\mTwentyKeepHeading{42bp}\@startsection{subsubsection}{3}{\z@}{7.2bp}{0.01bp}{\raggedright\mTwentyHeadingControls\mTwentyHeadingFont\fontsize{12bp}{14bp}\selectfont}}
@@ -464,7 +497,7 @@
  }
  \let\@makeschapterhead\@makechapterhead
  \newif\ifmTwentyFirstRestore
-@@ -62,22 +96,52 @@
+@@ -62,22 +112,52 @@
    \fi
   \else\clubpenalty\@clubpenalty\everypar{}\fi}}
  \AddToHook{para/end}{\ifmTwentyFirstRestore\ifmTwentySidebarActive\else\mTwentyFirstRestorefalse\rmfamily\fi\fi}
@@ -493,7 +526,7 @@
 + \else
 +  \put(0,-\paperheight){\includegraphics[page=\ifodd\c@page2\else1\fi]{\mTwentyAssetPath spread-border.original-template.pdf}}%
 + \fi\fi\fi}
-+\AddToHook{shipout/after}{\global\mTwentyBlankPagefalse\global\mTwentyOpenerPagefalse\global\mTwentyInteriorTitlePagefalse\ifmTwentyArtReverse\global\let\mc@align@columns\LR@column@boxes\global\mTwentyArtReversefalse\fi}
++\AddToHook{shipout/after}{\global\mTwentyBlankPagefalse\global\mTwentyOpenerPagefalse\global\mTwentyInteriorTitlePagefalse\global\mTwentyArtColumnActivefalse\ifmTwentyArtReverse\global\let\mc@align@columns\LR@column@boxes\global\mTwentyArtReversefalse\fi}
 +\newcommand\mTwentyInteriorTitle[2]{%
 + \hypersetup{pdfpagelayout=TwoPageRight,pdftitle={#1}}%
 + \mTwentyBodyEnd\clearpage\global\mTwentyInteriorTitlePagetrue\thispagestyle{empty}%
@@ -525,7 +558,7 @@
     \node[inner sep=0bp] at (.5\mTwentyArtWidth,.5\mTwentyArtHeight) {\includegraphics[width=\dimexpr\mTwentyArtWidth-14bp\relax,height=\dimexpr\mTwentyArtHeight-40bp\relax,keepaspectratio]{\mTwentyArtImage}};
     \node[inner sep=0bp,anchor=south,text width=\dimexpr\mTwentyArtWidth-14bp\relax,align=center] at (.5\mTwentyArtWidth,7bp) {\fontsize{8bp}{10bp}\selectfont\mTwentyArtCaption\space\mTwentyArtCredit};
    \fi
-@@ -85,30 +149,39 @@
+@@ -85,30 +165,32 @@
   \end{tikzpicture}%
  }
  \newcommand\mTwentyArtPDF{%
@@ -542,20 +575,14 @@
 + \ifx\mTwentyArtPlace\mTwentyNextPage\newpage\fi
 + \mTwentyArtWidth=\textwidth\mTwentyArtHeight=341.28bp
   \ifx\mTwentyArtKind\mTwentyVertical
-+  \mTwentyBodyEnd
-+  \mTwentyArtWidth=\mTwentyColumnWidth
-+  % Use a substantial remaining side region where it exists; a tall reserve
-+  % need not strand a preceding paragraph merely to recover the full 657bp.
-+  \mTwentyRemaining
-+  \ifdim\mTwentyAvailable<360bp
-+   \ifx\mTwentyArtPlace\mTwentyHere\PackageError{m20}{M20_E_PLACEMENT_UNAVAILABLE}{A vertical art reserve needs at least 360bp here.}\else\newpage\fi
-+  \fi
-   \mTwentyBodyBegin
+-  \mTwentyBodyBegin
 -  % Put the art first in the native stream. Reverse only this page's physical
 -  % columns when needed, leaving subsequent prose beside the reservation.
-+  % Multicol has now removed any real top/bottom float space. Reserve only
-+  % that page's live column height, leaving the original frame's shadow clear.
-+  \mTwentyArtHeight=\dimexpr\@colroom-14bp\relax
++  \mTwentyBodyEnd\clearpage
++  % The template's vertical frame is a full text-area column, not a shorter
++  % remainder box. Pending full-width floats must ship before this page.
++  \mTwentyArtWidth=\mTwentyColumnWidth\mTwentyArtHeight=\textheight
++  \global\mTwentyArtColumnActivetrue\mTwentyBodyBegin
 +  % The outside default is left on verso and right on recto. Reverse this
 +  % page only; shipout restores the ordinary column reading direction.
    \ifodd\c@page
