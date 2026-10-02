@@ -1,613 +1,687 @@
 # wodtex
 
-Native LaTeX authoring for 17 World of Darkness output profiles, with LuaLaTeX
-PDF classes and M20 reflowable EPUB 3. The implementation follows the approved
-specification in [docs/design](docs/design).
-The corrected native PDF installation implements generic class-selected commands and explicit M20 style overrides.
-See the [Crossover Style Architecture guide](docs/design/Crossover-Style-Architecture.md) for implemented behavior and extension hooks.
-The additional classes use source-mapped typography, measured geometry and
-decorative outer frames with native LaTeX composition.
+wodtex is a native LaTeX authoring system for World of Darkness books. Write
+ordinary LaTeX plus a small set of system-neutral commands, select a document
+class, and compile with **LuaLaTeX**.
 
-The supplied X20 packages are catalogued in the
-[output-profile inventory and class proposal](docs/design/X20-Output-Profiles.md).
-It identifies 17 implemented styles across gamelines, historical sublines, and
-book formats. See the [class reference](docs/X20-Class-Reference.md) for preparation,
-installation and supported behavior, and [acceptance results](docs/profiles/Acceptance.md)
-for the family branches and verification evidence.
+All **17 document classes** are implemented on `main` for PDF output. M20 uses
+the corrected original-template layout; the other 16 profiles use their own
+measured page geometry, genuine font faces, and extracted outer decorations
+with shared native LaTeX composition. M20 also has a separate, existing
+reflowable EPUB 3 workflow. The other profiles currently support PDF only.
 
-## Install and update (Windows / Git Bash)
+## Contents
 
-From your checkout on `main`, first install and repeat updates use the same commands:
+- [Install](#install)
+- [Choose a document class](#choose-a-document-class)
+- [Write and compile a book](#write-and-compile-a-book)
+- [System-neutral commands](#system-neutral-commands)
+- [System and layout overrides](#system-and-layout-overrides)
+- [Repository builds and EPUB](#repository-builds-and-epub)
+- [Current scope and troubleshooting](#current-scope-and-troubleshooting)
+
+## Install
+
+### Prerequisites
+
+For the installed PDF system, you need:
+
+- Git and access to this repository.
+- **Python 3.9 or later** to run the installer.
+- A TeX distribution with **LuaLaTeX** and its supporting LaTeX packages:
+  MiKTeX on Windows, or TeX Live/MacTeX on Linux/macOS. The classes require
+  LaTeX 2022-06-01 or newer. Select LuaLaTeX in your editor.
+- `makeindex` if your book has an index; `latexmk` is an optional convenience.
+
+The installer uses the Python standard library. It does not install Python
+dependencies, TeX packages, or fonts into the operating system. On MiKTeX,
+enable installation of missing packages or install the requested packages
+through MiKTeX Console. The classes use packages such as `fontspec`, `geometry`,
+`multicol`, `hyperref`, `longtable`, and `tcolorbox`/TikZ.
+
+Clone the repository and keep the checkout in place:
+
+```sh
+git clone https://github.com/charlesmsiegel/wodtex.git
+cd wodtex
+```
+
+### Windows: MiKTeX
+
+From **Git Bash**:
+
+```sh
+bash install.sh
+```
+
+The launcher finds Python 3.9+ through `python`, `py -3`, or `python3`. When
+using Windows Python, it registers the user tree with MiKTeX and refreshes its
+file-name database. Both `initexmf` and `miktex` must be on `PATH`.
+
+Alternatively, from **PowerShell**:
+
+```powershell
+py -3 scripts/install.py --miktex
+```
+
+The default Windows tree is `%LOCALAPPDATA%/wodtex/texmf`, falling back to
+`%USERPROFILE%/wodtex/texmf`. No administrator installation is required.
+
+### Linux/macOS: TeX Live or MacTeX
+
+Install into the user tree reported by your TeX distribution:
+
+```sh
+python3 scripts/install.py --tree "$(kpsewhich -var-value=TEXMFHOME)"
+```
+
+This also handles MacTeX installations whose user tree differs from `~/texmf`.
+On Unix, `bash install.sh` defaults to `~/texmf`; use it when that is your
+distribution's `TEXMFHOME`.
+
+For Windows TeX Live, use `py -3 scripts/install.py --tree "YOUR-TEXMFHOME"`
+with the path reported by `kpsewhich -var-value=TEXMFHOME`, without `--miktex`.
+
+### What the default installation provides
+
+The installer installs the classes and supporting packages into
+`TREE/tex/latex/wodtex/`. **The corrected M20 PDF layout is the default**;
+no source patch needs to be applied for normal installed use.
+
+This private checkout includes M20's fonts, prepared decorations, and original
+reference PDF. A fresh default installation checks their hashes against
+`bundle-manifest.json` and records the checkout's `fonts/` and `assets/`
+locations in:
+
+```text
+TREE/tex/latex/wodtex-local/wodtex-local.tex
+```
+
+The rendering inputs remain in the checkout; keep it at that location.
+See [input provenance](template-source/README.md) and
+[font notices](fonts/NOTICES.txt) for the supplied resources.
+
+**The other 16 classes need separately prepared template resources.**
+Installing a class file alone does not supply those fonts or decorations.
+
+### Prepare the other profiles
+
+Use Python with the dependencies in `requirements.txt` installed; Python 3.12+
+is the documented environment for the repository workflows. Supply the local
+X20 template directory whose files match the selected profile descriptors.
+
+On Windows, from PowerShell in the checkout:
+
+```powershell
+py -3 -m pip install -r requirements.txt
+py -3 scripts/prepare_profile.py --profile all --source-root "C:/path/to/X20"
+py -3 scripts/install.py --profile-root "$PWD/inputs/profiles" --miktex
+```
+
+On Linux/macOS:
+
+```sh
+python3 -m pip install -r requirements.txt
+python3 scripts/prepare_profile.py --profile all --source-root "/path/to/X20"
+python3 scripts/install.py --tree "$(kpsewhich -var-value=TEXMFHOME)" --profile-root "$PWD/inputs/profiles"
+```
+
+`--profile all` prepares the 16 additional profiles; M20 keeps its separate
+bundled resources. To prepare a subset, repeat `--profile`, for example
+`--profile w20 --profile msc`. The names are the style IDs in the class table
+below. `--out DIR` changes the preparation destination; supply that same
+directory as `--profile-root DIR` when installing.
+
+Preparation checks the original source hashes and writes namespaced font/art
+resources under `inputs/profiles/STYLE-ID/`. Keep the original source directory
+structure intact. Prepared resources are local inputs and are not in Git.
+The profile path is stored independently in:
+
+```text
+TREE/tex/latex/wodtex-local/wodtex-profiles-local.tex
+```
+
+See the [class reference](docs/X20-Class-Reference.md) and the
+[profile source audits](docs/profiles) for exact input mappings and substitutions.
+
+### Verify, update, and configure
+
+From a manuscript directory outside the checkout:
+
+```sh
+kpsewhich m20book.cls
+kpsewhich wodtex-local.tex
+```
+
+For another prepared class, also check its class and profile configuration:
+
+```sh
+kpsewhich w20book.cls
+kpsewhich wodtex-profiles-local.tex
+```
+
+The returned paths should point to the installed user tree.
+
+To update, return to the checkout, pull `main`, and repeat your installation
+command. For Windows/MiKTeX in Git Bash:
 
 ```sh
 git pull --ff-only origin main
 bash install.sh
 ```
 
-For a new checkout:
+On Linux/macOS, repeat the `--tree "$(kpsewhich -var-value=TEXMFHOME)"` command.
+If you selected a custom `--tree`, supply the same tree on every update.
 
-```sh
-git clone https://github.com/charlesmsiegel/wodtex.git
-cd wodtex
-bash install.sh
-```
-
-Python 3.9+, MiKTeX and LuaLaTeX must already be installed and on `PATH`.
-The launcher tries `python`, `py -3`, then `python3`, checks the Python version,
-and automatically registers a MiKTeX user tree when using Windows Python.
-It forwards arguments safely and installs no Python/TeX dependencies or global
-settings. MiKTeX 24.1 / LuaHBTeX 1.17.1 is the intended Windows target; actual
-Windows compilation of all 17 installed classes is tested. Linux native M20
-compilation is also tested.
-
-The private repository now includes the user-authorized, original eight-page
-M20 reference PDF in `template-source/`, nine required unmodified font files
-in `fonts/`, and prepared corrected-layout decorations in `assets/`. All
-required original and public faces are present. Ordinary installation requires
-no font/art flags, archive download, PDF extraction, PyMuPDF, or pinned Linux
-runtime. See [input provenance](template-source/README.md) and
-[font notices](fonts/NOTICES.txt). The repository owner asserts permission for
-this private STV workflow; licensing has not been independently verified.
-Unused InDesign/PSD material and private manuscripts are not included.
-
-A fresh default installation verifies `bundle-manifest.json` hashes before
-writing and points the local configuration to the checkout's `fonts/` and
-`assets/` directories. Missing/changed inputs fail with the affected filename.
-Keep the checkout in place. A moved checkout can be relinked explicitly with
-`bash install.sh --configure` from its new location.
-
-The corrected M20 PDF layout is installed by default. Create `book.tex` in a
-separate book folder:
-
-```tex
-\documentclass{m20book}
-\title{My Book}
-\subtitle{My Subtitle}
-\bookdescription{A supplement description}
-\author{My Name}
-\writtenby{My Name}
-\begin{document}
-\frontmatter
-\maketitle
-\makecredits
-\tableofcontents
-\mainmatter
-\chapter{First Chapter}
-Book prose.
-\end{document}
-```
-
-```sh
-cd "C:/Private/My Book"
-kpsewhich m20book.cls
-kpsewhich wodtex-local.tex
-lualatex -interaction=nonstopmode -halt-on-error book.tex
-lualatex -interaction=nonstopmode -halt-on-error book.tex
-```
-
-Native `\title{...}` supplies the default running title and PDF title. Explicit
-`\m20setup{running-title={...}}` and `\hypersetup{pdftitle={...}}` remain overrides.
-`profile=m20` is already the class default. A short TOC goes directly to its
-required facing illustration and recto chapter opener; a longer TOC receives
-only the single parity spacer when necessary. The first main chapter is Arabic
-page 1.
-
-Run LuaLaTeX again when references/contents request it. For an index, run
-`makeindex book` and LuaLaTeX again. Enable MiKTeX's missing-package installation
-or install requested public packages through MiKTeX Console. The two
-`kpsewhich` commands should point to the user tree. An obsolete local
-`m20book.cls` or `tex/` directory beside the manuscript can shadow installed
-resources; back up edits and remove that obsolete copy.
-
-### Generic author interface
-
-The corrected installed class provides `booksetup`, `subtitle`, `bookdescription`, `writtenby`, `developedby`, `editedby`, `specialthanks` and `copyrightyear`.
-Native `title` and `author` remain the primary book metadata.
-`maketitle` and `makecredits` render the M20 interior title and credits without repeating metadata strings.
-Generic `sidebar`, `sidebarwide`, `sidebarbreak`, `booktable`, `tablelead`, `statblock`, `statentry` and `artreserve` use the class default.
-Their options match the corresponding existing M20 command or environment.
-Nested generic tables and continuation/entry commands retain the enclosing element's style.
-Explicit M20-prefixed commands retain M20 meaning, and metadata setters share the same stored values.
-
-See [the runnable generic example](examples/generic-book.tex) and [the extension contract](docs/design/Crossover-Style-Architecture.md).
-Copy `generic-book.tex` and its `art/scene.png` into one document folder and run LuaLaTeX twice there.
-`art/scene.png` is a public geometric test fixture supplied alongside the example; replace it with your own scene image at that path.
-A missing meaningful image remains an error rather than being silently dropped.
-The generic interface is supported for the corrected M20 PDF installation and
-the new native PDF classes. Foreign-host style adapters and generic EPUB
-acceptance remain separate extension work.
-
-### Configuration and advanced installation
-
-The corrected layout supports older `array` package installations paired with
-newer `colortbl`, including the paragraph-cell API mismatch reported with
-MiKTeX 24.1. Update wodtex using the commands above and compile again; no edits
-to your table source are needed. Current `array` implementations keep their
-own paragraph-cell implementation.
-
-Updates preserve the existing local config **byte for byte**, including custom
-font/art locations. Existing installations are not silently switched to bundled
-paths. To explicitly switch an existing config to the checkout's bundled paths:
+Ordinary updates preserve both local configuration files. To explicitly
+relink M20 to the bundled resources, including after moving the checkout:
 
 ```sh
 bash install.sh --configure
 ```
 
-To use other prepared directories, supply both paths on a fresh installation,
-or add `--configure` to explicitly replace an existing config:
+To use other M20 rendering directories instead:
 
 ```sh
 bash install.sh --configure --font-dir "C:/Private/fonts" --asset-dir "C:/Private/assets"
 ```
 
-The default Windows root is `%LOCALAPPDATA%/wodtex/texmf`, falling back to
-`%USERPROFILE%/wodtex/texmf`. `--tree "C:/Private/wodtex-texmf"` selects another
-root; supply the same `--tree` on updates. The installer prints actual paths.
-The single config is `TREE/tex/latex/wodtex-local/wodtex-local.tex`. You may edit
-it directly using forward slashes and trailing slashes, or use the explicit
-configuration commands above. Per-document `\m20setup{font-path={.../},
-asset-path={.../}}` still overrides its defaults. Generated config rejects
-`{ } % # ~ ^ & $`, backslashes and newlines in paths; spaces and drive letters
-are supported. Pass Windows paths such as `C:/Users/YourName/...` to Windows
-Python in Git Bash.
+Supply **both** paths. These are the layout's font/decoration directories, not
+the folder containing your manuscript illustrations. When calling
+`scripts/install.py` directly, use the same options plus your usual `--tree`
+and, for MiKTeX, `--miktex`.
 
-Windows installation invokes the officially documented
-[`initexmf --register-root=DIR`](https://docs.miktex.org/manual/initexmf.html)
-and [`miktex fndb refresh`](https://docs.miktex.org/manual/miktex-fndb.html),
-both in default user mode. Both executables are checked before installation.
-Registration/refresh failures are reported; installed files remain, so correct
-the MiKTeX issue and rerun `bash install.sh`. No `--admin` option is used.
-Direct Python remains available: `python scripts/install.py --miktex`.
+To relink the additional profiles, explicitly supply `--profile-root DIR`.
+Their configuration is independent of M20's `--configure` operation.
+The installer refuses to overwrite locally edited managed package files;
+put manuscript settings in the preamble or local configuration instead.
 
-Only `TREE/tex/latex/wodtex` is replaced on update. Staging and a hash manifest
-protect managed files: local edits, added/missing files, unowned directories and
-symlinked resources are refused. Back up/reconcile such changes before
-reinstalling; keep custom settings in the local config or manuscript. Other
-tree contents are preserved. Every tracked `profiles/*.tex` resource is
-installed under a unique `wodtex-profile-*.tex` name; updates collect future
-resources without inventing new WoD/MSC designs.
+## Choose a document class
 
-`--layout corrected` is the default. To intentionally select the older renderer,
-use `--layout base` on every install/update with explicit prepared font/art
-paths on first install; the bundle supplies the corrected renderer's faces,
-not all additional legacy Noto/Futura requirements. Correction checksums use
-canonical LF text, accepting existing Windows CRLF checkouts while rejecting
-other source edits. Installed-file hashes and bundled binary hashes are exact.
-`.gitattributes` preserves LF source and exact font/PDF/image bytes.
+Change `\documentclass{...}` to select the book's default style. The generic
+commands remain the same; supported option details can vary by renderer.
 
-The same committed rendering inputs produce the same normalized managed
-TeX/Lua bytes and hash manifest on repeated installation. Configuration paths
-depend on your machine; updates preserve them. PDF bytes are not promised to
-be identical across TeX engines, package versions, fonts or build dates.
+| Book style | Style ID | Document class |
+| --- | --- | --- |
+| Mage: The Ascension 20th Anniversary | `m20` | `m20book` |
+| M20 Dark Ages | `m20-dark-ages` | `m20darkagesbook` |
+| Mage: The Sorcerers Crusade | `msc` | `mscbook` |
+| V20 clanbook | `v20-clanbook` | `v20clanbook` |
+| Victorian Age V20 | `vva20` | `vva20book` |
+| Victorian Age V20 clanbook | `vva20-clanbook` | `vva20clanbook` |
+| Werewolf: The Apocalypse 20th Anniversary | `w20` | `w20book` |
+| W20 Dark Ages | `w20-dark-ages` | `w20darkagesbook` |
+| W20 Wyld West | `w20-wyld-west` | `w20wyldwestbook` |
+| Changeling: The Dreaming 20th Anniversary | `c20` | `c20book` |
+| Dark Ages Fae | `dark-ages-fae` | `darkagesfaebook` |
+| Demon | `d20` | `d20book` |
+| Wraith 20th Anniversary | `wr20` | `wr20book` |
+| KotE20 dharmabook | `kote20-dharmabook` | `kote20dharmabook` |
+| KotEK20 | `kotek20` | `kotek20book` |
+| KotEK20 legacybook | `kotek20-legacybook` | `kotek20legacybook` |
+| General World of Darkness sourcebook | `wod` | `wodbook` |
 
-On TeX Live, the launcher omits MiKTeX registration and defaults to `~/texmf`.
-On Unix MiKTeX, pass `--miktex`. A nondefault TeX Live root needs configuration
-in your distribution (for a temporary check, `TEXMFHOME=/path/to/tree lualatex
-book.tex`). Repository builds and their exact-hash opt-in patch workflow below
-remain separate and unchanged. The source-only archive intentionally excludes
-licensed bundle bytes; archive consumers supply explicit prepared paths.
+All classes support native PDF. Only `m20book` has an EPUB backend.
+KotEK labels are retained as supplied; their expansion is unconfirmed.
 
-Run `python -m unittest tests.test_install tests.test_install_shell -v` for
-installation checks. Tests cover the launcher, config preservation, input
-corruption/missing files, CRLF source, source archives, deterministic updates,
-and external-folder compilation with synthetic fixtures and the real bundle.
-The bundled smoke checks genuine Abbess/Goudy faces, original decorations,
-tables, sidebar, art and resolved references before/after updating. Actual
-Windows/MiKTeX execution and complete licensed-layout acceptance remain separate.
+## Write and compile a book
 
-## Repository build workflow
+Create `book.tex` in your own book directory. This complete starter uses only
+the shared author interface:
 
-Use Python 3.12+, a TeX Live/LuaLaTeX installation, Java 17+, Node.js 18+,
-makeindex and Poppler. The tested environment is Linux x86-64; preparation
-supplies a pinned dvisvgm binary there. Other platforms need their own dvisvgm
-and compatible TeX paths.
+```latex
+\documentclass{m20book}
+\title{My Book}
+\subtitle{A Supplement for the Awakened}
+\bookdescription{Stories, places, and people for your chronicle.}
+\author{My Name}
+\writtenby{My Name}
+\developedby{Developer Name}
+\editedby{Editor Name}
+\specialthanks{The playtesters.}
+% Optional: otherwise the year is taken from the TeX engine at build time.
+% \copyrightyear{2026}
+
+\begin{document}
+\frontmatter
+\maketitle
+\makecredits
+\tableofcontents
+
+\mainmatter
+\chapter{First Chapter}
+\label{chap:first}
+\section{Getting Started}
+Ordinary book prose, with \textbf{bold} and \emph{italic} text.
+
+\begin{sidebar}[id=field-note]{Field Note}
+A note in the selected book style.
+\end{sidebar}
+
+\begin{booktable}[id=sample-table,head-rows=1]{ll}
+Name & Value \\
+First & One \\
+Second & Two \\
+\end{booktable}
+
+\begin{statblock}
+\statentry{\textbf{Strength}: 3}
+\statentry{\textbf{Resolve}: 4}
+\end{statblock}
+
+\appendix
+\chapter{Reference Material}
+See Chapter~\ref{chap:first}.
+\end{document}
+```
+
+After preparing that class's resources, replace `m20book` with, for example,
+`w20book` or `mscbook` to typeset the same source with that class's page policy,
+fonts, and component styles.
+
+From the directory containing `book.tex`:
+
+```sh
+lualatex -interaction=nonstopmode -halt-on-error book.tex
+lualatex -interaction=nonstopmode -halt-on-error book.tex
+```
+
+The result is `book.pdf` beside the source. Run LuaLaTeX again if the log asks
+for another pass to settle contents or cross-references. If installed,
+`latexmk` can handle reruns:
+
+```sh
+latexmk -lualatex -interaction=nonstopmode -halt-on-error book.tex
+```
+
+For an index, add `\makeindex` in the preamble, use `\index{term}` in the text,
+and place `\backmatter\printindex` at the end. Compile, run
+`makeindex book`, then run LuaLaTeX again until references settle.
+
+Use ordinary `\input{chapters/introduction.tex}`, `\include`, headings,
+lists, mathematics, footnotes, `\label`, `\ref`, `\pageref`, and hyperlinks.
+Keep your own illustrations next to the manuscript, for example
+`art/scene.png`. Installed PDF compilation does not need the checkout on
+`TEXINPUTS` or the repository's Python build driver.
+
+## System-neutral commands
+
+Unprefixed author commands use the document class's default renderer.
+A nested generic element inherits its enclosing element's selected style.
+
+| Command or environment | Purpose |
+| --- | --- |
+| `\title{TEXT}`, `\author{TEXT}` | Standard LaTeX title and author metadata |
+| `\subtitle{TEXT}` | Subtitle consumed by the title renderer |
+| `\bookdescription{TEXT}` | Description consumed by the title renderer |
+| `\writtenby{TEXT}`, `\developedby{TEXT}`, `\editedby{TEXT}` | Credit-role values |
+| `\specialthanks{TEXT}` | Acknowledgments |
+| `\copyrightyear{YYYY}` | Override the build-year default |
+| `\booksetup{KEY=VALUE,...}` | Settings supported by the selected renderer |
+| `\maketitle`, `\makecredits` | Render title and credits from stored metadata |
+| `sidebar[KEYS]{TITLE}` | One-column-width sidebar |
+| `sidebarwide[KEYS]{TITLE}` | Full-width sidebar, optionally with two internal columns |
+| `\sidebarbreak[page]` or `\sidebarbreak[column]` | Explicit continuation inside a sidebar |
+| `booktable[KEYS]{COLUMN-SPEC}` | Table using native `&` and `\\` row syntax |
+| `tablelead` | Table lead/group; behavior depends on the renderer |
+| `statblock`, `\statentry{TEXT}` | Stat-block container and entries |
+| `\artreserve[KEYS]{ID}` | Artwork or a placeholder; the braced ID is optional |
+
+Environment names are used as `\begin{NAME}...\end{NAME}`. Credit fields are
+empty until supplied; `\author` does not infer writers, editors, or developers.
+M20's native title also supplies the default running title and PDF title.
+Metadata setters store values independently of visual styling.
+
+### Sidebars
+
+```latex
+\begin{sidebar}[id=short-note,place=flow,breakable=true]{A Short Note}
+One-column sidebar text.
+\end{sidebar}
+
+\begin{sidebarwide}[id=wide-note,columns=2,place=next-page]{A Wide Note}
+First part of the note.
+\sidebarbreak[page]
+The continuation.
+\end{sidebarwide}
+```
+
+Common options are `id`, `place`, `columns`, and `breakable`.
+Use `place=flow` for normal composition or `place=next-page` to start on a
+fresh page. Use `columns=1` or `columns=2` inside a wide sidebar; keep narrow
+sidebars at one internal column. Short atomic notes can use `breakable=false`.
+
+M20 also enforces a strict first-segment placement for `place=here`; it can
+error when the segment does not fit. The newer profiles accept `here` without
+that strict placement guarantee, and both sidebar break modes use their native
+box continuation. M20's `balance` option is accepted but does not select an
+alternative balancing algorithm.
+
+For sidebar/table IDs, start with a letter and use letters, digits, `-`,
+`:`, `.`, or `_`. IDs must be unique within a document.
+
+### Tables and associated prose
+
+```latex
+\begin{booktable}[id=costs,head-rows=1]{ll}
+Item & Cost \\
+Book & 10 \\
+Map & 5 \\
+\end{booktable}
+```
+
+The required column specification uses native LaTeX columns such as `l`, `c`,
+`r`, and `p{DIMENSION}`. Use paragraph columns for wrapped prose.
+Set `head-rows` explicitly for portable source: M20 defaults to `0`, while the
+other profiles default to `1`.
+
+M20 supports container/column/explicit table widths, scaling, alignment,
+repeated headers, and owner pagination. Compact tables can float at page
+edges; tables inside a sidebar stay with that owner. The other profiles use
+`longtable` outside sidebars and atomic `tabular` inside them. M20-specific
+`width`, `scale`, `align`, and `epub` keys are not implemented by the newer
+profile renderer.
+
+In **corrected M20 PDF**, wrap a title, lead, and one compact table to keep the
+whole group together:
+
+```latex
+\begin{tablelead}
+\subsection{Equipment}
+Introductory prose that must travel with this table.
+\begin{booktable}[id=equipment,head-rows=1]{ll}
+Item & Cost \\
+Book & 10 \\
+\end{booktable}
+\end{tablelead}
+```
+
+This M20 group must fit one page and sit outside sidebars. Leave multipage
+tables in the ordinary table stream. The other profiles' `tablelead` renders
+lead prose without M20's atomic keep-together/floating guarantee.
+
+### Stat blocks
+
+Use `\statentry{TEXT}` inside `statblock`, as in the starter book.
+For M20, literal `|` separators in an entry become separate keyed lines.
+The other profiles render each entry as authored; use separate
+`\statentry` calls when sharing source across styles.
+
+### Artwork
+
+The simplest call needs only an image path:
+
+```latex
+\artreserve[image={art/scene.png}]
+\artreserve[kind=vertical,image={art/portrait.png}]
+```
+
+The default kind is `horizontal`. A braced ID, caption, credit, alternative
+text, and placement options are optional:
+
+```latex
+\artreserve[image={art/scene.png},
+  alt={A ruined observatory beneath a red moon},
+  caption={The abandoned observatory},
+  credit={Artist Name}]{observatory}
+
+\artreserve[kind=vertical]{reserved-portrait}
+```
+
+With no image, the command reserves a labeled placeholder. With an image,
+the file must exist. Paths are relative to the manuscript for ordinary
+installed compilation. Supply an explicit ID, or separate following grouped
+prose with a blank paragraph, so that group is not consumed as an optional ID.
+
+**Corrected M20 PDF:** images stretch to fill the entire frame interior,
+including intentional aspect-ratio distortion. Caption/credit text reserves
+its band only when supplied. Omitting both gives the image the full interior.
+Horizontal art uses native top/bottom edge floats; vertical art occupies a
+full-height text column on a fresh page. Artwork cannot be nested in sidebars.
+
+M20 images are meaningful by default. Missing `alt` text gives a PDF
+accessibility warning, but a path-only call still compiles. Use
+`role=decorative` for ornaments; supply `alt` for meaningful accessible
+content. Strict EPUB checking can reject meaningful images with empty
+descriptions.
+
+**Other PDF profiles:** images preserve aspect ratio within horizontal or
+vertical reservations. Use `place=flow` or `place=next-page`; M20's anchored
+`position` keys are unsupported and fail explicitly. Accepting `alt` and
+`role` in the PDF interface does not imply an implemented EPUB adapter.
+
+## System and layout overrides
+
+### Explicit M20 commands
+
+Generic commands select the class style. Existing explicit M20 commands retain
+their M20 meaning. They are useful for M20-specific source and compatibility:
+
+| Generic interface | Explicit M20 interface |
+| --- | --- |
+| `\booksetup{...}` | `\m20setup{...}` |
+| `sidebar` | `m20sidebar` |
+| `sidebarwide` | `m20sidebarwide` |
+| `\sidebarbreak[page]` | `\m20sidebarbreak[page]` |
+| `booktable` | `m20table` |
+| `tablelead` | `m20tablelead` |
+| `statblock` | `m20statblock` |
+| `\statentry{TEXT}` | `\mTwentyStatEntry{TEXT}` |
+| `\artreserve[KEYS]{ID}` | `\m20artreserve[KEYS]{ID}` |
+| `\maketitle` | `\mTwentyInteriorTitle{TITLE}{LOWER-LINE}` |
+| `\makecredits` | `\mTwentyInteriorCredits{CONTENT}` |
+
+The explicit title and credits commands take their content arguments directly.
+The `\m20writtenby`, `\m20developedby`, `\m20editedby`,
+`\m20specialthanks`, and `\m20copyrightyear` setters share the same neutral
+metadata; their prefix does not change the renderer.
+
+For example, a generic table and continuation inside an explicit M20 sidebar
+keep that sidebar's M20 context:
+
+```latex
+\begin{m20sidebarwide}[id=mage-note,place=next-page]{A Mage Note}
+\begin{booktable}[id=mage-records,head-rows=1]{ll}
+Trait & Rating \\
+Arete & 3 \\
+\end{booktable}
+\sidebarbreak[page]
+Further notes.
+\end{m20sidebarwide}
+```
+
+**Cross-system component mixing is still an extension point.** Production
+adapters for placing M20 elements inside a WoD/W20/MSC host, or vice versa,
+are not implemented. Do not assume that loading a foreign style package or
+changing a style ID makes that combination supported. New profile adapters
+require their matching class and reject a foreign host; unavailable registry
+capabilities fail explicitly. There is no implemented general
+`style=OTHER-SYSTEM` element option or complete set of `w20...`/`msc...`
+prefixed component commands.
+
+The registry provides preamble-only extension hooks
+`\wodtexRegisterRenderer{STYLE}{CAPABILITY}{COMMAND-NAME}` and
+`\wodtexSetClassStyle{STYLE}`. These are adapter APIs, not replacements for
+selecting the document's page policy through its class. See
+[Crossover Style Architecture](docs/design/Crossover-Style-Architecture.md)
+for the extension contract.
+
+### Setup and page-policy overrides
+
+For all PDF classes, a custom running title can be set in the preamble:
+
+```latex
+\booksetup{running-title={Short Book Title}}
+```
+
+The other 16 profiles currently support only `running-title` through
+`\booksetup`. Their page sizes, geometry, and typography come from their
+selected class/profile. M20 additionally supports:
+
+| M20 setup key | Default | Purpose |
+| --- | --- | --- |
+| `running-title` | Native title | Override the running book title |
+| `font-path` | Installed local configuration | Rendering fonts; trailing slash required |
+| `asset-path` | Installed local configuration | Layout decorations; trailing slash required |
+| `math` | `legacy` | Select `legacy` or explicit `unicode` mathematics |
+| `chapter-title-size` | `60bp` | Initial chapter heading size |
+| `chapter-title-leading` | `54bp` | Initial chapter heading line spacing |
+| `chapter-body-gap` | `6bp` | Extra space below the chapter opener |
+| `profile` | `m20` | Legacy M20 profile setting; use document classes to select other systems |
+
+Examples for an M20 preamble:
+
+```latex
+\booksetup{chapter-body-gap=9bp}
+\booksetup{chapter-title-size=48bp,chapter-title-leading=45bp}
+% Optional document-specific paths, using forward slashes:
+% \booksetup{font-path={C:/Private/fonts/},asset-path={C:/Private/assets/}}
+% Optional PDF-title override; M20 otherwise uses \title:
+% \hypersetup{pdftitle={A Separate PDF Title}}
+```
+
+`bp` is a PDF point, 72 per inch. These M20-only keys are rejected by the
+other profile renderer.
+
+For M20 artwork, `position=top`/`bottom` applies to horizontal reservations
+and `position=inner`/`outer` to vertical reservations. Defaults are `top`
+and `outer`, respectively:
+
+```latex
+\artreserve[position=bottom,image={art/scene.png}]
+\artreserve[kind=vertical,position=outer,image={art/portrait.png}]
+```
+
+M20 `place=here` keeps edge-float behavior for horizontal art; it is not a
+promise to put a rectangle inline in a prose column. Move explicit art calls
+at paragraph/section seams to control an illustration schedule.
+
+Use normal LaTeX counters for heading/contents depth, for example
+`\setcounter{secnumdepth}{0}` and `\setcounter{tocdepth}{2}`.
+The installed corrected M20 layout already suppresses printed section numbers.
+M20-specific `\m20bodybegin`, `\m20bodyend`, `\m20newpage`,
+`\m20anchor{ID}`, `\m20note{TEXT}`, and `\m20script{TEXT}` remain available
+for advanced flow, stable anchors, local notes, and explicit script-font use;
+they are not part of the shared cross-class command set.
+
+## Repository builds and EPUB
+
+Normal installed PDF compilation uses the LuaLaTeX commands above. The
+repository driver is useful for profile verification, build reports, and the
+separate M20 EPUB workflow. Run repository commands from the checkout root;
+on Windows, use `py -3` in place of `python3`.
+
+### Native builds for the additional profiles
+
+After preparing resources and installing the Python dependencies:
+
+```sh
+python3 scripts/build.py --target pdf --source examples/profiles/w20.tex --out build/w20 --verify
+```
+
+The driver selects the profile from the source's literal `\documentclass`.
+It uses LuaLaTeX on `PATH`, or `WODTEX_LUALATEX`, and the resource directory
+`inputs/profiles/`, or `WODTEX_PROFILE_ROOT`. It checks resource hashes,
+converges references/index, and rejects missing glyphs or unresolved references;
+`--verify` also checks measured page dimensions.
+
+Use **`--target pdf`** for these profiles: the driver's default is `all`,
+which requests an unsupported EPUB output and fails.
+
+### M20's separate repository workflow
+
+The M20 repository source retains a base PDF/EPUB renderer. The installed
+corrected PDF renderer is selected by the installer without modifying that
+source tree. For corrected repository-source PDF builds, see the
+[original-layout correction package](contrib/original-m20-layout/README.md);
+its checked source patch is separate from normal installation.
+
+The legacy M20 driver needs Python 3.12+, the packages in `requirements.txt`,
+a compatible TeX installation, and the pinned tools/converters described by
+`runtime.lock.json`. Its full preparation also uses Java, Node.js, and Poppler.
+This toolchain is separate from the installed PDF prerequisites.
 
 ```sh
 python3 -m pip install -r requirements.txt
 python3 scripts/preflight.py --prepare
-python3 scripts/prepare_assets.py --template-zip /path/to/Mage_Templates.zip
 python3 scripts/build.py --target all --source examples/book.tex --out build/book --verify
 ```
 
-Instead of the ZIP, pass `--idml "/path/to/M20 Template Interior.idml"` with
-the original `Document fonts` and `Links` directories beside it. Unbundled
-licensed inputs, private manuscripts, caches and build outputs are excluded from Git.
-Dependencies come from official sources with SHA256 pins and install locally;
-original input files remain intact. The explicitly authorized rendering bundle
-is tracked in this private repository; unrelated local inputs remain ignored.
+Initial preflight preparation needs network access to its pinned sources.
+Supply the layout's compatible M20 resources for the selected source renderer;
+the default installed corrected resources do not by themselves establish a
+working legacy base/EPUB build. See [repository setup](docs/README.txt) for
+the separate `prepare_assets.py` template-import workflow.
 
-Edit [examples/book.tex](examples/book.tex). Use `--target pdf` or `--target epub`
-for one format. Outputs and `build-report.json` are under the selected `build`
-directory. Failed builds return nonzero with target-specific diagnostics.
+The existing M20 EPUB adapter covers the supported legacy semantic interface.
+**Generic-interface EPUB acceptance and complete mappings for corrected
+print-only title/credits, `tablelead`, and `statblock` remain pending.**
+A successful corrected PDF is not evidence that the same manuscript supports
+EPUB. The other 16 classes reject `output=epub`, `--target epub`, and
+`--target all`.
 
-## Implemented
+Common driver options:
 
-- Native two-column PDF body and spanning headings; all three sidebar layouts
-  with long continuations, mandatory placement and atomic-content diagnostics.
-- Breakable native tables, repeated headings, nested tabular cells, local notes,
-  fixed art reservations, fresh chapter versos, contents, references and index.
-- Semantic EPUB asides, tables or labeled records, meaningful art with metadata,
-  notes/backlinks, native MathML with vector SVG alternatives and live navigation.
-- Pinned preparation, bounded build convergence, output verification, stress
-  fixtures, and a deterministic source archive with a fresh-unpack build test.
+| Option | Meaning |
+| --- | --- |
+| `--target pdf\|epub\|all` | Output target; default `all` |
+| `--source FILE` | Native LaTeX entry file; default `examples/specimen.tex` |
+| `--out DIR` | Output directory under the checkout's `build/` tree |
+| `--verify` | Run the selected target's verification |
+| `--prepare` | Prepare M20's pinned runtime; does not import template resources |
+| `--max-runs N` | Maximum PDF convergence passes; default `8` |
 
-The multilingual auto-selection regression is deferred at the user's request.
-Use `\foreignlanguage{arabic}{\m20script{مرحبا}}` and the equivalent recipe for
-other supported scripts. The regression remains an expected-failure test;
-missing glyphs still fail a build. Exact InDesign decoration calibration and
-physical e-reader validation remain open and are recorded in
-[Validation.txt](docs/Validation.txt).
+Results are `OUT/pdf/NAME.pdf` and, where supported, `OUT/epub/NAME.epub`.
+`OUT/build-report.json` and target logs record the actual result.
 
-## Check and package
+To render the comparison showcase after preparing all profiles:
 
 ```sh
-python3 scripts/build.py --target all --source examples/specimen.tex --out build/specimen --verify
+python3 examples/showcase.py
+```
+
+It writes individual books and a bookmarked comparison PDF under
+`build/showcase/`. Tests and source packaging are available through:
+
+```sh
 python3 -m unittest discover -s tests -t . -v
 python3 scripts/package.py --out build/packages/wodtex-m20.zip
 ```
 
-The archive contains source, examples, tests, dependency pins and documentation;
-supply your licensed inputs after unpacking. Set `WODTEX_TEMPLATE_ZIP` for the
-fresh-setup integration test when the ZIP is outside the default local location.
+The historical ZIP filename is retained; the source package includes all
+classes, examples, tests, and documentation. It excludes template rendering
+inputs, prepared resources, private manuscripts, and downloaded runtimes.
+A source ZIP therefore needs separately supplied rendering inputs after unpacking.
 
-See [setup](docs/README.txt), [command recipes](docs/Command-Reference.txt),
-[supported content](docs/Supported-Content.txt), and [validation limits](docs/Validation.txt).
+## Current scope and troubleshooting
 
-## Original-template PDF corrections: activation and authoring
+Recorded acceptance covers native specimens for the 16 new profiles and
+installation/compilation of all 17 classes from an unrelated manuscript
+directory. See [the acceptance record](docs/profiles/Acceptance.md) for the
+platform evidence, remaining legacy test failures, and reproducible checks.
+It does not claim a clean full historical test suite.
 
-This opt-in release is a reviewed PDF checkpoint, not full framework acceptance.
-The last aggregate snapshot, before the final pagination changes, recorded
-55 passes and 13 failures: seven runtime/mixed-script gates and six legacy
-policy assertions. The final local PDF verifier exits 1 for five reviewed
-vertical output-box warnings on four pages; pixel review found no clipping
-or horizontal overflow. The exact-hash text-span font audit contains only
-Abbess and genuine Goudy regular, bold and italic. Full merged framework
-acceptance and EPUB validation remain pending.
+The additional profiles are native adaptations of supplied templates, with
+documented genuine-face substitutions and extracted outer frames. They do not
+reproduce every illustrated clan, season, or chapter variant. Separate covers,
+foreign-host component adapters, and EPUB for these profiles remain open.
 
+| Symptom | Check or action |
+| --- | --- |
+| Class/config not found | Check `kpsewhich`; register/refresh the MiKTeX user tree or install into TeX Live's actual `TEXMFHOME` |
+| Old behavior after updating | A manuscript-local `m20book.cls` or obsolete `tex/` directory can shadow the installed packages |
+| `luaotfload-main` missing or font-loading failure | Install the TeX distribution's LuaLaTeX font support; the engine binary alone is insufficient |
+| Missing M20 font/decoration | Check `wodtex-local.tex`, keep the checkout in place, or explicitly relink with `--configure` |
+| `WODTEX_E_RESOURCE_MISSING` | Prepare that profile and set `--profile-root`; class installation alone supplies no additional-profile artwork |
+| Source/resource hash mismatch | Use the matching original templates or regenerate prepared resources with the current preparation recipe |
+| `WODTEX_E_SETUP_OPTION` / unknown option | Use keys supported by the selected class; M20-only keys are not portable |
+| `WODTEX_E_POSITION_UNSUPPORTED` | Anchored art is M20-specific; use `place=flow` or `place=next-page` in other profiles |
+| `WODTEX_E_HOST_UNSUPPORTED` / `WODTEX_E_CAPABILITY` | The requested adapter/element is unavailable in that host or output |
+| `WODTEX_E_NAME_COLLISION` | Another package replaced a generic author command or environment |
+| Missing glyphs in M20 multilingual prose | Use explicit script selection, for example `\foreignlanguage{arabic}{\m20script{مرحبا}}`; automatic selection remains deferred |
+| References/index unsettled | Repeat LuaLaTeX; run `makeindex book` for an index |
 
-For the repository build workflow, the original-template layout is an explicit opt-in source patch. It is not
-activated by selecting `profile=m20` alone. Preserve any uncommitted work, read
-`contrib/original-m20-layout/changes.patch`, and use a disposable checkout of
-the correction checkpoint you want to activate, keeping its complete package.
-The manifest records the tested base; the helper checks the actual base-file
-hashes, so untouched defaults at this checkpoint can be safely patched:
-
-```sh
-python3 contrib/original-m20-layout/apply.py --check
-python3 contrib/original-m20-layout/apply.py --apply
-```
-
-`--check` validates exact base/override checksums without changing files.
-`--apply` performs that check, saves replaced files under a new
-`build/original-m20-layout-backup-*` directory, and installs the source
-replacements. If base files changed, the helper refuses the operation; merge
-the patch with those changes instead. Neither mode downloads licensed inputs.
-The default source tree is unchanged until the patch is applied. If you instead
-check out the older base commit, copy the complete correction package from
-your chosen checkpoint into it before running the helper; otherwise you will
-activate that older commit's package.
-
-Prepare dependencies, licensed fonts and reference artwork locally:
-
-```sh
-python3 -m pip install -r requirements.txt
-python3 scripts/preflight.py --prepare
-python3 scripts/prepare_assets.py --template-zip /path/to/Mage_Templates.zip
-python3 scripts/extract_template_art.py /path/to/M20-Template-Interior.pdf --out assets
-python3 scripts/extract_spread_and_page_types.py /path/to/M20-Template-Interior.pdf --out assets
-python3 scripts/extract_frontmatter_reference.py /path/to/M20-Template-Interior.pdf --out assets
-python3 scripts/extract_sidebar_frame.py /path/to/M20-Template-Interior.pdf --out assets
-```
-
-Use `--idml "/path/to/M20 Template Interior.idml"` instead of `--template-zip`
-when its original `Document fonts` and `Links` directories are alongside it.
-`--assets-out DIR` selects another prepared asset directory; set the matching
-`asset-path` in your document header. The PDF extraction scripts require the
-original eight-page reference with SHA256
-`4c876e07b17f4a85877213d557b3f0236004bf6baa48d0bef708a68745e93df5`.
-They produce the authentic borders/panels, title background, art frames,
-copyright/logo artwork and sidebar texture/shadow assets. The full-page
-placeholder keeps the original pink background while its text uses Goudy.
-The authorized reference PDF, required fonts and extracted decorations are now
-tracked in this private repository; private manuscripts remain excluded.
-
-Build a native manuscript from the repository root:
-
-```sh
-python3 scripts/build.py --target pdf --source path/to/book.tex --out build/book --verify
-```
-
-- `--target`: `pdf`, `epub` or `all`; default `all`
-- `--source`: native LaTeX entry file; default `examples/specimen.tex`
-- `--out`: output directory; default `build/specimen`
-- `--verify`: run the target verifier after compilation; off unless supplied
-- `--prepare`: prepare pinned runtime dependencies through preflight; this
-  does not replace the separate licensed-template/art extraction steps
-- `--max-runs`: maximum PDF convergence passes; default `8`
-
-PDF output is under `OUT/pdf/`; EPUB output is under `OUT/epub/`, with a
-`build-report.json` at the output root. Missing glyphs, undeclared font
-substitutions, unresolved references, failed convergence and unreviewed
-layout overflows make the build fail. A visually reviewed warning is not a
-clean strict-verifier pass. The PDF-local `m20statblock`, `m20tablelead` and
-interior-frontmatter helpers still need complete EPUB mappings; do not infer
-EPUB readiness from a successful corrected PDF.
-
-### Document header and front matter
-
-Place setup and metadata after `\documentclass{m20book}` and before
-`\begin{document}`. Blank credit fields are the default; names are never inferred.
-
-```tex
-\documentclass{m20book}
-\m20setup{chapter-body-gap=6bp}
-\newcommand{\booktitle}{My Book}
-\title{\booktitle}
-\author{Author}
-\m20writtenby{[Writer Name]}
-\m20developedby{[Developer Name]}
-\m20editedby{[Editor Name]}
-\m20specialthanks{[Special Thanks]}
-% Optional fixed year; omit to use the TeX engine's build year automatically.
-\m20copyrightyear{2026}
-
-\begin{document}
-\frontmatter
-\mTwentyInteriorTitle{\booktitle}{Subtitle or author line}
-\mTwentyInteriorCredits{\input{frontmatter/credits.tex}}
-\tableofcontents
-\mainmatter
-\chapter{First Chapter}
-Ordinary prose.
-\appendix
-\chapter{Appendix Title}
-\end{document}
-```
-
-The five metadata commands each take one braced value:
-
-- `\m20writtenby{TEXT}`: Written By value; default empty
-- `\m20developedby{TEXT}`: Developed By value; default empty
-- `\m20editedby{TEXT}`: Edited By value; default empty
-- `\m20specialthanks{TEXT}`: Special Thanks body; default empty
-- `\m20copyrightyear{YYYY}`: four-digit year in the White Wolf notice;
-  default `\number\year`, evaluated at build time. This replaces only the date;
-  it does not add a separate book copyright notice or change the holder/copy
-
-`\mTwentyInteriorTitle{TITLE}{LOWER-LINE}` draws the original standalone purple
-interior title page. `\mTwentyInteriorCredits{CONTENT}` draws Credits and its
-role fields/thanks, retaining your supplied attribution content and original
-logo/address/legal material. Do not duplicate the copyright block in CONTENT.
-A source `\section{Credits and Attributions}` inside CONTENT retains its anchor
-but does not create another heading or TOC entry. Contents immediately follows
-Credits in this frontmatter sequence.
-
-The title and full-page chapter-facing illustration leaves have no folio.
-Contents uses the ordinary parity-correct spread border on every leaf;
-chapter openers retain their dedicated panel/frame. Necessary parity spacers
-use ordinary spread borders and footers instead of fully blank pages. Chapter
-TOC entries use the profile heading face, with `Chapter One: Title` rather
-than a detached numeral. Numbers one through twelve have word forms;
-appendix A/B entries use `Appendix A: Title` and `Appendix B: Title`.
-Use native `\chapter[Short title]{Long title}`, `\section`, `\subsection`,
-`\subsubsection`, `\label`, `\ref`, `\pageref` and `\hyperref` normally.
-
-### Setup options and typography
-
-`\m20setup{KEY=VALUE,...}` accepts:
-
-| Key | Default | Use |
-| --- | --- | --- |
-| `profile` | `m20` | Select measured profile configuration; M20 is the supported profile in this checkpoint |
-| `running-title` | empty | Book title for even-page footer runners |
-| `asset-path` | `assets/` | Asset directory, including trailing slash; build drivers normally supply an absolute project path |
-| `font-path` | `fonts/` | Licensed font directory, including trailing slash |
-| `math` | `legacy` | `legacy` or explicitly `unicode`; Unicode mode requires its runtime packages |
-| `chapter-title-size` | `60bp` | Initial chapter-panel heading size |
-| `chapter-title-leading` | `54bp` | Initial chapter heading line spacing |
-| `chapter-body-gap` | `6bp` | Extra space below the chapter opener before body text |
-
-`bp` is a PDF point, 72 per inch. Examples:
-
-```tex
-\m20setup{chapter-body-gap=9bp}
-\m20setup{chapter-title-size=48bp,chapter-title-leading=45bp}
-\m20setup{asset-path={/my/assets/},font-path={/my/fonts/}}
-```
-
-The heading face comes from the profile's `heading_regular` record and the
-emitted `\mTwentyHeadingFontFile` in `profiles/m20.tex`; asset preparation
-preserves that selection. M20 selects Abbess. Goudy Old Style is the shared
-nonheading default: body, stat values/keys, sidebar prose, table cells/column
-labels, lists, credit body, footers and nonchapter TOC entries use genuine
-regular/bold/italic faces. No Futura or Noto role substitution is selected by
-this correction. A missing heading glyph alone can use Goudy, preserving all
-other heading letters in the configured face; supplied Abbess lacks straight
-double quotes. There is no supplied genuine Goudy bolditalic face: a combined
-request uses the genuine italic face and emits an explicit warning when that
-combination is actually used. Ordinary bold and italic use their genuine faces.
-
-Heading hyphenation is disabled. Moderate oversized chapter titles reduce to
-48/45bp, then 42/39bp; exceptionally long titles may still need an explicit
-header-size override. Body paragraph fitting and heading/first-line no-break
-rules apply automatically, including across zero-height semantic anchors.
-
-### Body flow and stable anchors
-
-- `\m20bodybegin` starts the live two-column body; redundant calls do not nest it
-- `\m20bodyend` ends that live region before a full-width/custom block
-- `\m20newpage` ends the region, clears the page and resumes body flow
-- `\m20anchor{ID}` emits a zero-height stable source/placement marker; IDs
-  must begin with a letter and use letters, digits, `-`, `:`, `.`, `_`
-- `\m20note{TEXT}` is a footnote in ordinary prose, and a locally numbered
-  note in a sidebar/table owner
-- `\m20script{TEXT}` explicitly selects the supplied script fallback for
-  characters unavailable in the regular family; use it with `\foreignlanguage`
-- `\m20epubsafe{COMMAND-NAMES}` declares author-defined safe expansions to
-  EPUB source validation; it does not implement a missing semantic adapter
-
-Use unique IDs and native LaTeX paragraph breaks. Do not use blank lines or
-manual breaks as a substitute for a chapter-gap setting or a heading keep rule.
-
-### Sidebars and explicit sidebar breaks
-
-```tex
-\begin{m20sidebar}[id=field-note,place=flow]{Field Note}
-One-column sidebar prose with \textbf{genuine bold} and \emph{italic}.
-\end{m20sidebar}
-
-\begin{m20sidebarwide}[id=wide-note,columns=2,place=next-page]{A Wide Note}
-Two internal columns. Long content continues with a repeated heading.
-\m20sidebarbreak[page]
-An explicit author-requested continuation.
-\end{m20sidebarwide}
-```
-
-Both environments take optional keys and one required braced title:
-
-- `id`: unique stable ID; default `sidebar-N`
-- `place`: `flow` (default), `here` or `next-page`. Flow can advance to a
-  region that fits; here requires the first segment at that anchor and errors
-  if unavailable; next-page begins on a fresh physical page
-- `columns`: default `1`; `m20sidebar` only accepts `1`, while
-  `m20sidebarwide` supports `1` or `2`
-- `breakable`: default `true`; `false` makes an atomic block and diagnoses a
-  block too tall for one region
-- `balance`: accepted with default `true`; the correction's ordered,
-  natural-height frame stream does not expose an alternative balancing policy
-
-`\m20sidebarbreak` defaults to `[page]`; `[column]` requests a local column
-break. It is only valid inside a sidebar. Short flow sidebars keep together
-when they fit a full region; long sidebars paginate with protected paragraph
-ends. Text and contained table bands on one physical page share a continuous
-frame. The original double-gradient rules, square corners and source shadow
-are painted without stretching the rune texture. Authored title emphasis
-keeps the profile heading face instead of falling back to a body family.
-
-### Tables, repeated heads and title/lead association
-
-```tex
-\begin{m20table}[id=example-table,head-rows=1,width=container]{ll}
-Name & Description \\
-First & A wrapped cell. \\
-Second & Another value. \\
-\end{m20table}
-
-\begin{m20tablelead}
-\subsection{Table Title}
-Existing introductory prose that must travel with this table.
-\begin{m20table}[id=associated-table,head-rows=1]{ll}
-Name & Value \\
-First & One \\
-\end{m20table}
-\end{m20tablelead}
-```
-
-`m20table` takes optional keys followed by its required native column
-specification. Use `&` between cells and `\\` after rows. Keys:
-
-- `id`: unique ID; default `table-N`
-- `width`: `container` (default), `column` or an explicit dimension
-- `scale`: default `1`; must be greater than `0` and at most `1`
-- `align`: `left`, `center` (default) or `right` within the container
-- `head-rows`: nonnegative repeated-header row count; default `0`
-- `epub`: `table` or `records` for the EPUB adapter; it does not alter PDF rows
-
-Column specifications use native `l`, `c`, `r` or `p` entries. Long tables use
-owner pagination and repeated headers. Compact full-width tables float at page
-edges; sidebar tables stay inside their owner frame. Native `\footnote` or
-`\m20note` inside a table creates a local table note. Tables cannot contain a
-nested breakable `m20table`; use an atomic native `tabular` inside a cell.
-
-`m20tablelead` has no arguments. Wrap the existing title, lead and one compact
-table so all their tokens/anchors are boxed once and float together. Use it
-outside sidebars and keep the complete group below one-page capacity; it
-errors if too tall. Leave multipage tables in their native owner stream.
-
-### Stat blocks and lists
-
-```tex
-\begin{m20statblock}
-\mTwentyStatEntry{\textbf{Ruin Type}: Feral Realm | \textbf{Structural Integrity}: 4}
-\mTwentyStatEntry{\textbf{Primary Hazards}: Existing descriptive text.}
-\end{m20statblock}
-```
-
-`m20statblock` has no arguments. `\mTwentyStatEntry{TEXT}` takes one braced
-entry; literal `|` separators display as separate keyed lines without
-rewriting your source content. Both keys and values use Goudy at the same
-nominal 10bp size/baseline; weight provides emphasis. Existing `itemize`,
-`enumerate` and `description` use compact hanging Goudy with the correction's
-alternating bands. Standard native `\item` syntax and counters remain intact.
-
-### Art reservations and manual cadence overrides
-
-```tex
-\m20artreserve[kind=horizontal,position=top,role=decorative]{art-one}
-\m20artreserve[kind=horizontal,position=bottom,role=decorative]{art-two}
-\m20artreserve[kind=vertical,position=outer,role=decorative]{art-three}
-\m20artreserve[kind=horizontal,image={art/scene.png},alt={A concise image description},
- caption={Scene caption},credit={Artist credit}]{scene-one}
-```
-
-`\artreserve[KEYS]{ID}` and `\m20artreserve[KEYS]{ID}` accept the same optional keys.
-The braced ID is also optional; omitted IDs are generated uniquely.
-If the next token is a braced group, it is the explicit ID, preserving the existing syntax.
-Separate following grouped prose with a blank paragraph line or supply an explicit ID.
-
-- `kind`: `horizontal` (default) or `vertical`
-- `place`: `flow` (default), `here` or `next-page`
-- `position`: `top`/`bottom` for horizontal, `inner`/`outer` for vertical;
-  omitted position defaults to `top` or `outer` respectively
-- `image`: image path; default empty, giving a labeled placeholder
-- `role`: `decorative` by default for an empty placeholder; an actual image
-  defaults to `meaningful`
-- `alt`: optional descriptive text for accessible meaningful images
-- `caption`, `credit`: optional image-caption/credit text; default empty
-
-Images stretch independently to the available interior width and height, including intentional aspect-ratio distortion.
-The frame size and host page geometry remain unchanged.
-Images fill the interior bounded by the template frame insets, including the horizontal lower border/shadow allowance.
-A caption or credit reserves the existing text band below the image.
-When both are omitted, the image fills the full frame interior without a blank caption strip.
-Generic `artreserve` and explicit `m20artreserve` share this behavior.
-
-The default image call needs only a path and uses the horizontal box.
-Use `kind=vertical` to select the vertical box.
-All other keys and the braced ID are optional.
-
-```tex
-\artreserve[image={art/scene.jpg}]
-\artreserve[kind=vertical,image={art/scene.jpg}]{scene-one}
-```
-
-`alt` is invisible descriptive text, independent of the optional visible `caption` and `credit`.
-A meaningful image without `alt` compiles with an accessibility warning; no descriptive text is invented.
-Actual images remain meaningful by default, and omitted alt text is empty in EPUB output.
-Strict EPUB accessibility verification may reject that empty description, so supply `alt` for accessible meaningful content.
-Use `role=decorative` for purely decorative images, which do not need a description.
-Caption-free examples can still provide alt text or an explicit decorative role:
-
-```tex
-\artreserve[image={art/scene.jpg},alt={Description of the scene}]{scene-one}
-\artreserve[image={art/ornament.jpg},role=decorative]{ornament-one}
-```
-
-The image path must exist.
-Art reservations cannot be nested in sidebars. Horizontal reservations are
-half-page native edge floats, never a second stacked top float or an arbitrary
-middle-page box. `here` retains edge-float behavior rather than promising an
-inline rectangle in a live prose column; `next-page` first starts a new page.
-Vertical reservations use one full-height live text-area column on a fresh
-page, at the outside edge by default, with narrative in the other column.
-The art frame dimensions/aspect and authentic border drawing stay fixed.
-
-To override an authored image schedule, move/add/remove these explicit calls
-at sensible paragraph/section seams, or change their valid position/place
-keys. Do not insert one between a heading/stat block and its first prose
-paragraph. The corrected book's approximate target is one image every two to
-three spreads (about four to six pages), counting full-page chapter-facing
-art. This is an authored schedule, not automatic image invention or a rigid
-one-image-per-spread rule; both facing pages may contain artwork when their
-text/table composition benefits. Check actual rendered art-page gaps after
-changing prose, and avoid isolated art-only ending pages.
+Further references: [runnable M20 generic example](examples/generic-book.tex),
+[profile examples](examples/profiles/README.md),
+[class reference](docs/X20-Class-Reference.md), and
+[crossover extension contract](docs/design/Crossover-Style-Architecture.md).
