@@ -1,16 +1,19 @@
 # wodtex
 
-Native LaTeX authoring for M20 books, with LuaLaTeX PDF and reflowable EPUB 3
-from the same editable manuscript. The implementation follows the approved
+Native LaTeX authoring for 17 World of Darkness output profiles, with LuaLaTeX
+PDF classes and M20 reflowable EPUB 3. The implementation follows the approved
 specification in [docs/design](docs/design).
 The corrected native PDF installation implements generic class-selected commands and explicit M20 style overrides.
 See the [Crossover Style Architecture guide](docs/design/Crossover-Style-Architecture.md) for implemented behavior and extension hooks.
-WoD/MSC renderers and generic EPUB acceptance remain future work.
+The additional classes use source-mapped typography, measured geometry and
+decorative outer frames with native LaTeX composition.
 
 The supplied X20 packages are catalogued in the
 [output-profile inventory and class proposal](docs/design/X20-Output-Profiles.md).
-It identifies 17 candidate styles across gamelines, historical sublines, and
-book formats; only M20 is currently implemented.
+It identifies 17 implemented styles across gamelines, historical sublines, and
+book formats. See the [class reference](docs/X20-Class-Reference.md) for preparation,
+installation and supported behavior, and [acceptance results](docs/profiles/Acceptance.md)
+for the family branches and verification evidence.
 
 ## Install and update (Windows / Git Bash)
 
@@ -34,7 +37,8 @@ The launcher tries `python`, `py -3`, then `python3`, checks the Python version,
 and automatically registers a MiKTeX user tree when using Windows Python.
 It forwards arguments safely and installs no Python/TeX dependencies or global
 settings. MiKTeX 24.1 / LuaHBTeX 1.17.1 is the intended Windows target; actual
-Windows execution has not been tested here. Linux native compilation is tested.
+Windows compilation of all 17 installed classes is tested. Linux native M20
+compilation is also tested.
 
 The private repository now includes the user-authorized, original eight-page
 M20 reference PDF in `template-source/`, nine required unmodified font files
@@ -109,7 +113,9 @@ See [the runnable generic example](examples/generic-book.tex) and [the extension
 Copy `generic-book.tex` and its `art/scene.png` into one document folder and run LuaLaTeX twice there.
 `art/scene.png` is a public geometric test fixture supplied alongside the example; replace it with your own scene image at that path.
 A missing meaningful image remains an error rather than being silently dropped.
-The full generic interface is supported for the corrected native PDF installation; WoD/MSC rendering and generic EPUB acceptance remain future work.
+The generic interface is supported for the corrected M20 PDF installation and
+the new native PDF classes. Foreign-host style adapters and generic EPUB
+acceptance remain separate extension work.
 
 ### Configuration and advanced installation
 

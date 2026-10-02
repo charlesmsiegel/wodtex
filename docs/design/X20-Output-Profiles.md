@@ -1,8 +1,10 @@
 # X20 template inventory and proposed class architecture
 
 Prepared 2026-10-02 from `C:/Users/charl/Downloads/templates/WOD/X20`.
-This is an inventory and implementation proposal. Only `m20book` currently
-exists; the other class names below are candidates, not working classes.
+The inventory originally proposed these classes; all 17 now exist on
+`x20/integration`, with each family implemented on its own `x20/*` branch.
+See the [class reference](../X20-Class-Reference.md) and
+[acceptance results](../profiles/Acceptance.md) for supported behavior.
 The accompanying [source catalogue](X20-Template-Catalogue.json) records exact
 relative document paths, source hashes, archive members, supplied font filenames,
 and linked-asset counts. Original source packages remain in Downloads.
@@ -29,7 +31,7 @@ and linked-asset counts. Original source packages remain in Downloads.
 | `KotEK20` (exact supplied label) | Legacybook | `kotek20-legacybook` | `kotek20legacybook` | Cover/interior IDML, INDD, PDF |
 | World of Darkness | General sourcebook | `wod` | `wodbook` | Cover/interior IDML, INDD, PDF |
 
-There are **17 candidate styles**, including the existing M20 style: 16 additions.
+There are **17 implemented styles**, including the existing M20 style: 16 additions.
 Book formats are separate styles where supplied templates differ; clanbooks,
 Dharmabooks, and Legacybooks are not counted as separate gamelines.
 `KotEK20` is deliberately left unexpanded: filenames and inspected story text
@@ -137,7 +139,8 @@ supported cross-style combination. Test unsupported capability errors.
 PDF acceptance and EPUB acceptance are separate; begin with reference-backed
 native PDF classes and explicitly defer EPUB until mappings and checks exist.
 
-This preparation does not implement classes, extract artwork, install fonts,
-modify runtime profiles, or establish visual fidelity. Class implementation is
-the next architectural task, using this inventory and the existing extension
-contract as inputs.
+The architecture and delivery notes above preserve the original preparation
+proposal. The subsequent implementation uses a descriptor registry, neutral
+IDML reader, separate preparation and native PDF builder, and generalized
+installer/package payload. Current supported behavior and validation are in
+[the acceptance record](../profiles/Acceptance.md).
