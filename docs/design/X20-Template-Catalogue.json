@@ -1,0 +1,4283 @@
+{
+  "schema_version": 1,
+  "catalogue_kind": "source-inventory-not-runtime-registry",
+  "prepared_on": "2026-10-02",
+  "source_root": "C:/Users/charl/Downloads/templates/WOD/X20",
+  "candidate_style_count": 17,
+  "notes": [
+    "Proposed IDs/classes are planning names, not installed capabilities.",
+    "KotEK20 full title is unconfirmed.",
+    "Font files and linked assets are inventoried but roles, visual metrics and suitability are not yet audited.",
+    "SHA256 recorded for primary documents, archives and archived primary documents; fonts and links currently record paths and sizes only.",
+    "No archive was extracted and no source bytes were copied into the repository."
+  ],
+  "profiles": [
+    {
+      "style_id": "m20",
+      "proposed_class": "m20book",
+      "runtime_status": "existing-m20-only",
+      "packages": [
+        {
+          "folder": "Mage the Ascension 20th Anniversary Edition",
+          "file_count": 43,
+          "documents": [
+            {
+              "path": "Mage the Ascension 20th Anniversary Edition/M20 Template Cover/M20 Template Cover.idml",
+              "format": "idml",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "path": "Mage the Ascension 20th Anniversary Edition/M20 Template Cover/M20 Template Cover.indd",
+              "format": "indd",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "path": "Mage the Ascension 20th Anniversary Edition/M20 Template Cover/M20 Template Cover.pdf",
+              "format": "pdf",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "path": "Mage the Ascension 20th Anniversary Edition/M20 Template Interior/M20 Template Interior.idml",
+              "format": "idml",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "path": "Mage the Ascension 20th Anniversary Edition/M20 Template Interior/M20 Template Interior.indd",
+              "format": "indd",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            {
+              "path": "Mage the Ascension 20th Anniversary Edition/M20 Template Interior/M20 Template Interior.pdf",
+              "format": "pdf",
+              "bytes": 0,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            }
+          ],
+          "archives": [],
+          "font_files": [
+            {
+              "path": "Mage the Ascension 20th Anniversary Edition/M20 Template Cover/Document fonts/abbess-regular.ttf",
+              "bytes": 0
+            },
+            {
+              "path": "Mage the Ascension 20th Anniversary Edition/M20 Template Cover/Document fonts/GOUDOS.TTF",
+              "bytes": 0
+            },
+            {
+              "path": "Mage the Ascension 20th Anniversary Edition/M20 Template Cover/Document fonts/MinionPro-Regular_0.otf",
+              "bytes": 0
+            },
+            {
+              "path": "Mage the Ascension 20th Anniversary Edition/M20 Template Interior/Document fonts/abbess-regular.ttf",
+              "bytes": 0
+            },
+            {
+              "path": "Mage the Ascension 20th Anniversary Edition/M20 Template Interior/Document fonts/ANTQUAI.TTF",
+              "bytes": 0
+            },
+            {
+              "path": "Mage the Ascension 20th Anniversary Edition/M20 Template Interior/Document fonts/arial.ttf",
+              "bytes": 0
+            },
+            {
+              "path": "Mage the Ascension 20th Anniversary Edition/M20 Template Interior/Document fonts/ariblk.ttf",
+              "bytes": 0
+            },
+            {
+              "path": "Mage the Ascension 20th Anniversary Edition/M20 Template Interior/Document fonts/FuturaPTBook.otf",
+              "bytes": 0
+            },
+            {
+              "path": "Mage the Ascension 20th Anniversary Edition/M20 Template Interior/Document fonts/GOUDOS.TTF",
+              "bytes": 0
+            },
+            {
+              "path": "Mage the Ascension 20th Anniversary Edition/M20 Template Interior/Document fonts/GOUDOSB_0.TTF",
+              "bytes": 0
+            },
+            {
+              "path": "Mage the Ascension 20th Anniversary Edition/M20 Template Interior/Document fonts/GOUDOSI_0.TTF",
+              "bytes": 0
+            },
+            {
+              "path": "Mage the Ascension 20th Anniversary Edition/M20 Template Interior/Document fonts/MinionPro-Regular_0.otf",
+              "bytes": 0
+            }
+          ],
+          "linked_assets": [
+            {
+              "path": "Mage the Ascension 20th Anniversary Edition/M20 Template Cover/Links/Cover Silk.psd",
+              "bytes": 0
+            },
+            {
+              "path": "Mage the Ascension 20th Anniversary Edition/M20 Template Cover/Links/M20 Cover Frame RGB REDESING.psd",
+              "bytes": 0
+            },
+            {
+              "path": "Mage the Ascension 20th Anniversary Edition/M20 Template Cover/Links/M20 Two Page Spread.tif",
+              "bytes": 0
+            },
+            {
+              "path": "Mage the Ascension 20th Anniversary Edition/M20 Template Cover/Links/MtA20-logo only.psd",
+              "bytes": 0
+            },
+            {
+              "path": "Mage the Ascension 20th Anniversary Edition/M20 Template Cover/Links/SV MdT 4.png",
+              "bytes": 0
+            },
+            {
+              "path": "Mage the Ascension 20th Anniversary Edition/M20 Template Cover/Links/WW_Logo.eps",
+              "bytes": 0
+            },
+            {
+              "path": "Mage the Ascension 20th Anniversary Edition/M20 Template Interior/Links/M20 Sheet Background.tif",
+              "bytes": 0
+            },
+            {
+              "path": "Mage the Ascension 20th Anniversary Edition/M20 Template Interior/Links/M20 Two Page Spread.tif",
+              "bytes": 70441992
+            },
+            {
+              "path": "Mage the Ascension 20th Anniversary Edition/M20 Template Interior/Links/M20_2-Page_Interactive 1.psd",
+              "bytes": 5362342
+            },
+            {
+              "path": "Mage the Ascension 20th Anniversary Edition/M20 Template Interior/Links/M20_DoublePage__0000_Border copy.psd",
+              "bytes": 12281392
+            },
+            {
+              "path": "Mage the Ascension 20th Anniversary Edition/M20 Template Interior/Links/M20_DoublePage__0001_Background.psd",
+              "bytes": 36006210
+            },
+            {
+              "path": "Mage the Ascension 20th Anniversary Edition/M20 Template Interior/Links/M20_SinglePage__0000_Border.psd",
+              "bytes": 61221284
+            },
+            {
+              "path": "Mage the Ascension 20th Anniversary Edition/M20 Template Interior/Links/M20_SinglePage__0001_Background.psd",
+              "bytes": 25288569
+            },
+            {
+              "path": "Mage the Ascension 20th Anniversary Edition/M20 Template Interior/Links/Mage Gold.psd",
+              "bytes": 19112986
+            },
+            {
+              "path": "Mage the Ascension 20th Anniversary Edition/M20 Template Interior/Links/Mage Silk v2.psd",
+              "bytes": 94188544
+            },
+            {
+              "path": "Mage the Ascension 20th Anniversary Edition/M20 Template Interior/Links/sidebar v2.tif",
+              "bytes": 50644672
+            },
+            {
+              "path": "Mage the Ascension 20th Anniversary Edition/M20 Template Interior/Links/sidebar v3.tif",
+              "bytes": 66439064
+            },
+            {
+              "path": "Mage the Ascension 20th Anniversary Edition/M20 Template Interior/Links/WW_Logo.eps",
+              "bytes": 204791
+            }
+          ]
+        },
+        {
+          "folder": "M20 Template",
+          "file_count": 31,
+          "documents": [
+            {
+              "path": "M20 Template/M20 Template Cover.indd",
+              "format": "indd",
+              "bytes": 3186688,
+              "sha256": "077583589e524630b30a8b51038c4d3ad36c8e322114a5ab10831515c47eb765"
+            },
+            {
+              "path": "M20 Template/M20 Template Interior.indd",
+              "format": "indd",
+              "bytes": 6045696,
+              "sha256": "adc9bbc72ad994f84ecb456f8833b7b80c59f15f7c2fd98450319043b936552c"
+            }
+          ],
+          "archives": [],
+          "font_files": [
+            {
+              "path": "M20 Template/Document fonts/abbess-regular.ttf",
+              "bytes": 66168
+            },
+            {
+              "path": "M20 Template/Document fonts/ANTQUAI.TTF",
+              "bytes": 149092
+            },
+            {
+              "path": "M20 Template/Document fonts/arial.ttf",
+              "bytes": 1036584
+            },
+            {
+              "path": "M20 Template/Document fonts/ariblk.ttf",
+              "bytes": 167592
+            },
+            {
+              "path": "M20 Template/Document fonts/FuturaPTBook.otf",
+              "bytes": 112916
+            },
+            {
+              "path": "M20 Template/Document fonts/GOUDOS.TTF",
+              "bytes": 81376
+            },
+            {
+              "path": "M20 Template/Document fonts/GOUDOSB_0.TTF",
+              "bytes": 82796
+            },
+            {
+              "path": "M20 Template/Document fonts/GOUDOSI_0.TTF",
+              "bytes": 80280
+            },
+            {
+              "path": "M20 Template/Document fonts/MinionPro-Regular_0.otf",
+              "bytes": 218640
+            }
+          ],
+          "linked_assets": [
+            {
+              "path": "M20 Template/Links/Cover Silk.psd",
+              "bytes": 69370638
+            },
+            {
+              "path": "M20 Template/Links/M20 Cover Frame RGB REDESING.psd",
+              "bytes": 56057962
+            },
+            {
+              "path": "M20 Template/Links/M20 Sheet Background.tif",
+              "bytes": 37839900
+            },
+            {
+              "path": "M20 Template/Links/M20 Two Page Spread.tif",
+              "bytes": 70441992
+            },
+            {
+              "path": "M20 Template/Links/M20_2-Page_Interactive 1.psd",
+              "bytes": 5362342
+            },
+            {
+              "path": "M20 Template/Links/M20_DoublePage__0000_Border copy.psd",
+              "bytes": 12281392
+            },
+            {
+              "path": "M20 Template/Links/M20_DoublePage__0001_Background.psd",
+              "bytes": 36006210
+            },
+            {
+              "path": "M20 Template/Links/M20_SinglePage__0000_Border.psd",
+              "bytes": 61221284
+            },
+            {
+              "path": "M20 Template/Links/M20_SinglePage__0001_Background.psd",
+              "bytes": 25288569
+            },
+            {
+              "path": "M20 Template/Links/Mage Gold.psd",
+              "bytes": 19112986
+            },
+            {
+              "path": "M20 Template/Links/Mage Silk v2.psd",
+              "bytes": 94188544
+            },
+            {
+              "path": "M20 Template/Links/MtA20-logo only.psd",
+              "bytes": 24919611
+            },
+            {
+              "path": "M20 Template/Links/sidebar v2.tif",
+              "bytes": 50644672
+            },
+            {
+              "path": "M20 Template/Links/sidebar v3.tif",
+              "bytes": 66439064
+            },
+            {
+              "path": "M20 Template/Links/SV MdT 4.png",
+              "bytes": 1263511
+            },
+            {
+              "path": "M20 Template/Links/WW_Logo.eps",
+              "bytes": 204791
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "style_id": "m20-dark-ages",
+      "proposed_class": "m20darkagesbook",
+      "runtime_status": "not-implemented",
+      "packages": [
+        {
+          "folder": "M20 Dark Ages",
+          "file_count": 43,
+          "documents": [
+            {
+              "path": "M20 Dark Ages/M20DA Template Cover/Dark Ages M20 Template Cover.idml",
+              "format": "idml",
+              "bytes": 85866,
+              "sha256": "7c613f0408233b9698cd5491673728e783f92ec61cec3625b3dd75fbf1109911"
+            },
+            {
+              "path": "M20 Dark Ages/M20DA Template Cover/Dark Ages M20 Template Cover.indd",
+              "format": "indd",
+              "bytes": 3846144,
+              "sha256": "36b7cd0f7d0df32a75d92b0f76ac4759ec0e83aed405d1a2daad64c033c11227"
+            },
+            {
+              "path": "M20 Dark Ages/M20DA Template Cover/Dark Ages M20 Template Cover.pdf",
+              "format": "pdf",
+              "bytes": 8013502,
+              "sha256": "bf5c4063b89a94bdfaa5986b73b00d888ea260b5ddb5fd6dc7291137c560e01d"
+            },
+            {
+              "path": "M20 Dark Ages/M20DA Template Interior/Dark Ages M20 Template Interior.idml",
+              "format": "idml",
+              "bytes": 217321,
+              "sha256": "c6b2fe3232138ce383455bbb30a51c47dda2af244f35dc5e1c3727a50253f21d"
+            },
+            {
+              "path": "M20 Dark Ages/M20DA Template Interior/Dark Ages M20 Template Interior.indd",
+              "format": "indd",
+              "bytes": 5279744,
+              "sha256": "96096a24baa2e7d596cd48cb5631ca13f63268eed6396bcd50c987c2aa94bf6f"
+            },
+            {
+              "path": "M20 Dark Ages/M20DA Template Interior/Dark Ages M20 Template Interior.pdf",
+              "format": "pdf",
+              "bytes": 13717687,
+              "sha256": "4b9b2ff5c510f12d2f937839d37dbffb09166a5c063f51ce188db6bbf6eae004"
+            }
+          ],
+          "archives": [],
+          "font_files": [
+            {
+              "path": "M20 Dark Ages/M20DA Template Cover/Document fonts/abbess-regular.ttf",
+              "bytes": 66168
+            },
+            {
+              "path": "M20 Dark Ages/M20DA Template Cover/Document fonts/Galahad Regular.ttf",
+              "bytes": 220117
+            },
+            {
+              "path": "M20 Dark Ages/M20DA Template Cover/Document fonts/MinionPro-Regular_0.otf",
+              "bytes": 218640
+            },
+            {
+              "path": "M20 Dark Ages/M20DA Template Cover/Document fonts/SOLEMNIT.TTF",
+              "bytes": 47100
+            },
+            {
+              "path": "M20 Dark Ages/M20DA Template Interior/Document fonts/ariblk.ttf",
+              "bytes": 167592
+            },
+            {
+              "path": "M20 Dark Ages/M20DA Template Interior/Document fonts/Clairvaux-Roman.ttf",
+              "bytes": 51840
+            },
+            {
+              "path": "M20 Dark Ages/M20DA Template Interior/Document fonts/FuturaPTBook.otf",
+              "bytes": 112916
+            },
+            {
+              "path": "M20 Dark Ages/M20DA Template Interior/Document fonts/FuturaStd-Book.otf",
+              "bytes": 25708
+            },
+            {
+              "path": "M20 Dark Ages/M20DA Template Interior/Document fonts/Galahad Regular.ttf",
+              "bytes": 220117
+            },
+            {
+              "path": "M20 Dark Ages/M20DA Template Interior/Document fonts/gob_.ttf",
+              "bytes": 81952
+            },
+            {
+              "path": "M20 Dark Ages/M20DA Template Interior/Document fonts/GOUDOS.TTF",
+              "bytes": 81376
+            },
+            {
+              "path": "M20 Dark Ages/M20DA Template Interior/Document fonts/GOUDOSB_0.TTF",
+              "bytes": 82796
+            },
+            {
+              "path": "M20 Dark Ages/M20DA Template Interior/Document fonts/GOUDOSI_0.TTF",
+              "bytes": 80280
+            },
+            {
+              "path": "M20 Dark Ages/M20DA Template Interior/Document fonts/Goudy Oldstyle Italic_0.otf",
+              "bytes": 23544
+            },
+            {
+              "path": "M20 Dark Ages/M20DA Template Interior/Document fonts/GOUDY.ttf",
+              "bytes": 50808
+            },
+            {
+              "path": "M20 Dark Ages/M20DA Template Interior/Document fonts/GoudyOlSt BT Roman.ttf",
+              "bytes": 61600
+            },
+            {
+              "path": "M20 Dark Ages/M20DA Template Interior/Document fonts/MinionPro-Regular_0.otf",
+              "bytes": 218640
+            },
+            {
+              "path": "M20 Dark Ages/M20DA Template Interior/Document fonts/SOLEMNIT.TTF",
+              "bytes": 47100
+            }
+          ],
+          "linked_assets": [
+            {
+              "path": "M20 Dark Ages/M20DA Template Cover/Links/Frame dark ages M20 cover.tif",
+              "bytes": 39962124
+            },
+            {
+              "path": "M20 Dark Ages/M20DA Template Cover/Links/M20 dark ages cover texture.tif",
+              "bytes": 43638964
+            },
+            {
+              "path": "M20 Dark Ages/M20DA Template Cover/Links/M20 Dark Ages Logo.psd",
+              "bytes": 3609388
+            },
+            {
+              "path": "M20 Dark Ages/M20DA Template Cover/Links/M20DAmageParch.tif",
+              "bytes": 16256700
+            },
+            {
+              "path": "M20 Dark Ages/M20DA Template Cover/Links/SV WoD final.png",
+              "bytes": 1145510
+            },
+            {
+              "path": "M20 Dark Ages/M20DA Template Cover/Links/WW_Logo.eps",
+              "bytes": 204791
+            },
+            {
+              "path": "M20 Dark Ages/M20DA Template Interior/Links/Character Sheet bar M20DA.tif",
+              "bytes": 2089820
+            },
+            {
+              "path": "M20 Dark Ages/M20DA Template Interior/Links/dark ages mage cross.tif",
+              "bytes": 20016844
+            },
+            {
+              "path": "M20 Dark Ages/M20DA Template Interior/Links/Image border DAMage.tif",
+              "bytes": 36252848
+            },
+            {
+              "path": "M20 Dark Ages/M20DA Template Interior/Links/left border DAMage frame.tif",
+              "bytes": 36251636
+            },
+            {
+              "path": "M20 Dark Ages/M20DA Template Interior/Links/left border DAMagebackground.tif",
+              "bytes": 27192592
+            },
+            {
+              "path": "M20 Dark Ages/M20DA Template Interior/Links/M20 Dark Ages Logo.psd",
+              "bytes": 3609388
+            },
+            {
+              "path": "M20 Dark Ages/M20DA Template Interior/Links/M20DAmageParch.tif",
+              "bytes": 16256700
+            },
+            {
+              "path": "M20 Dark Ages/M20DA Template Interior/Links/PaperStained0032_1_H.tif",
+              "bytes": 35648236
+            },
+            {
+              "path": "M20 Dark Ages/M20DA Template Interior/Links/WW_Logo.eps",
+              "bytes": 204791
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "style_id": "msc",
+      "proposed_class": "mscbook",
+      "runtime_status": "not-implemented",
+      "packages": [
+        {
+          "folder": "M20 Sorcerer's Crusade",
+          "file_count": 47,
+          "documents": [
+            {
+              "path": "M20 Sorcerer's Crusade/M20 Crusade Sourcebook Cover/Crusade M20 Template Cover.idml",
+              "format": "idml",
+              "bytes": 74666,
+              "sha256": "ecd0d1ec574b1add6055ee8d12b5de429eb9bb945eac62fbd656f68ef087c9fd"
+            },
+            {
+              "path": "M20 Sorcerer's Crusade/M20 Crusade Sourcebook Cover/Crusade M20 Template Cover.indd",
+              "format": "indd",
+              "bytes": 3485696,
+              "sha256": "8af60a168ebf3660460a130dc577e870acd7179fad80f54b49fdbebd627e9be9"
+            },
+            {
+              "path": "M20 Sorcerer's Crusade/M20 Crusade Sourcebook Cover/Crusade M20 Template Cover.pdf",
+              "format": "pdf",
+              "bytes": 2366369,
+              "sha256": "3c21fbd2b7cd23bb18c7b0dd329eeb198673a5744b3fdf3df2fb7976c4406804"
+            },
+            {
+              "path": "M20 Sorcerer's Crusade/M20 Crusade Sourcebook Interior/Crusade M20 Template Interior.idml",
+              "format": "idml",
+              "bytes": 185839,
+              "sha256": "5a709348b43a24f2fffca03df3ef941eea67bce9ba2e8f4d8c8a25e85042c675"
+            },
+            {
+              "path": "M20 Sorcerer's Crusade/M20 Crusade Sourcebook Interior/Crusade M20 Template Interior.indd",
+              "format": "indd",
+              "bytes": 5668864,
+              "sha256": "0fa194d094074c3a14462298bbced158c6a5d4220af59f5862de688fd538c7d3"
+            },
+            {
+              "path": "M20 Sorcerer's Crusade/M20 Crusade Sourcebook Interior/Crusade M20 Template Interior.pdf",
+              "format": "pdf",
+              "bytes": 9765464,
+              "sha256": "0f242318146ede29e0a15f34a00007a2fae64bf586db2e934b62f63c9d3b741f"
+            }
+          ],
+          "archives": [],
+          "font_files": [
+            {
+              "path": "M20 Sorcerer's Crusade/M20 Crusade Sourcebook Cover/Document fonts/Clairvaux-Roman.ttf",
+              "bytes": 51840
+            },
+            {
+              "path": "M20 Sorcerer's Crusade/M20 Crusade Sourcebook Cover/Document fonts/Classic Font 104.ttf",
+              "bytes": 86036
+            },
+            {
+              "path": "M20 Sorcerer's Crusade/M20 Crusade Sourcebook Cover/Document fonts/GOUDOS.TTF",
+              "bytes": 81376
+            },
+            {
+              "path": "M20 Sorcerer's Crusade/M20 Crusade Sourcebook Cover/Document fonts/MinionPro-Regular_0.otf",
+              "bytes": 218640
+            },
+            {
+              "path": "M20 Sorcerer's Crusade/M20 Crusade Sourcebook Interior/Document fonts/ariblk.ttf",
+              "bytes": 167592
+            },
+            {
+              "path": "M20 Sorcerer's Crusade/M20 Crusade Sourcebook Interior/Document fonts/Clairvaux-Roman.ttf",
+              "bytes": 51840
+            },
+            {
+              "path": "M20 Sorcerer's Crusade/M20 Crusade Sourcebook Interior/Document fonts/FuturaPTBook.otf",
+              "bytes": 112916
+            },
+            {
+              "path": "M20 Sorcerer's Crusade/M20 Crusade Sourcebook Interior/Document fonts/FuturaStd-Book.otf",
+              "bytes": 25708
+            },
+            {
+              "path": "M20 Sorcerer's Crusade/M20 Crusade Sourcebook Interior/Document fonts/gob_.ttf",
+              "bytes": 81952
+            },
+            {
+              "path": "M20 Sorcerer's Crusade/M20 Crusade Sourcebook Interior/Document fonts/GOUDOS.TTF",
+              "bytes": 81376
+            },
+            {
+              "path": "M20 Sorcerer's Crusade/M20 Crusade Sourcebook Interior/Document fonts/GOUDOSB_0.TTF",
+              "bytes": 82796
+            },
+            {
+              "path": "M20 Sorcerer's Crusade/M20 Crusade Sourcebook Interior/Document fonts/GOUDOSI_0.TTF",
+              "bytes": 80280
+            },
+            {
+              "path": "M20 Sorcerer's Crusade/M20 Crusade Sourcebook Interior/Document fonts/Goudy Oldstyle Italic_0.otf",
+              "bytes": 23544
+            },
+            {
+              "path": "M20 Sorcerer's Crusade/M20 Crusade Sourcebook Interior/Document fonts/GOUDY.ttf",
+              "bytes": 50808
+            },
+            {
+              "path": "M20 Sorcerer's Crusade/M20 Crusade Sourcebook Interior/Document fonts/GoudyOlSt BT Roman.ttf",
+              "bytes": 61600
+            },
+            {
+              "path": "M20 Sorcerer's Crusade/M20 Crusade Sourcebook Interior/Document fonts/MinionPro-Regular_0.otf",
+              "bytes": 218640
+            },
+            {
+              "path": "M20 Sorcerer's Crusade/M20 Crusade Sourcebook Interior/Document fonts/TrajanPro-Regular.otf",
+              "bytes": 69524
+            },
+            {
+              "path": "M20 Sorcerer's Crusade/M20 Crusade Sourcebook Interior/Document fonts/TypographerWoodcut02.ttf",
+              "bytes": 315796
+            },
+            {
+              "path": "M20 Sorcerer's Crusade/M20 Crusade Sourcebook Interior/Document fonts/ZapfDingbats.ttf",
+              "bytes": 62180
+            }
+          ],
+          "linked_assets": [
+            {
+              "path": "M20 Sorcerer's Crusade/M20 Crusade Sourcebook Cover/Links/20 thCrusade logo.tif",
+              "bytes": 5342528
+            },
+            {
+              "path": "M20 Sorcerer's Crusade/M20 Crusade Sourcebook Cover/Links/Cover.tif",
+              "bytes": 36042872
+            },
+            {
+              "path": "M20 Sorcerer's Crusade/M20 Crusade Sourcebook Cover/Links/M20 Crusade background.tif",
+              "bytes": 9357244
+            },
+            {
+              "path": "M20 Sorcerer's Crusade/M20 Crusade Sourcebook Cover/Links/M20 Crusade cover bar.psd",
+              "bytes": 14189776
+            },
+            {
+              "path": "M20 Sorcerer's Crusade/M20 Crusade Sourcebook Cover/Links/SV WoD final.png",
+              "bytes": 1145510
+            },
+            {
+              "path": "M20 Sorcerer's Crusade/M20 Crusade Sourcebook Cover/Links/WW_Logo.eps",
+              "bytes": 204791
+            },
+            {
+              "path": "M20 Sorcerer's Crusade/M20 Crusade Sourcebook Interior/Links/Capital C Gold copy.tif",
+              "bytes": 7478928
+            },
+            {
+              "path": "M20 Sorcerer's Crusade/M20 Crusade Sourcebook Interior/Links/M20 Crusade 01.tif",
+              "bytes": 23228956
+            },
+            {
+              "path": "M20 Sorcerer's Crusade/M20 Crusade Sourcebook Interior/Links/M20 Crusade 01a.tif",
+              "bytes": 13230000
+            },
+            {
+              "path": "M20 Sorcerer's Crusade/M20 Crusade Sourcebook Interior/Links/M20 Crusade 02.tif",
+              "bytes": 21773752
+            },
+            {
+              "path": "M20 Sorcerer's Crusade/M20 Crusade Sourcebook Interior/Links/M20 Crusade 02a.tif",
+              "bytes": 11425588
+            },
+            {
+              "path": "M20 Sorcerer's Crusade/M20 Crusade Sourcebook Interior/Links/M20 Crusade background pages.tif",
+              "bytes": 14191008
+            },
+            {
+              "path": "M20 Sorcerer's Crusade/M20 Crusade Sourcebook Interior/Links/M20 Crusade cover bar.psd",
+              "bytes": 14189776
+            },
+            {
+              "path": "M20 Sorcerer's Crusade/M20 Crusade Sourcebook Interior/Links/M20 Crusade fade.tif",
+              "bytes": 120014196
+            },
+            {
+              "path": "M20 Sorcerer's Crusade/M20 Crusade Sourcebook Interior/Links/paper intro 20Crusade.tif",
+              "bytes": 24629004
+            },
+            {
+              "path": "M20 Sorcerer's Crusade/M20 Crusade Sourcebook Interior/Links/PaperStained0051_4_L.tif",
+              "bytes": 12229784
+            },
+            {
+              "path": "M20 Sorcerer's Crusade/M20 Crusade Sourcebook Interior/Links/partchment intro 20 Crusade.ai",
+              "bytes": 60400976
+            },
+            {
+              "path": "M20 Sorcerer's Crusade/M20 Crusade Sourcebook Interior/Links/WW_Logo.eps",
+              "bytes": 204791
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "style_id": "v20-clanbook",
+      "proposed_class": "v20clanbook",
+      "runtime_status": "not-implemented",
+      "packages": [
+        {
+          "folder": "Vampire the Masquerade 20th Anniversary Edition Clanbooks",
+          "file_count": 168,
+          "documents": [
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Clanbook 4th ed. Cover.idml",
+              "format": "idml",
+              "bytes": 176683,
+              "sha256": "62c4c2856835f9714dbef25192dcd6eddb3764d122615f04154f6d37df2bbe42"
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Clanbook 4th ed. Cover.indd",
+              "format": "indd",
+              "bytes": 11980800,
+              "sha256": "d8df318f6d15100fd2711db2c12d53d2e4320a01132450f80227b04313977525"
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Clanbook 4th ed. Cover.pdf",
+              "format": "pdf",
+              "bytes": 5698847,
+              "sha256": "1d9dd416b5a9ca119a782146cf6f40056a688ce336168d4bf91c958861bc12cd"
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Inside/Clanbook 4th ed. Inside.idml",
+              "format": "idml",
+              "bytes": 8774981,
+              "sha256": "99baeeee9dcd270155f38c0edf52ee8fc7371720217fed6c30f69bf9558aae09"
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Inside/Clanbook 4th ed. Inside.indd",
+              "format": "indd",
+              "bytes": 32440320,
+              "sha256": "bc66a183f055475a119af0ec2872a1faa5a64f5fb1dcd47f4a56ab753874ae2a"
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Inside/Clanbook 4th ed. Inside.pdf",
+              "format": "pdf",
+              "bytes": 129220043,
+              "sha256": "c5308d00630f790f4313fadadbd2d9162b28259cffb7acdb091310bb1163a5d0"
+            }
+          ],
+          "archives": [],
+          "font_files": [
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Document fonts/[Giovanni, Ventrue] Wilkli.TTF",
+              "bytes": 70684
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Document fonts/[Nosferatu] Unicorn.ttf",
+              "bytes": 47868
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Document fonts/abbess-regular.ttf",
+              "bytes": 66168
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Document fonts/ADLIBN.TTF",
+              "bytes": 51320
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Document fonts/balthazarregular.ttf",
+              "bytes": 64544
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Document fonts/Beanie Plain.ttf",
+              "bytes": 83411
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Document fonts/Clairvaux-Roman.ttf",
+              "bytes": 51840
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Document fonts/delavan.TTF",
+              "bytes": 57848
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Document fonts/DemocraticaRegular.ttf",
+              "bytes": 45344
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Document fonts/deroos_.TTF",
+              "bytes": 50492
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Document fonts/Goudy SSi Bold Italic.ttf",
+              "bytes": 76500
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Document fonts/Goudy SSi Bold.ttf",
+              "bytes": 75749
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Document fonts/Goudy SSi Italic.ttf",
+              "bytes": 76299
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Document fonts/Goudy SSi.ttf",
+              "bytes": 75240
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Document fonts/Goudy Text MT Lombardic Caps Lombardic Capitals.ttf",
+              "bytes": 83648
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Document fonts/MinionPro-Regular.otf",
+              "bytes": 218640
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Document fonts/MORPHEUS.TTF",
+              "bytes": 68044
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Document fonts/olivette-regular_0.ttf",
+              "bytes": 39112
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Document fonts/PERCBOLD.TTF",
+              "bytes": 68556
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Inside/Document fonts/[Giovanni, Ventrue] Wilkli.TTF",
+              "bytes": 70684
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Inside/Document fonts/[Nosferatu] Unicorn.ttf",
+              "bytes": 47868
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Inside/Document fonts/[Ravnos] DECCD_.TTF",
+              "bytes": 32844
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Inside/Document fonts/abbess-regular.ttf",
+              "bytes": 66168
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Inside/Document fonts/ADLIBN.TTF",
+              "bytes": 51320
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Inside/Document fonts/ALADDIN.TTF",
+              "bytes": 46668
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Inside/Document fonts/AMBROSMF.OTF",
+              "bytes": 25092
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Inside/Document fonts/ARTHUR.TTF",
+              "bytes": 17760
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Inside/Document fonts/balthazarregular.ttf",
+              "bytes": 64544
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Inside/Document fonts/Benguiat Italic.ttf",
+              "bytes": 104929
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Inside/Document fonts/BenguiatNormal.ttf",
+              "bytes": 52992
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Inside/Document fonts/ChaparralPro-Italic.otf",
+              "bytes": 128628
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Inside/Document fonts/Cirrus.ttf",
+              "bytes": 48740
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Inside/Document fonts/Clubhouse.ttf",
+              "bytes": 91288
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Inside/Document fonts/cornet.ttf",
+              "bytes": 42489
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Inside/Document fonts/Dakota2.ttf",
+              "bytes": 129248
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Inside/Document fonts/deat.ttf",
+              "bytes": 75064
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Inside/Document fonts/delavan.TTF",
+              "bytes": 57848
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Inside/Document fonts/deroos_.TTF",
+              "bytes": 50492
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Inside/Document fonts/Dolphian2.ttf",
+              "bytes": 77088
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Inside/Document fonts/Friz_quadrata_os_tt_bold.ttf",
+              "bytes": 64194
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Inside/Document fonts/frizquadratatt.ttf",
+              "bytes": 62316
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Inside/Document fonts/FuturaPTBold.otf",
+              "bytes": 129072
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Inside/Document fonts/FuturaPTBook.otf",
+              "bytes": 112916
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Inside/Document fonts/GE HandyScript.ttf",
+              "bytes": 67647
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Inside/Document fonts/GOUDOS.TTF",
+              "bytes": 81376
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Inside/Document fonts/GOUDOSB.TTF",
+              "bytes": 82796
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Inside/Document fonts/GOUDOSBI.ttf",
+              "bytes": 85220
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Inside/Document fonts/GOUDOSI.TTF",
+              "bytes": 80280
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Inside/Document fonts/Goudy Text MT Lombardic Caps Lombardic Capitals.ttf",
+              "bytes": 83648
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Inside/Document fonts/GROTTO.TTF",
+              "bytes": 29764
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Inside/Document fonts/H74PROCL.TTF",
+              "bytes": 44608
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Inside/Document fonts/H74WDC_.TTF",
+              "bytes": 36692
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Inside/Document fonts/hanshand.TTF",
+              "bytes": 58464
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Inside/Document fonts/lazar.TTF",
+              "bytes": 17952
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Inside/Document fonts/LIL____.TTF",
+              "bytes": 26356
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Inside/Document fonts/OLDSH__.ttf",
+              "bytes": 69160
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Inside/Document fonts/olivette-regular_0.ttf",
+              "bytes": 39112
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Inside/Document fonts/Schmutz-icg-cleaned.ttf",
+              "bytes": 108776
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Inside/Document fonts/scroonge.ttf",
+              "bytes": 90028
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Inside/Document fonts/Sparrownew119-regular.ttf",
+              "bytes": 76648
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Inside/Document fonts/Tiger Rag LET Plain1.0.ttf",
+              "bytes": 124351
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Inside/Document fonts/VintageTypewriter-Corona.ttf",
+              "bytes": 217392
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Inside/Document fonts/VIVALDII.TTF",
+              "bytes": 64748
+            }
+          ],
+          "linked_assets": [
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Links/Assamite FC.psd",
+              "bytes": 1975961
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Links/Brujah FC.psd",
+              "bytes": 4748544
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Links/Darker Marble.tif",
+              "bytes": 70445620
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Links/Front Frame SVeffect.psd",
+              "bytes": 13182334
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Links/gangrel cover.psd",
+              "bytes": 3818777
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Links/gio.psd",
+              "bytes": 5260790
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Links/Lasombra FC.psd",
+              "bytes": 3394043
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Links/logo Toreador 4rd ed.eps",
+              "bytes": 428178
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Links/logo V20 metal.psd",
+              "bytes": 4633458
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Links/Malk FC 2.psd",
+              "bytes": 3477532
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Links/Marble backcover Assamite.tif",
+              "bytes": 22049432
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Links/Marble backcover Brujah.tif",
+              "bytes": 22287456
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Links/Marble backcover Gangrel.tif",
+              "bytes": 22217596
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Links/Marble backcover Giovanni.tif",
+              "bytes": 21107212
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Links/Marble backcover Lasombra.tif",
+              "bytes": 22251872
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Links/Marble backcover Malkavian.tif",
+              "bytes": 22119852
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Links/Marble backcover Nosfetaru.tif",
+              "bytes": 22216424
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Links/Marble backcover Ravnos.tif",
+              "bytes": 22360312
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Links/Marble backcover Setite.tif",
+              "bytes": 22335472
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Links/Marble backcover Toreador.tif",
+              "bytes": 22260700
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Links/Marble backcover Tremere.tif",
+              "bytes": 22227672
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Links/Marble backcover Tzimisce.tif",
+              "bytes": 22189284
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Links/Marble backcover Ventrue.tif",
+              "bytes": 22343532
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Links/Marble backcover.tif",
+              "bytes": 22499952
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Links/NosFC.psd",
+              "bytes": 3847792
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Links/Ravnos FC.psd",
+              "bytes": 2971869
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Links/Setite-fc.psd",
+              "bytes": 3565925
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Links/SV WoD 4.png",
+              "bytes": 1263511
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Links/Tittle Blood.tif",
+              "bytes": 20835452
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Links/Tittle Clanbook.tif",
+              "bytes": 3374052
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Links/Tremere FC.psd",
+              "bytes": 3061517
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Links/Tzimisce FC.psd",
+              "bytes": 2823922
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Links/ventrue cover.psd",
+              "bytes": 4439934
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Cover/Links/WW_Logo.eps",
+              "bytes": 204791
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/Assamite Paper 02.tif",
+              "bytes": 61072684
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/Assamite Paper.tif",
+              "bytes": 31870012
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/Assamite Texture.tif",
+              "bytes": 128727448
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/black border2.psd",
+              "bytes": 31049966
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/border_open-blue_2.tif",
+              "bytes": 37111080
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/Brujah Note.tif",
+              "bytes": 35574644
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/Brujah Paper.tif",
+              "bytes": 116771592
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/Brujah Texture.tif",
+              "bytes": 128027416
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/Brujah.TIF",
+              "bytes": 227358
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/Caitiff Marble.tif",
+              "bytes": 128159248
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/Caitiff Paper.tif",
+              "bytes": 115432248
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/Davis Glyph Creeping Skeleton.tif",
+              "bytes": 53810
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/Dripping Rust.psd",
+              "bytes": 33659661
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/Gangrel Note.tif",
+              "bytes": 54495340
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/Gangrel Paper.tif",
+              "bytes": 115126456
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/Gangrel Texture.tif",
+              "bytes": 127873856
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/Giovanni Paper FLAT.tif",
+              "bytes": 120131336
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/Giovanni Paper MERGED.tif",
+              "bytes": 55019412
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/Giovanni Texture.tif",
+              "bytes": 130136600
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/Lasombra Note FLAT.tif",
+              "bytes": 55109328
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/Lasombra Paper.tif",
+              "bytes": 119384208
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/Lasombra Texture.tif",
+              "bytes": 129664676
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/Lore unknown Marble.tif",
+              "bytes": 70445756
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/Lore unknown paper.tif",
+              "bytes": 52422848
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/Malkavian Note Paper.tif",
+              "bytes": 50415800
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/Malkavian Paper.tif",
+              "bytes": 118030380
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/Malkavian Texture.tif",
+              "bytes": 129349764
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/Nosferatu Note Paper.tif",
+              "bytes": 40735120
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/Nosferatu Paper.tif",
+              "bytes": 116879264
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/Nosferatu Texture.tif",
+              "bytes": 129403200
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/PagePlain0100_1_L.tif",
+              "bytes": 59313668
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/PARCHMENT FOR prologue recortado.ai",
+              "bytes": 22012265
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/PARCHMENT FOR prologue.psd",
+              "bytes": 28900749
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/Ravnos Note.tif",
+              "bytes": 55216200
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/Ravnos Paper.tif",
+              "bytes": 117946708
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/Ravnos Texture.tif",
+              "bytes": 128959160
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/Setite Note.tif",
+              "bytes": 55841044
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/Setite Paper.tif",
+              "bytes": 113956152
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/Setite Texture.tif",
+              "bytes": 127410620
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/shiny metal.psd",
+              "bytes": 998634
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/sidebarParch1_6.tif",
+              "bytes": 36940852
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/StainedPaper_01.psd",
+              "bytes": 103614023
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/StainedPaper_02.psd",
+              "bytes": 56053013
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/StorytellersVault_WoD3ª.png",
+              "bytes": 1536189
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/Toreador Paper.tif",
+              "bytes": 112883196
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/Toreador Texture.tif",
+              "bytes": 127410828
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/Tremere Paper.tif",
+              "bytes": 118105100
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/Tremere Texture.tif",
+              "bytes": 130309684
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/Tremre Note.tif",
+              "bytes": 60312284
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/Tzimisce Paper.tif",
+              "bytes": 114429296
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/Tzimisce Texture.tif",
+              "bytes": 128857112
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/Tzmisce Note Paper Merged.tif",
+              "bytes": 55823080
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/V20 Ankh600dpi.tif",
+              "bytes": 2465384
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/V20_Back_Elements_0000_new border copy.psd",
+              "bytes": 6156516
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/V20_Back_Elements_0001_Group 2.tif",
+              "bytes": 50174328
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/V20_border_open.tif",
+              "bytes": 37111836
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/v20_header_1.tif",
+              "bytes": 5826104
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/Ventrue Paper.tif",
+              "bytes": 117400816
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/Ventrue Texture.tif",
+              "bytes": 128284120
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/Vetnrue Note Paper Merged.tif",
+              "bytes": 50158352
+            },
+            {
+              "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Links/Links/WW_Logo.eps",
+              "bytes": 204791
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "style_id": "vva20",
+      "proposed_class": "vva20book",
+      "runtime_status": "not-implemented",
+      "packages": [
+        {
+          "folder": "Indesign VVa20 Sourcebook Cover",
+          "file_count": 15,
+          "documents": [
+            {
+              "path": "Indesign VVa20 Sourcebook Cover/VVa Sourcebook 20th Cover.idml",
+              "format": "idml",
+              "bytes": 86890,
+              "sha256": "ac27417211483b749af935d89743c3f5c06bcc9ddf4de9b9a2f7944dc89eb18a"
+            },
+            {
+              "path": "Indesign VVa20 Sourcebook Cover/VVa Sourcebook 20th Cover.indd",
+              "format": "indd",
+              "bytes": 5152768,
+              "sha256": "8efa9cf812e6e0889ae0c06a5d14993c521e51e281dbcd9cfae06a0b9bddf083"
+            },
+            {
+              "path": "Indesign VVa20 Sourcebook Cover/VVa Sourcebook 20th Cover.pdf",
+              "format": "pdf",
+              "bytes": 5456171,
+              "sha256": "2ff618a331cc783723998e78a3b58042ccaa8233a867e8c753fdc8863e14826b"
+            }
+          ],
+          "archives": [],
+          "font_files": [
+            {
+              "path": "Indesign VVa20 Sourcebook Cover/Document fonts/ChiseledOpenRegular.ttf",
+              "bytes": 37396
+            },
+            {
+              "path": "Indesign VVa20 Sourcebook Cover/Document fonts/GOUDY.TTF",
+              "bytes": 48432
+            },
+            {
+              "path": "Indesign VVa20 Sourcebook Cover/Document fonts/OPTIProtea.otf",
+              "bytes": 36524
+            }
+          ],
+          "linked_assets": [
+            {
+              "path": "Indesign VVa20 Sourcebook Cover/Links/Cover picture.png",
+              "bytes": 57654
+            },
+            {
+              "path": "Indesign VVa20 Sourcebook Cover/Links/logo V20 metal.psd",
+              "bytes": 4633458
+            },
+            {
+              "path": "Indesign VVa20 Sourcebook Cover/Links/SV WoD final.png",
+              "bytes": 1145510
+            },
+            {
+              "path": "Indesign VVa20 Sourcebook Cover/Links/VaVRibbon 2.psd",
+              "bytes": 5071943
+            },
+            {
+              "path": "Indesign VVa20 Sourcebook Cover/Links/Victorian age logo final cover.psd",
+              "bytes": 165847555
+            },
+            {
+              "path": "Indesign VVa20 Sourcebook Cover/Links/WoD Logo 3ª white letters.eps",
+              "bytes": 395286
+            },
+            {
+              "path": "Indesign VVa20 Sourcebook Cover/Links/WW_Logo.eps",
+              "bytes": 204791
+            }
+          ]
+        },
+        {
+          "folder": "Indesign VVa20 Sourcebook interior",
+          "file_count": 78,
+          "documents": [
+            {
+              "path": "Indesign VVa20 Sourcebook interior/VVa20 Sourcebook interior.idml",
+              "format": "idml",
+              "bytes": 278441,
+              "sha256": "82fb2960efc576df72f02060e1eaddafde25015bf58a3450288385db36e82444"
+            },
+            {
+              "path": "Indesign VVa20 Sourcebook interior/VVa20 Sourcebook interior.indd",
+              "format": "indd",
+              "bytes": 8216576,
+              "sha256": "af7c84396523e4eebae4fb82c69b10ba93a3a0624b4425aa318e56070e6e6af4"
+            },
+            {
+              "path": "Indesign VVa20 Sourcebook interior/VVa20 Sourcebook interior.pdf",
+              "format": "pdf",
+              "bytes": 19484279,
+              "sha256": "bd1ca22061721353eb908a7fa3b7ce08b8abe5e50b6b786eeb67b869390d3a43"
+            }
+          ],
+          "archives": [],
+          "font_files": [
+            {
+              "path": "Indesign VVa20 Sourcebook interior/Document fonts/Aquiline.ttf",
+              "bytes": 173596
+            },
+            {
+              "path": "Indesign VVa20 Sourcebook interior/Document fonts/ChiseledOpenRegular.ttf",
+              "bytes": 37396
+            },
+            {
+              "path": "Indesign VVa20 Sourcebook interior/Document fonts/gob___.TTF",
+              "bytes": 76004
+            },
+            {
+              "path": "Indesign VVa20 Sourcebook interior/Document fonts/GOUDOS.TTF",
+              "bytes": 81376
+            },
+            {
+              "path": "Indesign VVa20 Sourcebook interior/Document fonts/GOUDOSB_0.TTF",
+              "bytes": 82796
+            },
+            {
+              "path": "Indesign VVa20 Sourcebook interior/Document fonts/GOUDOSI_0.TTF",
+              "bytes": 80280
+            },
+            {
+              "path": "Indesign VVa20 Sourcebook interior/Document fonts/GOUDY.TTF",
+              "bytes": 48432
+            },
+            {
+              "path": "Indesign VVa20 Sourcebook interior/Document fonts/MinionPro-Regular_0.otf",
+              "bytes": 218640
+            },
+            {
+              "path": "Indesign VVa20 Sourcebook interior/Document fonts/OPTIProtea.otf",
+              "bytes": 36524
+            },
+            {
+              "path": "Indesign VVa20 Sourcebook interior/Document fonts/PercolatorExpert.PFB",
+              "bytes": 41901
+            },
+            {
+              "path": "Indesign VVa20 Sourcebook interior/Document fonts/PercolatorExpert.pfm",
+              "bytes": 694
+            },
+            {
+              "path": "Indesign VVa20 Sourcebook interior/Document fonts/UNIVERSI.TTF",
+              "bytes": 36944
+            },
+            {
+              "path": "Indesign VVa20 Sourcebook interior/Document fonts/University Roman Bold LET Regular.ttf",
+              "bytes": 32888
+            },
+            {
+              "path": "Indesign VVa20 Sourcebook interior/Document fonts/University Roman LET Plain.ttf",
+              "bytes": 47228
+            }
+          ],
+          "linked_assets": [
+            {
+              "path": "Indesign VVa20 Sourcebook interior/Links/4323913749_23f17ab3e4_o.jpg",
+              "bytes": 1412650
+            },
+            {
+              "path": "Indesign VVa20 Sourcebook interior/Links/bat diamond VVa.tif",
+              "bytes": 3046736
+            },
+            {
+              "path": "Indesign VVa20 Sourcebook interior/Links/Bat PaperVVa.tif",
+              "bytes": 26537388
+            },
+            {
+              "path": "Indesign VVa20 Sourcebook interior/Links/Chap art VVa01.tif",
+              "bytes": 3263032
+            },
+            {
+              "path": "Indesign VVa20 Sourcebook interior/Links/Chap art VVa02.tif",
+              "bytes": 21532340
+            },
+            {
+              "path": "Indesign VVa20 Sourcebook interior/Links/Color_vinesflat.tif",
+              "bytes": 25338848
+            },
+            {
+              "path": "Indesign VVa20 Sourcebook interior/Links/new example diamond 25%.tif",
+              "bytes": 1098220
+            },
+            {
+              "path": "Indesign VVa20 Sourcebook interior/Links/new example diamond.tif",
+              "bytes": 926976
+            },
+            {
+              "path": "Indesign VVa20 Sourcebook interior/Links/PaperVAV20.tif",
+              "bytes": 9296364
+            },
+            {
+              "path": "Indesign VVa20 Sourcebook interior/Links/Portrait.png",
+              "bytes": 74596
+            },
+            {
+              "path": "Indesign VVa20 Sourcebook interior/Links/VAV  iron portrait border .tif",
+              "bytes": 2840748
+            },
+            {
+              "path": "Indesign VVa20 Sourcebook interior/Links/VAV ankh 20A.tif",
+              "bytes": 672736
+            },
+            {
+              "path": "Indesign VVa20 Sourcebook interior/Links/VAV border element.tif",
+              "bytes": 2313388
+            },
+            {
+              "path": "Indesign VVa20 Sourcebook interior/Links/VaVRibbon 2.psd",
+              "bytes": 5071943
+            },
+            {
+              "path": "Indesign VVa20 Sourcebook interior/Links/Victorian age logo final.tif",
+              "bytes": 9900476
+            },
+            {
+              "path": "Indesign VVa20 Sourcebook interior/Links/VVa border.tif",
+              "bytes": 5345608
+            },
+            {
+              "path": "Indesign VVa20 Sourcebook interior/Links/VVa border2.tif",
+              "bytes": 24163636
+            },
+            {
+              "path": "Indesign VVa20 Sourcebook interior/Links/WW_Logo.eps",
+              "bytes": 204791
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "style_id": "vva20-clanbook",
+      "proposed_class": "vva20clanbook",
+      "runtime_status": "not-implemented",
+      "packages": [
+        {
+          "folder": "Vampire the Victorian Age 20th Anniversary Edition Clanbooks",
+          "file_count": 2,
+          "documents": [],
+          "archives": [
+            {
+              "path": "Vampire the Victorian Age 20th Anniversary Edition Clanbooks/Indesign VVa20 Clanbook Cover.zip",
+              "bytes": 92173015,
+              "sha256": "37f4d5e3b45464060d46237b6e367c59a94f060614d10d1b6b407df2ad6709fc",
+              "documents": [
+                {
+                  "member": "Indesign VVa20 Clanbook Cover/VVa20 Clanbook Cover.pdf",
+                  "bytes": 2799658,
+                  "format": "pdf",
+                  "sha256": "894e3b6d40b9250369c47f09231419483a0cb059fb1a01285d03c1dfaa6c1177"
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook Cover/VVa20 Clanbook Cover.idml",
+                  "bytes": 108054,
+                  "format": "idml",
+                  "sha256": "44d097b3bd2f75a4eafd9e4ad43ba8bbdb4384e5f7809d1d44c28340b7265f81"
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook Cover/VVa20 Clanbook Cover.indd",
+                  "bytes": 7340032,
+                  "format": "indd",
+                  "sha256": "efc1e0bae626b4d89014be2de639fdc8b4d3346027816cdcfe23d231159395cf"
+                }
+              ],
+              "font_files": [
+                {
+                  "member": "Indesign VVa20 Clanbook Cover/Document fonts/OPTIProtea.otf",
+                  "bytes": 36524
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook Cover/Document fonts/University Roman LET Plain.ttf",
+                  "bytes": 47228
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook Cover/Document fonts/GOUDY.TTF",
+                  "bytes": 48432
+                }
+              ],
+              "linked_assets": [
+                {
+                  "member": "Indesign VVa20 Clanbook Cover/Links/assamite.psd",
+                  "bytes": 2890117
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook Cover/Links/Assamites symbol.tif",
+                  "bytes": 1136724
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook Cover/Links/Brujah symbol.tif",
+                  "bytes": 3254504
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook Cover/Links/Brujah.psd",
+                  "bytes": 1526373
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook Cover/Links/Cover picture.png",
+                  "bytes": 57654
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook Cover/Links/fog.tif",
+                  "bytes": 10165832
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook Cover/Links/Followers symbol.tif",
+                  "bytes": 1733324
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook Cover/Links/Gangrel symbol.tif",
+                  "bytes": 7520332
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook Cover/Links/followers.psd",
+                  "bytes": 2316762
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook Cover/Links/gangrel.psd",
+                  "bytes": 1906140
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook Cover/Links/Giovanni symbol.tif",
+                  "bytes": 8384972
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook Cover/Links/giovanni.psd",
+                  "bytes": 1652276
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook Cover/Links/logo V20 metal.psd",
+                  "bytes": 4633458
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook Cover/Links/lasombra.psd",
+                  "bytes": 2208743
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook Cover/Links/Lasombra symbol.tif",
+                  "bytes": 3901772
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook Cover/Links/Malkavian symbol.tif",
+                  "bytes": 2326284
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook Cover/Links/malkavian.psd",
+                  "bytes": 2450607
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook Cover/Links/nosferatu.psd",
+                  "bytes": 1807845
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook Cover/Links/Nosferatu symbol.tif",
+                  "bytes": 2589064
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook Cover/Links/Ravnos symbol.tif",
+                  "bytes": 2266688
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook Cover/Links/ravnos.psd",
+                  "bytes": 2079907
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook Cover/Links/Toreador symbol.tif",
+                  "bytes": 5320120
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook Cover/Links/SV WoD final.png",
+                  "bytes": 1145510
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook Cover/Links/toreador.psd",
+                  "bytes": 1448681
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook Cover/Links/Tremere symbol.tif",
+                  "bytes": 5701348
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook Cover/Links/Tremere.psd",
+                  "bytes": 1408375
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook Cover/Links/Tzimi symbol.tif",
+                  "bytes": 2248776
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook Cover/Links/Ventrue symbol.tif",
+                  "bytes": 6418712
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook Cover/Links/tzimisce.psd",
+                  "bytes": 2097792
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook Cover/Links/VVa Cover fence Clanbook.tif",
+                  "bytes": 10426436
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook Cover/Links/Ventrue.psd",
+                  "bytes": 938057
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook Cover/Links/WW_Logo.eps",
+                  "bytes": 204791
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook Cover/Links/WoD Logo 3ª white letters.eps",
+                  "bytes": 395286
+                }
+              ]
+            },
+            {
+              "path": "Vampire the Victorian Age 20th Anniversary Edition Clanbooks/Indesign VVa20 Clanbook interior.zip",
+              "bytes": 168682022,
+              "sha256": "c1ccf168f73f81de08626870830c21dba42c8179be7d4035604cfc8d87779c27",
+              "documents": [
+                {
+                  "member": "Indesign VVa20 Clanbook interior/VVa20 Clanbook interior.idml",
+                  "bytes": 5694434,
+                  "format": "idml",
+                  "sha256": "dd4f555265a357d425fcfe1a26a65468111572a4b3906b8b312e31626d73297f"
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/VVa20 Clanbook interior.indd",
+                  "bytes": 23896064,
+                  "format": "indd",
+                  "sha256": "bc8e8402fdf39163d18725ab17058b99c555651e820913f74e47995259d2b88f"
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/VVa20 Clanbook interior.pdf",
+                  "bytes": 22194175,
+                  "format": "pdf",
+                  "sha256": "811f6e7a603ad842c1d4633d3fe7dbb6b36089df4b0c8ae52b43e725bd2beefe"
+                }
+              ],
+              "font_files": [
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Document fonts/anglican_0.ttf",
+                  "bytes": 54516
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Document fonts/Angular.PFB",
+                  "bytes": 44266
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Document fonts/Angular.pfm",
+                  "bytes": 692
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Document fonts/Aquiline.ttf",
+                  "bytes": 173596
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Document fonts/BirchStd_0.otf",
+                  "bytes": 38036
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Document fonts/ChiseledOpenRegular.ttf",
+                  "bytes": 37396
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Document fonts/Cirrus.ttf",
+                  "bytes": 48740
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Document fonts/FelinaT26 Gothic Regular.otf",
+                  "bytes": 31764
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Document fonts/GazelleFLF.ttf",
+                  "bytes": 53596
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Document fonts/gob___.TTF",
+                  "bytes": 76004
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Document fonts/GOUDOS.TTF",
+                  "bytes": 81376
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Document fonts/GOUDOSB_0.TTF",
+                  "bytes": 82796
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Document fonts/GOUDOSI_0.TTF",
+                  "bytes": 80280
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Document fonts/GOUDY.TTF",
+                  "bytes": 48432
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Document fonts/metronouveau.ttf",
+                  "bytes": 61736
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Document fonts/MinionPro-Regular_0.otf",
+                  "bytes": 218640
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Document fonts/Nosferatu GorillaITCbyBT-Regular.otf",
+                  "bytes": 66012
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Document fonts/OPTIProtea.otf",
+                  "bytes": 36524
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Document fonts/PercolatorExpert.PFB",
+                  "bytes": 41901
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Document fonts/PercolatorExpert.pfm",
+                  "bytes": 694
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Document fonts/Ravnos cowboyrhumba.ttf",
+                  "bytes": 57668
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Document fonts/Toreador flemishscript_bt.ttf",
+                  "bytes": 77104
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Document fonts/Tzimisce Ironwood.ttf",
+                  "bytes": 90875
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Document fonts/UNIVERSI.TTF",
+                  "bytes": 36944
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Document fonts/University Roman Bold LET Regular.ttf",
+                  "bytes": 32888
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Document fonts/University Roman LET Plain.ttf",
+                  "bytes": 47228
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Document fonts/VivaldiICG.otf",
+                  "bytes": 44904
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Document fonts/VoiturePlat.otf",
+                  "bytes": 130112
+                }
+              ],
+              "linked_assets": [
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Links/4323913749_23f17ab3e4_o.jpg",
+                  "bytes": 1412650
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Links/Assamites symbol.tif",
+                  "bytes": 719728
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Links/bat diamond VVa.tif",
+                  "bytes": 3046736
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Links/Bat PaperVVa.tif",
+                  "bytes": 26537388
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Links/Chap art VVa02.tif",
+                  "bytes": 21532340
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Links/Brujah symbol.tif",
+                  "bytes": 2077692
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Links/Chap art VVa01.tif",
+                  "bytes": 3263032
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Links/Color_vinesflat.tif",
+                  "bytes": 25338848
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Links/Gangrel symbol.tif",
+                  "bytes": 3593468
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Links/Followers symbol.tif",
+                  "bytes": 1175672
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Links/Giovanni symbol.tif",
+                  "bytes": 4357132
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Links/Malkavian symbol.tif",
+                  "bytes": 2109504
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Links/Lasombra symbol.tif",
+                  "bytes": 2445116
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Links/new example diamond.tif",
+                  "bytes": 926976
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Links/Nosferatu symbol.tif",
+                  "bytes": 2205772
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Links/new example diamond 25%.tif",
+                  "bytes": 1098220
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Links/PaperVAV20.tif",
+                  "bytes": 9296364
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Links/Toreador symbol.tif",
+                  "bytes": 3540364
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Links/Portrait.png",
+                  "bytes": 74596
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Links/Tremere symbol.tif",
+                  "bytes": 3513664
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Links/Ravnos symbol.tif",
+                  "bytes": 1996748
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Links/VAV  iron portrait border .tif",
+                  "bytes": 2840748
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Links/Tzimi symbol.tif",
+                  "bytes": 1877120
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Links/VAV ankh 20Aflat.tif",
+                  "bytes": 49936
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Links/VAV border element.tif",
+                  "bytes": 2313388
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Links/VAV ankh 20A.tif",
+                  "bytes": 672736
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Links/Ventrue symbol.tif",
+                  "bytes": 5725668
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Links/VVa border CharacterSheet.tif",
+                  "bytes": 1667848
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Links/VVa border Clanbook.tif",
+                  "bytes": 8546364
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Links/VVa border [background].tif",
+                  "bytes": 8514876
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Links/VVa Cover fence Clanbook empty.tif",
+                  "bytes": 3639432
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Links/VVa border [empty].tif",
+                  "bytes": 1744836
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Links/VVa border.tif",
+                  "bytes": 5345608
+                },
+                {
+                  "member": "Indesign VVa20 Clanbook interior/Links/WW_Logo.eps",
+                  "bytes": 204791
+                }
+              ]
+            }
+          ],
+          "font_files": [],
+          "linked_assets": []
+        }
+      ]
+    },
+    {
+      "style_id": "w20",
+      "proposed_class": "w20book",
+      "runtime_status": "not-implemented",
+      "packages": [
+        {
+          "folder": "W4 InDesign",
+          "file_count": 43,
+          "documents": [
+            {
+              "path": "W4 InDesign/Indesign/W20 Supplement Template/W20 Sourcebook2.indd",
+              "format": "indd",
+              "bytes": 8208384,
+              "sha256": "08adb83b73fdab9f832dd347770e619c47336cb3d3f67d8b8d9f205364ec6c9b"
+            },
+            {
+              "path": "W4 InDesign/Indesign/W20 Supplement Template/Werewolf 4th ed. template.pdf",
+              "format": "pdf",
+              "bytes": 5121723,
+              "sha256": "be7d95d055f77d7182b649440fd707086b7205efe8b4078ce582a9c17462af72"
+            },
+            {
+              "path": "W4 InDesign/Indesign/W20 Supplement Template cover/W20 4th ed. Cover.indd",
+              "format": "indd",
+              "bytes": 3727360,
+              "sha256": "d77d77ffd19aca105067b3e58b64a00814f1ce4d9d045092820c59cfaa75be1a"
+            },
+            {
+              "path": "W4 InDesign/Indesign/W20 Supplement Template cover/W20 4th ed. Cover.pdf",
+              "format": "pdf",
+              "bytes": 4407745,
+              "sha256": "4040f9486b4615ae2520129dee7a28e11cc8af8eed6110c82710b0b292af4ff0"
+            }
+          ],
+          "archives": [],
+          "font_files": [
+            {
+              "path": "W4 InDesign/Indesign/W20 Supplement Template/Document fonts/balthazarregular.ttf",
+              "bytes": 64544
+            },
+            {
+              "path": "W4 InDesign/Indesign/W20 Supplement Template/Document fonts/CaflischScriptPro-Bold.otf",
+              "bytes": 266408
+            },
+            {
+              "path": "W4 InDesign/Indesign/W20 Supplement Template/Document fonts/Garou.ttf",
+              "bytes": 30896
+            },
+            {
+              "path": "W4 InDesign/Indesign/W20 Supplement Template/Document fonts/GOBI.PFB",
+              "bytes": 46253
+            },
+            {
+              "path": "W4 InDesign/Indesign/W20 Supplement Template/Document fonts/GOUDOS.TTF",
+              "bytes": 81376
+            },
+            {
+              "path": "W4 InDesign/Indesign/W20 Supplement Template/Document fonts/GOUDOSB_0.TTF",
+              "bytes": 82796
+            },
+            {
+              "path": "W4 InDesign/Indesign/W20 Supplement Template/Document fonts/GOUDOSI_0.TTF",
+              "bytes": 80280
+            },
+            {
+              "path": "W4 InDesign/Indesign/W20 Supplement Template/Document fonts/Goudy SSi Bold Italic.ttf",
+              "bytes": 76500
+            },
+            {
+              "path": "W4 InDesign/Indesign/W20 Supplement Template/Document fonts/Goudy SSi Bold.ttf",
+              "bytes": 75749
+            },
+            {
+              "path": "W4 InDesign/Indesign/W20 Supplement Template/Document fonts/Goudy SSi.ttf",
+              "bytes": 75240
+            },
+            {
+              "path": "W4 InDesign/Indesign/W20 Supplement Template/Document fonts/MinionPro-Regular_0.otf",
+              "bytes": 218640
+            },
+            {
+              "path": "W4 InDesign/Indesign/W20 Supplement Template cover/Document fonts/Garou.ttf",
+              "bytes": 30896
+            },
+            {
+              "path": "W4 InDesign/Indesign/W20 Supplement Template cover/Document fonts/GOUDOS.TTF",
+              "bytes": 81376
+            },
+            {
+              "path": "W4 InDesign/Indesign/W20 Supplement Template cover/Document fonts/MinionPro-Regular_0.otf",
+              "bytes": 218640
+            }
+          ],
+          "linked_assets": [
+            {
+              "path": "W4 InDesign/Indesign/W20 Supplement Template/Links/SiderbarRustLt.tif",
+              "bytes": 12354280
+            },
+            {
+              "path": "W4 InDesign/Indesign/W20 Supplement Template/Links/W20BordPlainCMYK.psd",
+              "bytes": 24846712
+            },
+            {
+              "path": "W4 InDesign/Indesign/W20 Supplement Template/Links/W20BordPlainCMYK_1.psd",
+              "bytes": 24846712
+            },
+            {
+              "path": "W4 InDesign/Indesign/W20 Supplement Template/Links/W20ChapterOpenCMYK big rust.tif",
+              "bytes": 19629024
+            },
+            {
+              "path": "W4 InDesign/Indesign/W20 Supplement Template/Links/W20ContentsPageCMYK.tif",
+              "bytes": 16979000
+            },
+            {
+              "path": "W4 InDesign/Indesign/W20 Supplement Template/Links/W20CreditsPage.tif",
+              "bytes": 17010968
+            },
+            {
+              "path": "W4 InDesign/Indesign/W20 Supplement Template/Links/W20CreditsPage_1.tif",
+              "bytes": 17010968
+            },
+            {
+              "path": "W4 InDesign/Indesign/W20 Supplement Template/Links/W20FullPageFrame_0000_DarkerVerdigris.psd",
+              "bytes": 20521723
+            },
+            {
+              "path": "W4 InDesign/Indesign/W20 Supplement Template/Links/W20FullPageFrame_0001_Hue_Saturation 1.psd",
+              "bytes": 53377509
+            },
+            {
+              "path": "W4 InDesign/Indesign/W20 Supplement Template/Links/W20SidebarElementHCMYK.psd",
+              "bytes": 2159159
+            },
+            {
+              "path": "W4 InDesign/Indesign/W20 Supplement Template/Links/W20SidebarElementVCMYK.psd",
+              "bytes": 1249322
+            },
+            {
+              "path": "W4 InDesign/Indesign/W20 Supplement Template/Links/W20TitlePage.tif",
+              "bytes": 8397928
+            },
+            {
+              "path": "W4 InDesign/Indesign/W20 Supplement Template/Links/W20TitlePage_1.tif",
+              "bytes": 8397928
+            },
+            {
+              "path": "W4 InDesign/Indesign/W20 Supplement Template/Links/WW_Logo.eps",
+              "bytes": 204791
+            },
+            {
+              "path": "W4 InDesign/Indesign/W20 Supplement Template cover/Links/04 W20 SUPPLEMENT TEXTURE HD.tif",
+              "bytes": 42998544
+            },
+            {
+              "path": "W4 InDesign/Indesign/W20 Supplement Template cover/Links/B 03 BackRust.tif",
+              "bytes": 22804452
+            },
+            {
+              "path": "W4 InDesign/Indesign/W20 Supplement Template cover/Links/SV MdT 4.png",
+              "bytes": 1263511
+            },
+            {
+              "path": "W4 InDesign/Indesign/W20 Supplement Template cover/Links/W20BordPlainCMYK.psd",
+              "bytes": 24846712
+            },
+            {
+              "path": "W4 InDesign/Indesign/W20 Supplement Template cover/Links/W20LogoCMYK.psd",
+              "bytes": 16585526
+            },
+            {
+              "path": "W4 InDesign/Indesign/W20 Supplement Template cover/Links/WW_Logo.eps",
+              "bytes": 204791
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "style_id": "w20-dark-ages",
+      "proposed_class": "w20darkagesbook",
+      "runtime_status": "not-implemented",
+      "packages": [
+        {
+          "folder": "W20 Dark Ages Color",
+          "file_count": 44,
+          "documents": [
+            {
+              "path": "W20 Dark Ages Color/W20DA Supplement Cover/W20DA Supplement Cover.idml",
+              "format": "idml",
+              "bytes": 74235,
+              "sha256": "2e2166b8d9f4dba1b4116dadde295742ae4a9f54c67323098ec1a48845f6528b"
+            },
+            {
+              "path": "W20 Dark Ages Color/W20DA Supplement Cover/W20DA Supplement Cover.indd",
+              "format": "indd",
+              "bytes": 3026944,
+              "sha256": "30b3629f9297864d1d69ac8737f8e7ba28d06658ece9ced158320fd6d78f3758"
+            },
+            {
+              "path": "W20 Dark Ages Color/W20DA Supplement Cover/W20DA Supplement Cover.pdf",
+              "format": "pdf",
+              "bytes": 4663177,
+              "sha256": "3891d4c337526715cfbe7afb1a596f5ccb3011553251e4a864f329470f3d3ed9"
+            },
+            {
+              "path": "W20 Dark Ages Color/W20DA Supplement Interior/W20DA Supplement.idml",
+              "format": "idml",
+              "bytes": 238235,
+              "sha256": "bae277bd9572f122881ed3fbff08670f1c738877881bd05d3afe73b5a2c72540"
+            },
+            {
+              "path": "W20 Dark Ages Color/W20DA Supplement Interior/W20DA Supplement.indd",
+              "format": "indd",
+              "bytes": 7704576,
+              "sha256": "dc5177d70d3fc34f3c636423e6fda047f57a0c9f592e887d631749d3d280ae80"
+            },
+            {
+              "path": "W20 Dark Ages Color/W20DA Supplement Interior/W20DA Supplement.pdf",
+              "format": "pdf",
+              "bytes": 16977900,
+              "sha256": "2a154b58bae1464a75bcdeccfceb8e8768ffaffe8cd752faf250748bb31b397f"
+            }
+          ],
+          "archives": [],
+          "font_files": [
+            {
+              "path": "W20 Dark Ages Color/W20DA Supplement Cover/Document fonts/ariblk.ttf",
+              "bytes": 167620
+            },
+            {
+              "path": "W20 Dark Ages Color/W20DA Supplement Cover/Document fonts/Galahad Regular.ttf",
+              "bytes": 220117
+            },
+            {
+              "path": "W20 Dark Ages Color/W20DA Supplement Cover/Document fonts/GOUDOS.TTF",
+              "bytes": 81376
+            },
+            {
+              "path": "W20 Dark Ages Color/W20DA Supplement Interior/Document fonts/ariblk.ttf",
+              "bytes": 167620
+            },
+            {
+              "path": "W20 Dark Ages Color/W20DA Supplement Interior/Document fonts/CLAWS_1.ttf",
+              "bytes": 31264
+            },
+            {
+              "path": "W20 Dark Ages Color/W20DA Supplement Interior/Document fonts/ds_UnFunH_1.ttf",
+              "bytes": 236672
+            },
+            {
+              "path": "W20 Dark Ages Color/W20DA Supplement Interior/Document fonts/FuturaPTBook.otf",
+              "bytes": 112916
+            },
+            {
+              "path": "W20 Dark Ages Color/W20DA Supplement Interior/Document fonts/FuturaStd-Book.otf",
+              "bytes": 25708
+            },
+            {
+              "path": "W20 Dark Ages Color/W20DA Supplement Interior/Document fonts/Galahad Regular.ttf",
+              "bytes": 220117
+            },
+            {
+              "path": "W20 Dark Ages Color/W20DA Supplement Interior/Document fonts/GOUDOS.TTF",
+              "bytes": 81376
+            },
+            {
+              "path": "W20 Dark Ages Color/W20DA Supplement Interior/Document fonts/GOUDOSB_0.TTF",
+              "bytes": 82796
+            },
+            {
+              "path": "W20 Dark Ages Color/W20DA Supplement Interior/Document fonts/GOUDOSI_0.TTF",
+              "bytes": 80280
+            },
+            {
+              "path": "W20 Dark Ages Color/W20DA Supplement Interior/Document fonts/Goudy Old Style Italic BT.ttf",
+              "bytes": 58984
+            },
+            {
+              "path": "W20 Dark Ages Color/W20DA Supplement Interior/Document fonts/GoudyOlSt BT Roman.ttf",
+              "bytes": 61600
+            },
+            {
+              "path": "W20 Dark Ages Color/W20DA Supplement Interior/Document fonts/Goudyolst-bt-bold.ttf",
+              "bytes": 65944
+            },
+            {
+              "path": "W20 Dark Ages Color/W20DA Supplement Interior/Document fonts/MinionPro-Regular_0.otf",
+              "bytes": 218640
+            },
+            {
+              "path": "W20 Dark Ages Color/W20DA Supplement Interior/Document fonts/SOLEMNIT.TTF",
+              "bytes": 47100
+            }
+          ],
+          "linked_assets": [
+            {
+              "path": "W20 Dark Ages Color/W20DA Supplement Cover/Links/SV MdT 4.png",
+              "bytes": 1263511
+            },
+            {
+              "path": "W20 Dark Ages Color/W20DA Supplement Cover/Links/SV WoD final.png",
+              "bytes": 1145510
+            },
+            {
+              "path": "W20 Dark Ages Color/W20DA Supplement Cover/Links/W20 Dark Ages LogoCMYK.tif",
+              "bytes": 2988636
+            },
+            {
+              "path": "W20 Dark Ages Color/W20DA Supplement Cover/Links/W20DA border classic.tif",
+              "bytes": 2979948
+            },
+            {
+              "path": "W20 Dark Ages Color/W20DA Supplement Cover/Links/WDATEXTU.tif",
+              "bytes": 16842644
+            },
+            {
+              "path": "W20 Dark Ages Color/W20DA Supplement Cover/Links/WoD Logo 3ª white letters.eps",
+              "bytes": 395286
+            },
+            {
+              "path": "W20 Dark Ages Color/W20DA Supplement Cover/Links/WW_Logo.png",
+              "bytes": 197603
+            },
+            {
+              "path": "W20 Dark Ages Color/W20DA Supplement Interior/Links/DA Parch green.ai",
+              "bytes": 6440739
+            },
+            {
+              "path": "W20 Dark Ages Color/W20DA Supplement Interior/Links/Fondo hojas.tif",
+              "bytes": 100888348
+            },
+            {
+              "path": "W20 Dark Ages Color/W20DA Supplement Interior/Links/W20 Dark Ages LogoCMYK.tif",
+              "bytes": 2988636
+            },
+            {
+              "path": "W20 Dark Ages Color/W20DA Supplement Interior/Links/W20DA border big.tif",
+              "bytes": 4309432
+            },
+            {
+              "path": "W20 Dark Ages Color/W20DA Supplement Interior/Links/W20DA border classic purple.tif",
+              "bytes": 6002696
+            },
+            {
+              "path": "W20 Dark Ages Color/W20DA Supplement Interior/Links/W20DA border classic.tif",
+              "bytes": 2979948
+            },
+            {
+              "path": "W20 Dark Ages Color/W20DA Supplement Interior/Links/W20DA necklace.psd",
+              "bytes": 51111909
+            },
+            {
+              "path": "W20 Dark Ages Color/W20DA Supplement Interior/Links/W20DA Parchment.psd",
+              "bytes": 403621401
+            },
+            {
+              "path": "W20 Dark Ages Color/W20DA Supplement Interior/Links/WDATEXTU.tif",
+              "bytes": 16842644
+            },
+            {
+              "path": "W20 Dark Ages Color/W20DA Supplement Interior/Links/WW_Logo.eps",
+              "bytes": 204791
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "style_id": "w20-wyld-west",
+      "proposed_class": "w20wyldwestbook",
+      "runtime_status": "not-implemented",
+      "packages": [
+        {
+          "folder": "Werewolf the Wyld West 20th Anniversary Edition",
+          "file_count": 40,
+          "documents": [
+            {
+              "path": "Werewolf the Wyld West 20th Anniversary Edition/W20 Wyld West Supplement cover/W20 Wyld West Supplement cover.idml",
+              "format": "idml",
+              "bytes": 79920,
+              "sha256": "0b3300d60878396e5bae2900938a6510d23758eeb091db6456377823285b078f"
+            },
+            {
+              "path": "Werewolf the Wyld West 20th Anniversary Edition/W20 Wyld West Supplement cover/W20 Wyld West Supplement cover.indd",
+              "format": "indd",
+              "bytes": 3350528,
+              "sha256": "f665407a9c6170cc1570ec76e8bc3f5b053de234c4acdb0381fd98e4f20bd411"
+            },
+            {
+              "path": "Werewolf the Wyld West 20th Anniversary Edition/W20 Wyld West Supplement cover/W20 Wyld West Supplement cover.pdf",
+              "format": "pdf",
+              "bytes": 6324169,
+              "sha256": "8d4105ba3ee0782fc93c325d1c2024e4730db9dd6fec45c8d5fb8d8f985bad11"
+            },
+            {
+              "path": "Werewolf the Wyld West 20th Anniversary Edition/W20 Wyld West Supplement interior/W20 Wyld West Supplement.idml",
+              "format": "idml",
+              "bytes": 354412,
+              "sha256": "b5800fca9b44fcfbd3e585241f7898293834d8c482908e4055ffb372ec1f5882"
+            },
+            {
+              "path": "Werewolf the Wyld West 20th Anniversary Edition/W20 Wyld West Supplement interior/W20 Wyld West Supplement.indd",
+              "format": "indd",
+              "bytes": 5828608,
+              "sha256": "11c04f534f76a7415b505788e80910ecafeaef3c86534a0a80c00c8bcda71646"
+            },
+            {
+              "path": "Werewolf the Wyld West 20th Anniversary Edition/W20 Wyld West Supplement interior/W20 Wyld West Supplement.pdf",
+              "format": "pdf",
+              "bytes": 14990723,
+              "sha256": "4eb115266dee71820340b2430d3cfecd301664dacf7ffa74b60ba28674d165b0"
+            }
+          ],
+          "archives": [],
+          "font_files": [
+            {
+              "path": "Werewolf the Wyld West 20th Anniversary Edition/W20 Wyld West Supplement cover/Document fonts/GOUDOS.TTF",
+              "bytes": 81376
+            },
+            {
+              "path": "Werewolf the Wyld West 20th Anniversary Edition/W20 Wyld West Supplement cover/Document fonts/MinionPro-Regular_0.otf",
+              "bytes": 218640
+            },
+            {
+              "path": "Werewolf the Wyld West 20th Anniversary Edition/W20 Wyld West Supplement cover/Document fonts/Saddlebag.ttf",
+              "bytes": 43000
+            },
+            {
+              "path": "Werewolf the Wyld West 20th Anniversary Edition/W20 Wyld West Supplement cover/Document fonts/Stagecoach.ttf",
+              "bytes": 73146
+            },
+            {
+              "path": "Werewolf the Wyld West 20th Anniversary Edition/W20 Wyld West Supplement interior/Document fonts/BKANT.TTF",
+              "bytes": 155528
+            },
+            {
+              "path": "Werewolf the Wyld West 20th Anniversary Edition/W20 Wyld West Supplement interior/Document fonts/FuturaPTBook.otf",
+              "bytes": 112916
+            },
+            {
+              "path": "Werewolf the Wyld West 20th Anniversary Edition/W20 Wyld West Supplement interior/Document fonts/GOUDOS.TTF",
+              "bytes": 81376
+            },
+            {
+              "path": "Werewolf the Wyld West 20th Anniversary Edition/W20 Wyld West Supplement interior/Document fonts/GOUDOSB_0.TTF",
+              "bytes": 82796
+            },
+            {
+              "path": "Werewolf the Wyld West 20th Anniversary Edition/W20 Wyld West Supplement interior/Document fonts/GOUDOSI_0.TTF",
+              "bytes": 80280
+            },
+            {
+              "path": "Werewolf the Wyld West 20th Anniversary Edition/W20 Wyld West Supplement interior/Document fonts/MinionPro-Regular_0.otf",
+              "bytes": 218640
+            },
+            {
+              "path": "Werewolf the Wyld West 20th Anniversary Edition/W20 Wyld West Supplement interior/Document fonts/Saddlebag.ttf",
+              "bytes": 43000
+            },
+            {
+              "path": "Werewolf the Wyld West 20th Anniversary Edition/W20 Wyld West Supplement interior/Document fonts/Stagecoach.ttf",
+              "bytes": 73146
+            }
+          ],
+          "linked_assets": [
+            {
+              "path": "Werewolf the Wyld West 20th Anniversary Edition/W20 Wyld West Supplement cover/Links/Cover Frame.tif",
+              "bytes": 33931764
+            },
+            {
+              "path": "Werewolf the Wyld West 20th Anniversary Edition/W20 Wyld West Supplement cover/Links/SV WoD 4.png",
+              "bytes": 1263511
+            },
+            {
+              "path": "Werewolf the Wyld West 20th Anniversary Edition/W20 Wyld West Supplement cover/Links/W20WWW logo1.png",
+              "bytes": 2805723
+            },
+            {
+              "path": "Werewolf the Wyld West 20th Anniversary Edition/W20 Wyld West Supplement cover/Links/Wild West Border.tif",
+              "bytes": 6655536
+            },
+            {
+              "path": "Werewolf the Wyld West 20th Anniversary Edition/W20 Wyld West Supplement cover/Links/Wild West Cover background.tif",
+              "bytes": 70944588
+            },
+            {
+              "path": "Werewolf the Wyld West 20th Anniversary Edition/W20 Wyld West Supplement cover/Links/WW_Logo.eps",
+              "bytes": 204791
+            },
+            {
+              "path": "Werewolf the Wyld West 20th Anniversary Edition/W20 Wyld West Supplement cover/Links/Wyld West.tif",
+              "bytes": 22218736
+            },
+            {
+              "path": "Werewolf the Wyld West 20th Anniversary Edition/W20 Wyld West Supplement interior/Links/Cover Frame.tif",
+              "bytes": 33931764
+            },
+            {
+              "path": "Werewolf the Wyld West 20th Anniversary Edition/W20 Wyld West Supplement interior/Links/sidebar.psd",
+              "bytes": 289098635
+            },
+            {
+              "path": "Werewolf the Wyld West 20th Anniversary Edition/W20 Wyld West Supplement interior/Links/W20_WyldWest page 1blank.pdf",
+              "bytes": 225800
+            },
+            {
+              "path": "Werewolf the Wyld West 20th Anniversary Edition/W20 Wyld West Supplement interior/Links/W20_WyldWest page 2blank.pdf",
+              "bytes": 378999
+            },
+            {
+              "path": "Werewolf the Wyld West 20th Anniversary Edition/W20 Wyld West Supplement interior/Links/W20WWW logo1.png",
+              "bytes": 2805723
+            },
+            {
+              "path": "Werewolf the Wyld West 20th Anniversary Edition/W20 Wyld West Supplement interior/Links/Wild West 1Pg Border.tiff",
+              "bytes": 426286
+            },
+            {
+              "path": "Werewolf the Wyld West 20th Anniversary Edition/W20 Wyld West Supplement interior/Links/Wild West Border.tif",
+              "bytes": 6655536
+            },
+            {
+              "path": "Werewolf the Wyld West 20th Anniversary Edition/W20 Wyld West Supplement interior/Links/Wild West Ch.Hd.tif",
+              "bytes": 11432036
+            },
+            {
+              "path": "Werewolf the Wyld West 20th Anniversary Edition/W20 Wyld West Supplement interior/Links/WW_Logo.eps",
+              "bytes": 204791
+            },
+            {
+              "path": "Werewolf the Wyld West 20th Anniversary Edition/W20 Wyld West Supplement interior/Links/Wyld West.tif",
+              "bytes": 22218736
+            },
+            {
+              "path": "Werewolf the Wyld West 20th Anniversary Edition/W20 Wyld West Supplement interior/Links/Wyld West_1.tif",
+              "bytes": 29451736
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "style_id": "c20",
+      "proposed_class": "c20book",
+      "runtime_status": "not-implemented",
+      "packages": [
+        {
+          "folder": "Changeling the Dreaming 20th Anniversary Edition",
+          "file_count": 48,
+          "documents": [
+            {
+              "path": "Changeling the Dreaming 20th Anniversary Edition/C20 Sourcebook Cover Folder/C20 Sourcebook Cover.idml",
+              "format": "idml",
+              "bytes": 329782,
+              "sha256": "bf957cdb44cf8d111483bed06d366aa1b89951d3978634884e3edf350758516f"
+            },
+            {
+              "path": "Changeling the Dreaming 20th Anniversary Edition/C20 Sourcebook Cover Folder/C20 Sourcebook Cover.indd",
+              "format": "indd",
+              "bytes": 3256320,
+              "sha256": "8a0ffd0086da81986104b525c3c49bd22833fd88b9249fa8844133623a0f3b27"
+            },
+            {
+              "path": "Changeling the Dreaming 20th Anniversary Edition/C20 Sourcebook Cover Folder/C20 Sourcebook Cover.pdf",
+              "format": "pdf",
+              "bytes": 2535058,
+              "sha256": "996572abb6424bce217ab85c536b990aced66e36cc1220caac930793514daf1a"
+            },
+            {
+              "path": "Changeling the Dreaming 20th Anniversary Edition/C20 Sourcebook Interior Folder/C20 Sourcebook Interior.idml",
+              "format": "idml",
+              "bytes": 510502,
+              "sha256": "c2ed845f7bc8cd586f56dc42541fed3af845d22027d9ea7607da2af94af24d8d"
+            },
+            {
+              "path": "Changeling the Dreaming 20th Anniversary Edition/C20 Sourcebook Interior Folder/C20 Sourcebook Interior.indd",
+              "format": "indd",
+              "bytes": 19488768,
+              "sha256": "78481004ff14eb2153afb455ac81f0eeb5518593f9c3fdb1216ecb77d0765375"
+            },
+            {
+              "path": "Changeling the Dreaming 20th Anniversary Edition/C20 Sourcebook Interior Folder/C20 Sourcebook Interior.pdf",
+              "format": "pdf",
+              "bytes": 13309052,
+              "sha256": "f20b6a3bcc8b62d5297a47c519c921953abf3e9345a91984c95cd8ff78d201f7"
+            }
+          ],
+          "archives": [],
+          "font_files": [
+            {
+              "path": "Changeling the Dreaming 20th Anniversary Edition/C20 Sourcebook Cover Folder/Document fonts/CASAB.TTF",
+              "bytes": 67540
+            },
+            {
+              "path": "Changeling the Dreaming 20th Anniversary Edition/C20 Sourcebook Cover Folder/Document fonts/MinionPro-Regular_0.otf",
+              "bytes": 218640
+            },
+            {
+              "path": "Changeling the Dreaming 20th Anniversary Edition/C20 Sourcebook Cover Folder/Document fonts/timesbd.ttf",
+              "bytes": 1175904
+            },
+            {
+              "path": "Changeling the Dreaming 20th Anniversary Edition/C20 Sourcebook Interior Folder/Document fonts/Adobe - GoudyStd-Bold.otf",
+              "bytes": 35292
+            },
+            {
+              "path": "Changeling the Dreaming 20th Anniversary Edition/C20 Sourcebook Interior Folder/Document fonts/Adobe - GoudyStd-Italic.otf",
+              "bytes": 36588
+            },
+            {
+              "path": "Changeling the Dreaming 20th Anniversary Edition/C20 Sourcebook Interior Folder/Document fonts/Adobe - GoudyStd.otf",
+              "bytes": 47656
+            },
+            {
+              "path": "Changeling the Dreaming 20th Anniversary Edition/C20 Sourcebook Interior Folder/Document fonts/BoltonLight.otf",
+              "bytes": 34280
+            },
+            {
+              "path": "Changeling the Dreaming 20th Anniversary Edition/C20 Sourcebook Interior Folder/Document fonts/BoydUncial.ttf",
+              "bytes": 27896
+            },
+            {
+              "path": "Changeling the Dreaming 20th Anniversary Edition/C20 Sourcebook Interior Folder/Document fonts/CASAB.TTF",
+              "bytes": 67540
+            },
+            {
+              "path": "Changeling the Dreaming 20th Anniversary Edition/C20 Sourcebook Interior Folder/Document fonts/gob_.ttf",
+              "bytes": 81952
+            },
+            {
+              "path": "Changeling the Dreaming 20th Anniversary Edition/C20 Sourcebook Interior Folder/Document fonts/Kells 2.ttf",
+              "bytes": 23868
+            },
+            {
+              "path": "Changeling the Dreaming 20th Anniversary Edition/C20 Sourcebook Interior Folder/Document fonts/KellsFLF.ttf",
+              "bytes": 42212
+            },
+            {
+              "path": "Changeling the Dreaming 20th Anniversary Edition/C20 Sourcebook Interior Folder/Document fonts/Kramola.ttf",
+              "bytes": 74104
+            },
+            {
+              "path": "Changeling the Dreaming 20th Anniversary Edition/C20 Sourcebook Interior Folder/Document fonts/MeathFLF.ttf",
+              "bytes": 43148
+            },
+            {
+              "path": "Changeling the Dreaming 20th Anniversary Edition/C20 Sourcebook Interior Folder/Document fonts/MinionPro-Regular_0.otf",
+              "bytes": 218640
+            },
+            {
+              "path": "Changeling the Dreaming 20th Anniversary Edition/C20 Sourcebook Interior Folder/Document fonts/timesbd.ttf",
+              "bytes": 1175904
+            },
+            {
+              "path": "Changeling the Dreaming 20th Anniversary Edition/C20 Sourcebook Interior Folder/Document fonts/timesi.ttf",
+              "bytes": 940288
+            },
+            {
+              "path": "Changeling the Dreaming 20th Anniversary Edition/C20 Sourcebook Interior Folder/Document fonts/ZapfDingbats_0.ttf",
+              "bytes": 156088
+            }
+          ],
+          "linked_assets": [
+            {
+              "path": "Changeling the Dreaming 20th Anniversary Edition/C20 Sourcebook Cover Folder/Links/C20 JS Cover.tif",
+              "bytes": 11997840
+            },
+            {
+              "path": "Changeling the Dreaming 20th Anniversary Edition/C20 Sourcebook Cover Folder/Links/C20Logo.psd",
+              "bytes": 4857181
+            },
+            {
+              "path": "Changeling the Dreaming 20th Anniversary Edition/C20 Sourcebook Cover Folder/Links/SV WoD 3.png",
+              "bytes": 1259439
+            },
+            {
+              "path": "Changeling the Dreaming 20th Anniversary Edition/C20 Sourcebook Interior Folder/Links/Actor.psd",
+              "bytes": 2180293
+            },
+            {
+              "path": "Changeling the Dreaming 20th Anniversary Edition/C20 Sourcebook Interior Folder/Links/C20Border.psd",
+              "bytes": 102284070
+            },
+            {
+              "path": "Changeling the Dreaming 20th Anniversary Edition/C20 Sourcebook Interior Folder/Links/C20ChapterHead.psd",
+              "bytes": 17476917
+            },
+            {
+              "path": "Changeling the Dreaming 20th Anniversary Edition/C20 Sourcebook Interior Folder/Links/C20ChShBorder.psd",
+              "bytes": 19847896
+            },
+            {
+              "path": "Changeling the Dreaming 20th Anniversary Edition/C20 Sourcebook Interior Folder/Links/C20PrologueBorder1.psd",
+              "bytes": 18320579
+            },
+            {
+              "path": "Changeling the Dreaming 20th Anniversary Edition/C20 Sourcebook Interior Folder/Links/C20PrologueBorderH.psd",
+              "bytes": 14887560
+            },
+            {
+              "path": "Changeling the Dreaming 20th Anniversary Edition/C20 Sourcebook Interior Folder/Links/C20PrologueBorderS.psd",
+              "bytes": 18683445
+            },
+            {
+              "path": "Changeling the Dreaming 20th Anniversary Edition/C20 Sourcebook Interior Folder/Links/C20PrologueBorderV.psd",
+              "bytes": 19694921
+            },
+            {
+              "path": "Changeling the Dreaming 20th Anniversary Edition/C20 Sourcebook Interior Folder/Links/C20RedBorder.psd",
+              "bytes": 14767576
+            },
+            {
+              "path": "Changeling the Dreaming 20th Anniversary Edition/C20 Sourcebook Interior Folder/Links/C20SidebarH.psd",
+              "bytes": 1469989
+            },
+            {
+              "path": "Changeling the Dreaming 20th Anniversary Edition/C20 Sourcebook Interior Folder/Links/C20SidebarV.psd",
+              "bytes": 1080561
+            },
+            {
+              "path": "Changeling the Dreaming 20th Anniversary Edition/C20 Sourcebook Interior Folder/Links/Chicanery.psd",
+              "bytes": 2191502
+            },
+            {
+              "path": "Changeling the Dreaming 20th Anniversary Edition/C20 Sourcebook Interior Folder/Links/Fae.psd",
+              "bytes": 2531436
+            },
+            {
+              "path": "Changeling the Dreaming 20th Anniversary Edition/C20 Sourcebook Interior Folder/Links/Prop.psd",
+              "bytes": 2301517
+            },
+            {
+              "path": "Changeling the Dreaming 20th Anniversary Edition/C20 Sourcebook Interior Folder/Links/Scene.psd",
+              "bytes": 2248198
+            },
+            {
+              "path": "Changeling the Dreaming 20th Anniversary Edition/C20 Sourcebook Interior Folder/Links/Soothsay.psd",
+              "bytes": 2006572
+            },
+            {
+              "path": "Changeling the Dreaming 20th Anniversary Edition/C20 Sourcebook Interior Folder/Links/WW_Logo.eps",
+              "bytes": 204791
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "style_id": "dark-ages-fae",
+      "proposed_class": "darkagesfaebook",
+      "runtime_status": "not-implemented",
+      "packages": [
+        {
+          "folder": "DA Fae 20",
+          "file_count": 52,
+          "documents": [
+            {
+              "path": "DA Fae 20/Dark Ages Fae 20th Cover/Dark Ages Fae 20th Cover.idml",
+              "format": "idml",
+              "bytes": 73856,
+              "sha256": "24df7f19af679ed4d7736ae43052747c77666dfbba15eb46f6d216a932da952c"
+            },
+            {
+              "path": "DA Fae 20/Dark Ages Fae 20th Cover/Dark Ages Fae 20th Cover.indd",
+              "format": "indd",
+              "bytes": 4337664,
+              "sha256": "5ee3ed45e162c10c361b7845c32abcd7d8b512c201478fabd053ed20f090d8db"
+            },
+            {
+              "path": "DA Fae 20/Dark Ages Fae 20th Cover/Dark Ages Fae 20th Cover.pdf",
+              "format": "pdf",
+              "bytes": 5998691,
+              "sha256": "0c7d098b7590ee3695e5cda123d4150a91d3b12624540cf96a7c0b86b2d8bde8"
+            },
+            {
+              "path": "DA Fae 20/Dark Ages Fae 20th Interior/Dark Ages Fae 20th.idml",
+              "format": "idml",
+              "bytes": 184956,
+              "sha256": "322b4c7ee17fee3fa1baac19d838c0db0bee388033515207cf2a5937fbf3d4a4"
+            },
+            {
+              "path": "DA Fae 20/Dark Ages Fae 20th Interior/Dark Ages Fae 20th.indd",
+              "format": "indd",
+              "bytes": 8695808,
+              "sha256": "05842d11e25f8d02e4a5a200982bbd71b11d557b042202c94938da89b9716c1e"
+            },
+            {
+              "path": "DA Fae 20/Dark Ages Fae 20th Interior/Dark Ages Fae 20th.pdf",
+              "format": "pdf",
+              "bytes": 27124601,
+              "sha256": "1f6e48441ee1a3d5c6f523e3a8092c51797cfbdb32e7caaf8ddd6e67e26d6082"
+            }
+          ],
+          "archives": [],
+          "font_files": [
+            {
+              "path": "DA Fae 20/Dark Ages Fae 20th Cover/Document fonts/cas_antn.ttf",
+              "bytes": 34848
+            },
+            {
+              "path": "DA Fae 20/Dark Ages Fae 20th Cover/Document fonts/gad_0.ttf",
+              "bytes": 53456
+            },
+            {
+              "path": "DA Fae 20/Dark Ages Fae 20th Cover/Document fonts/KellsFLF.ttf",
+              "bytes": 42212
+            },
+            {
+              "path": "DA Fae 20/Dark Ages Fae 20th Cover/Document fonts/MinionPro-Bold.otf",
+              "bytes": 217028
+            },
+            {
+              "path": "DA Fae 20/Dark Ages Fae 20th Interior/Document fonts/[Edad Oscura] Mordred-Bold-Regular.ttf",
+              "bytes": 243024
+            },
+            {
+              "path": "DA Fae 20/Dark Ages Fae 20th Interior/Document fonts/CENTAUR.TTF",
+              "bytes": 82760
+            },
+            {
+              "path": "DA Fae 20/Dark Ages Fae 20th Interior/Document fonts/FuturaPTBook.otf",
+              "bytes": 112916
+            },
+            {
+              "path": "DA Fae 20/Dark Ages Fae 20th Interior/Document fonts/FuturaStd-Book.otf",
+              "bytes": 25708
+            },
+            {
+              "path": "DA Fae 20/Dark Ages Fae 20th Interior/Document fonts/gad_0.ttf",
+              "bytes": 53456
+            },
+            {
+              "path": "DA Fae 20/Dark Ages Fae 20th Interior/Document fonts/GOUDOS.TTF",
+              "bytes": 81376
+            },
+            {
+              "path": "DA Fae 20/Dark Ages Fae 20th Interior/Document fonts/GOUDOSB_0.TTF",
+              "bytes": 82796
+            },
+            {
+              "path": "DA Fae 20/Dark Ages Fae 20th Interior/Document fonts/GOUDOSI_0.TTF",
+              "bytes": 80280
+            },
+            {
+              "path": "DA Fae 20/Dark Ages Fae 20th Interior/Document fonts/GoudyOlSt BT Roman.ttf",
+              "bytes": 61600
+            },
+            {
+              "path": "DA Fae 20/Dark Ages Fae 20th Interior/Document fonts/HiH - Schnorr Initialen.ttf",
+              "bytes": 70764
+            },
+            {
+              "path": "DA Fae 20/Dark Ages Fae 20th Interior/Document fonts/Kuenstler 165.otf",
+              "bytes": 28120
+            },
+            {
+              "path": "DA Fae 20/Dark Ages Fae 20th Interior/Document fonts/MinionPro-Bold.otf",
+              "bytes": 217028
+            }
+          ],
+          "linked_assets": [
+            {
+              "path": "DA Fae 20/Dark Ages Fae 20th Cover/Links/20th Anniversary Dark Ages Fae.psb",
+              "bytes": 26054804
+            },
+            {
+              "path": "DA Fae 20/Dark Ages Fae 20th Cover/Links/Back cover 1st ed.tif",
+              "bytes": 8766000
+            },
+            {
+              "path": "DA Fae 20/Dark Ages Fae 20th Cover/Links/Fae parchment.tif",
+              "bytes": 4768744
+            },
+            {
+              "path": "DA Fae 20/Dark Ages Fae 20th Cover/Links/Marco lazo Invierno.tif",
+              "bytes": 6204004
+            },
+            {
+              "path": "DA Fae 20/Dark Ages Fae 20th Cover/Links/New Cover texture.tif",
+              "bytes": 11684192
+            },
+            {
+              "path": "DA Fae 20/Dark Ages Fae 20th Cover/Links/Pictures frame.psb",
+              "bytes": 19625016
+            },
+            {
+              "path": "DA Fae 20/Dark Ages Fae 20th Cover/Links/SV WoD final.png",
+              "bytes": 1145510
+            },
+            {
+              "path": "DA Fae 20/Dark Ages Fae 20th Cover/Links/WW_Logo.png",
+              "bytes": 197603
+            },
+            {
+              "path": "DA Fae 20/Dark Ages Fae 20th Interior/Links/01.tif",
+              "bytes": 1547668
+            },
+            {
+              "path": "DA Fae 20/Dark Ages Fae 20th Interior/Links/02.tif",
+              "bytes": 1567100
+            },
+            {
+              "path": "DA Fae 20/Dark Ages Fae 20th Interior/Links/03.tif",
+              "bytes": 1545052
+            },
+            {
+              "path": "DA Fae 20/Dark Ages Fae 20th Interior/Links/04.tif",
+              "bytes": 1543520
+            },
+            {
+              "path": "DA Fae 20/Dark Ages Fae 20th Interior/Links/05.tif",
+              "bytes": 1550016
+            },
+            {
+              "path": "DA Fae 20/Dark Ages Fae 20th Interior/Links/Cover Shot.tif",
+              "bytes": 11944334
+            },
+            {
+              "path": "DA Fae 20/Dark Ages Fae 20th Interior/Links/DA-Fae-char sheet blank.pdf",
+              "bytes": 1384699
+            },
+            {
+              "path": "DA Fae 20/Dark Ages Fae 20th Interior/Links/dolly.psd",
+              "bytes": 3555847
+            },
+            {
+              "path": "DA Fae 20/Dark Ages Fae 20th Interior/Links/Fae header.psd",
+              "bytes": 20462602
+            },
+            {
+              "path": "DA Fae 20/Dark Ages Fae 20th Interior/Links/Fae header.tif",
+              "bytes": 18639544
+            },
+            {
+              "path": "DA Fae 20/Dark Ages Fae 20th Interior/Links/Marco lazo Eclipse.tif",
+              "bytes": 233112388
+            },
+            {
+              "path": "DA Fae 20/Dark Ages Fae 20th Interior/Links/Marco lazo Invierno.tif",
+              "bytes": 6204004
+            },
+            {
+              "path": "DA Fae 20/Dark Ages Fae 20th Interior/Links/Marco lazo Otoño.tif",
+              "bytes": 8414564
+            },
+            {
+              "path": "DA Fae 20/Dark Ages Fae 20th Interior/Links/Marco lazo Primavera.tif",
+              "bytes": 8535440
+            },
+            {
+              "path": "DA Fae 20/Dark Ages Fae 20th Interior/Links/Marco lazo Verano.tif",
+              "bytes": 9245660
+            },
+            {
+              "path": "DA Fae 20/Dark Ages Fae 20th Interior/Links/Pictures frame.psb",
+              "bytes": 19625016
+            },
+            {
+              "path": "DA Fae 20/Dark Ages Fae 20th Interior/Links/small sidebar Summer.tif",
+              "bytes": 1617912
+            },
+            {
+              "path": "DA Fae 20/Dark Ages Fae 20th Interior/Links/WW_Logo.eps",
+              "bytes": 204791
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "style_id": "d20",
+      "proposed_class": "d20book",
+      "runtime_status": "not-implemented",
+      "packages": [
+        {
+          "folder": "Demon the Fallen 20th Anniversary Edition",
+          "file_count": 40,
+          "documents": [
+            {
+              "path": "Demon the Fallen 20th Anniversary Edition/demon the fallen 20th cover/Demon The Fallen 20th Cover.idml",
+              "format": "idml",
+              "bytes": 126554,
+              "sha256": "6bf149007351132188cb4c4da218f1ae76ef6133ff4e8f567ae469b09db15123"
+            },
+            {
+              "path": "Demon the Fallen 20th Anniversary Edition/demon the fallen 20th cover/Demon The Fallen 20th Cover.indd",
+              "format": "indd",
+              "bytes": 4546560,
+              "sha256": "9d2011cd966f50e74d1bc62e17c7684a6b10ae2eabd6f4f7bc82a277d41aee50"
+            },
+            {
+              "path": "Demon the Fallen 20th Anniversary Edition/demon the fallen 20th cover/Demon The Fallen 20th Cover.pdf",
+              "format": "pdf",
+              "bytes": 7718802,
+              "sha256": "4b5e76480a357fc0d1d7ee75513cbb2c5d681cdc5f23620ae3b1f774e6e71df9"
+            },
+            {
+              "path": "Demon the Fallen 20th Anniversary Edition/demon the fallen 20th template/Demon The Fallen 20th Template.idml",
+              "format": "idml",
+              "bytes": 684024,
+              "sha256": "d1a6fd00a607da4e521f3a99e120350c7c4d29c973f5adcd8478da2bb30b44ea"
+            },
+            {
+              "path": "Demon the Fallen 20th Anniversary Edition/demon the fallen 20th template/Demon The Fallen 20th Template.indd",
+              "format": "indd",
+              "bytes": 10162176,
+              "sha256": "7b1aad33bf3a053035168a8e8c6fd0efb58691a35c7d4cea7394847244e5f3e7"
+            },
+            {
+              "path": "Demon the Fallen 20th Anniversary Edition/demon the fallen 20th template/Demon The Fallen 20th Template.pdf",
+              "format": "pdf",
+              "bytes": 19123994,
+              "sha256": "e6172056f3896cf589ae348c725fd5a2424e40d2a72bdd5f13373645c7398fd4"
+            }
+          ],
+          "archives": [],
+          "font_files": [
+            {
+              "path": "Demon the Fallen 20th Anniversary Edition/demon the fallen 20th cover/Document fonts/GOUDY.ttf",
+              "bytes": 50808
+            },
+            {
+              "path": "Demon the Fallen 20th Anniversary Edition/demon the fallen 20th cover/Document fonts/LushUs Medium.ttf",
+              "bytes": 25744
+            },
+            {
+              "path": "Demon the Fallen 20th Anniversary Edition/demon the fallen 20th cover/Document fonts/MinionPro-Regular_0.otf",
+              "bytes": 218640
+            },
+            {
+              "path": "Demon the Fallen 20th Anniversary Edition/demon the fallen 20th cover/Document fonts/scythe.ttf",
+              "bytes": 31064
+            },
+            {
+              "path": "Demon the Fallen 20th Anniversary Edition/demon the fallen 20th template/Document fonts/arial.ttf",
+              "bytes": 1036584
+            },
+            {
+              "path": "Demon the Fallen 20th Anniversary Edition/demon the fallen 20th template/Document fonts/ariblk.ttf",
+              "bytes": 167592
+            },
+            {
+              "path": "Demon the Fallen 20th Anniversary Edition/demon the fallen 20th template/Document fonts/gob_.ttf",
+              "bytes": 81952
+            },
+            {
+              "path": "Demon the Fallen 20th Anniversary Edition/demon the fallen 20th template/Document fonts/Goudy Oldstyle Italic_0.otf",
+              "bytes": 23544
+            },
+            {
+              "path": "Demon the Fallen 20th Anniversary Edition/demon the fallen 20th template/Document fonts/Goudy SSi.ttf",
+              "bytes": 75240
+            },
+            {
+              "path": "Demon the Fallen 20th Anniversary Edition/demon the fallen 20th template/Document fonts/GOUDY.ttf",
+              "bytes": 50808
+            },
+            {
+              "path": "Demon the Fallen 20th Anniversary Edition/demon the fallen 20th template/Document fonts/grettin.ttf",
+              "bytes": 72684
+            },
+            {
+              "path": "Demon the Fallen 20th Anniversary Edition/demon the fallen 20th template/Document fonts/LushUs Medium.ttf",
+              "bytes": 25744
+            },
+            {
+              "path": "Demon the Fallen 20th Anniversary Edition/demon the fallen 20th template/Document fonts/scythe.ttf",
+              "bytes": 31064
+            }
+          ],
+          "linked_assets": [
+            {
+              "path": "Demon the Fallen 20th Anniversary Edition/demon the fallen 20th cover/Links/Demon 20 Cover Frame.tif",
+              "bytes": 8631080
+            },
+            {
+              "path": "Demon the Fallen 20th Anniversary Edition/demon the fallen 20th cover/Links/Demon 20th back cover.tif",
+              "bytes": 11508400
+            },
+            {
+              "path": "Demon the Fallen 20th Anniversary Edition/demon the fallen 20th cover/Links/Demon The Fallen 20th logo.tif",
+              "bytes": 6904352
+            },
+            {
+              "path": "Demon the Fallen 20th Anniversary Edition/demon the fallen 20th cover/Links/Demonpchmnt20.tif",
+              "bytes": 13996096
+            },
+            {
+              "path": "Demon the Fallen 20th Anniversary Edition/demon the fallen 20th cover/Links/SV WoD final.png",
+              "bytes": 1145510
+            },
+            {
+              "path": "Demon the Fallen 20th Anniversary Edition/demon the fallen 20th cover/Links/texture blue fire with scales.tif",
+              "bytes": 361987604
+            },
+            {
+              "path": "Demon the Fallen 20th Anniversary Edition/demon the fallen 20th cover/Links/WW_Logo.eps",
+              "bytes": 204791
+            },
+            {
+              "path": "Demon the Fallen 20th Anniversary Edition/demon the fallen 20th template/Links/Char sheet.pdf",
+              "bytes": 1496499
+            },
+            {
+              "path": "Demon the Fallen 20th Anniversary Edition/demon the fallen 20th template/Links/Demon 20 Header.ai",
+              "bytes": 8164421
+            },
+            {
+              "path": "Demon the Fallen 20th Anniversary Edition/demon the fallen 20th template/Links/Demon Border20 01.tif",
+              "bytes": 23483816
+            },
+            {
+              "path": "Demon the Fallen 20th Anniversary Edition/demon the fallen 20th template/Links/Demon Border20 AB.tif",
+              "bytes": 20168488
+            },
+            {
+              "path": "Demon the Fallen 20th Anniversary Edition/demon the fallen 20th template/Links/demon pentacle 20.tif",
+              "bytes": 13460624
+            },
+            {
+              "path": "Demon the Fallen 20th Anniversary Edition/demon the fallen 20th template/Links/Demonpchmnt20.tif",
+              "bytes": 13996096
+            },
+            {
+              "path": "Demon the Fallen 20th Anniversary Edition/demon the fallen 20th template/Links/Dtexturcmyk.tif",
+              "bytes": 6480396
+            },
+            {
+              "path": "Demon the Fallen 20th Anniversary Edition/demon the fallen 20th template/Links/SBardrk 20.tif",
+              "bytes": 1208548
+            },
+            {
+              "path": "Demon the Fallen 20th Anniversary Edition/demon the fallen 20th template/Links/Spmntk 20.tif",
+              "bytes": 2719892
+            },
+            {
+              "path": "Demon the Fallen 20th Anniversary Edition/demon the fallen 20th template/Links/WW_Logo.eps",
+              "bytes": 204791
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "style_id": "wr20",
+      "proposed_class": "wr20book",
+      "runtime_status": "not-implemented",
+      "packages": [
+        {
+          "folder": "Wraith the Oblivion 20th Anniversary Edition",
+          "file_count": 47,
+          "documents": [
+            {
+              "path": "Wraith the Oblivion 20th Anniversary Edition/wr20 ed sourcebook cover/Wr20 ed Sourcebook cover.idml",
+              "format": "idml",
+              "bytes": 603856,
+              "sha256": "40fa225bc743e7d91f083c026d4d9a492317bade52cb84f37fae1699b9325e37"
+            },
+            {
+              "path": "Wraith the Oblivion 20th Anniversary Edition/wr20 ed sourcebook cover/Wr20 ed Sourcebook cover.indd",
+              "format": "indd",
+              "bytes": 4952064,
+              "sha256": "9ea430d63fdace58540ce13db9bb10dc7ba3926d00ded752b7ce8027dd49120b"
+            },
+            {
+              "path": "Wraith the Oblivion 20th Anniversary Edition/wr20 ed sourcebook cover/Wr20 ed Sourcebook cover.pdf",
+              "format": "pdf",
+              "bytes": 3386093,
+              "sha256": "bdbc5d5459e012025edfa21c1960b1b0406d8f9330e7020b9c684732f84e8473"
+            },
+            {
+              "path": "Wraith the Oblivion 20th Anniversary Edition/wr20 ed sourcebook interior/Wr20 ed Sourcebook Interior.idml",
+              "format": "idml",
+              "bytes": 254471,
+              "sha256": "e8e6788e7263ac419236229bf03fc3f23331351b5189cf87d4d58ebec518e4fc"
+            },
+            {
+              "path": "Wraith the Oblivion 20th Anniversary Edition/wr20 ed sourcebook interior/Wr20 ed Sourcebook Interior.indd",
+              "format": "indd",
+              "bytes": 10829824,
+              "sha256": "60678e5e6af52f186aaab16741b269fac4b9cab326fbac70c3742a65d6221ba6"
+            },
+            {
+              "path": "Wraith the Oblivion 20th Anniversary Edition/wr20 ed sourcebook interior/Wr20 ed Sourcebook Interior.pdf",
+              "format": "pdf",
+              "bytes": 16671374,
+              "sha256": "24419c73eab5a5c82e530e83c746f5694ea722968dd328d46c1ddb9683292759"
+            }
+          ],
+          "archives": [],
+          "font_files": [
+            {
+              "path": "Wraith the Oblivion 20th Anniversary Edition/wr20 ed sourcebook cover/Document fonts/Adobe - GoudyStd-Italic.otf",
+              "bytes": 36588
+            },
+            {
+              "path": "Wraith the Oblivion 20th Anniversary Edition/wr20 ed sourcebook cover/Document fonts/Adobe - GoudyStd.otf",
+              "bytes": 47656
+            },
+            {
+              "path": "Wraith the Oblivion 20th Anniversary Edition/wr20 ed sourcebook cover/Document fonts/MatrixTall.ttf",
+              "bytes": 61787
+            },
+            {
+              "path": "Wraith the Oblivion 20th Anniversary Edition/wr20 ed sourcebook interior/Document fonts/Adobe - GoudyStd-Bold.otf",
+              "bytes": 35292
+            },
+            {
+              "path": "Wraith the Oblivion 20th Anniversary Edition/wr20 ed sourcebook interior/Document fonts/Adobe - GoudyStd-BoldItalic.otf",
+              "bytes": 35904
+            },
+            {
+              "path": "Wraith the Oblivion 20th Anniversary Edition/wr20 ed sourcebook interior/Document fonts/Adobe - GoudyStd-Italic.otf",
+              "bytes": 36588
+            },
+            {
+              "path": "Wraith the Oblivion 20th Anniversary Edition/wr20 ed sourcebook interior/Document fonts/Adobe - GoudyStd.otf",
+              "bytes": 47656
+            },
+            {
+              "path": "Wraith the Oblivion 20th Anniversary Edition/wr20 ed sourcebook interior/Document fonts/gob_.ttf",
+              "bytes": 81952
+            },
+            {
+              "path": "Wraith the Oblivion 20th Anniversary Edition/wr20 ed sourcebook interior/Document fonts/GOBI.PFB",
+              "bytes": 46253
+            },
+            {
+              "path": "Wraith the Oblivion 20th Anniversary Edition/wr20 ed sourcebook interior/Document fonts/MatrixTall.ttf",
+              "bytes": 61787
+            },
+            {
+              "path": "Wraith the Oblivion 20th Anniversary Edition/wr20 ed sourcebook interior/Document fonts/MinionPro-Regular_0.otf",
+              "bytes": 218640
+            },
+            {
+              "path": "Wraith the Oblivion 20th Anniversary Edition/wr20 ed sourcebook interior/Document fonts/VintageTypewriter-Corona.ttf",
+              "bytes": 217392
+            },
+            {
+              "path": "Wraith the Oblivion 20th Anniversary Edition/wr20 ed sourcebook interior/Document fonts/Wilhelm Klingspor Gotisch_0.ttf",
+              "bytes": 72108
+            },
+            {
+              "path": "Wraith the Oblivion 20th Anniversary Edition/wr20 ed sourcebook interior/Document fonts/Wilkli.TTF",
+              "bytes": 70684
+            },
+            {
+              "path": "Wraith the Oblivion 20th Anniversary Edition/wr20 ed sourcebook interior/Document fonts/ZapfDingbats_0.ttf",
+              "bytes": 156088
+            }
+          ],
+          "linked_assets": [
+            {
+              "path": "Wraith the Oblivion 20th Anniversary Edition/wr20 ed sourcebook cover/Links/Cobb_01.tif",
+              "bytes": 4299824
+            },
+            {
+              "path": "Wraith the Oblivion 20th Anniversary Edition/wr20 ed sourcebook cover/Links/SV WoD final.png",
+              "bytes": 1145510
+            },
+            {
+              "path": "Wraith the Oblivion 20th Anniversary Edition/wr20 ed sourcebook cover/Links/wraith2 chains _ black .tif",
+              "bytes": 63009516
+            },
+            {
+              "path": "Wraith the Oblivion 20th Anniversary Edition/wr20 ed sourcebook cover/Links/WTO20Logo_1merged.tif",
+              "bytes": 4816152
+            },
+            {
+              "path": "Wraith the Oblivion 20th Anniversary Edition/wr20 ed sourcebook interior/Links/Cobb P.tif",
+              "bytes": 158476
+            },
+            {
+              "path": "Wraith the Oblivion 20th Anniversary Edition/wr20 ed sourcebook interior/Links/Cobb Shadow Temp",
+              "bytes": 353876
+            },
+            {
+              "path": "Wraith the Oblivion 20th Anniversary Edition/wr20 ed sourcebook interior/Links/Cobb T.tif",
+              "bytes": 212204
+            },
+            {
+              "path": "Wraith the Oblivion 20th Anniversary Edition/wr20 ed sourcebook interior/Links/Cobb_01.tif",
+              "bytes": 4299824
+            },
+            {
+              "path": "Wraith the Oblivion 20th Anniversary Edition/wr20 ed sourcebook interior/Links/FoD Big Black Spread Cobb Swirl CMYK.tif",
+              "bytes": 23065760
+            },
+            {
+              "path": "Wraith the Oblivion 20th Anniversary Edition/wr20 ed sourcebook interior/Links/FoD Big Black Spread.tif",
+              "bytes": 70319692
+            },
+            {
+              "path": "Wraith the Oblivion 20th Anniversary Edition/wr20 ed sourcebook interior/Links/FOD SKULL Bronze.tif",
+              "bytes": 1868840
+            },
+            {
+              "path": "Wraith the Oblivion 20th Anniversary Edition/wr20 ed sourcebook interior/Links/glyphglowball.tif",
+              "bytes": 39916
+            },
+            {
+              "path": "Wraith the Oblivion 20th Anniversary Edition/wr20 ed sourcebook interior/Links/glyphlizzy.tif",
+              "bytes": 78848
+            },
+            {
+              "path": "Wraith the Oblivion 20th Anniversary Edition/wr20 ed sourcebook interior/Links/Wr20BorderL.psd",
+              "bytes": 159934941
+            },
+            {
+              "path": "Wraith the Oblivion 20th Anniversary Edition/wr20 ed sourcebook interior/Links/Wr20BorderR.psd",
+              "bytes": 165259041
+            },
+            {
+              "path": "Wraith the Oblivion 20th Anniversary Edition/wr20 ed sourcebook interior/Links/Wr20ChainElement.psd",
+              "bytes": 567072
+            },
+            {
+              "path": "Wraith the Oblivion 20th Anniversary Edition/wr20 ed sourcebook interior/Links/Wr20ChapterBorderA.psd",
+              "bytes": 143058322
+            },
+            {
+              "path": "Wraith the Oblivion 20th Anniversary Edition/wr20 ed sourcebook interior/Links/Wr20ChapterBorderB.psd",
+              "bytes": 142280237
+            },
+            {
+              "path": "Wraith the Oblivion 20th Anniversary Edition/wr20 ed sourcebook interior/Links/Wr20ChShBorder.psd",
+              "bytes": 163696112
+            },
+            {
+              "path": "Wraith the Oblivion 20th Anniversary Edition/wr20 ed sourcebook interior/Links/Wr20SidebarTexture.psd",
+              "bytes": 131799262
+            },
+            {
+              "path": "Wraith the Oblivion 20th Anniversary Edition/wr20 ed sourcebook interior/Links/wraith2 chains _ black .tif",
+              "bytes": 63009516
+            },
+            {
+              "path": "Wraith the Oblivion 20th Anniversary Edition/wr20 ed sourcebook interior/Links/WW_Logo.eps",
+              "bytes": 204791
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "style_id": "kote20-dharmabook",
+      "proposed_class": "kote20dharmabook",
+      "runtime_status": "not-implemented",
+      "packages": [
+        {
+          "folder": "Indesign KotE20 Dharmabook cover",
+          "file_count": 23,
+          "documents": [
+            {
+              "path": "Indesign KotE20 Dharmabook cover/Template KotE20 Dharmabook cover.idml",
+              "format": "idml",
+              "bytes": 84141,
+              "sha256": "a601e8673ed82422b3302579237c861fe924cedcc9e9acc1612b592ade1af484"
+            },
+            {
+              "path": "Indesign KotE20 Dharmabook cover/Template KotE20 Dharmabook cover.indd",
+              "format": "indd",
+              "bytes": 6463488,
+              "sha256": "15112bfc0b6eb8dec851f35fdc1fa14708dc196a0d9d82fb6886775d6bf16c0f"
+            }
+          ],
+          "archives": [],
+          "font_files": [
+            {
+              "path": "Indesign KotE20 Dharmabook cover/Document fonts/GOUDOS.TTF",
+              "bytes": 81376
+            },
+            {
+              "path": "Indesign KotE20 Dharmabook cover/Document fonts/GOUDOSB_0.TTF",
+              "bytes": 82796
+            },
+            {
+              "path": "Indesign KotE20 Dharmabook cover/Document fonts/kendo-itc1.ttf",
+              "bytes": 133863
+            }
+          ],
+          "linked_assets": [
+            {
+              "path": "Indesign KotE20 Dharmabook cover/Links/Color Light Dark Edge.eps",
+              "bytes": 7060141
+            },
+            {
+              "path": "Indesign KotE20 Dharmabook cover/Links/Dharma symbol.png",
+              "bytes": 1925173
+            },
+            {
+              "path": "Indesign KotE20 Dharmabook cover/Links/JADE EPS w clip.ai",
+              "bytes": 4678481
+            },
+            {
+              "path": "Indesign KotE20 Dharmabook cover/Links/kindred logo.eps",
+              "bytes": 48227
+            },
+            {
+              "path": "Indesign KotE20 Dharmabook cover/Links/KotE 20A Dharma header.tif",
+              "bytes": 11950288
+            },
+            {
+              "path": "Indesign KotE20 Dharmabook cover/Links/KotE 20A Logo.tif",
+              "bytes": 16753484
+            },
+            {
+              "path": "Indesign KotE20 Dharmabook cover/Links/KOTE Cover red texture 20A.jpg",
+              "bytes": 4053204
+            },
+            {
+              "path": "Indesign KotE20 Dharmabook cover/Links/SV WoD final.png",
+              "bytes": 1145510
+            },
+            {
+              "path": "Indesign KotE20 Dharmabook cover/Links/V20 Logo full.EN FX.tif",
+              "bytes": 3088664
+            },
+            {
+              "path": "Indesign KotE20 Dharmabook cover/Links/WoD Logo 3ª white letters.eps",
+              "bytes": 395286
+            },
+            {
+              "path": "Indesign KotE20 Dharmabook cover/Links/WW_Logo.eps",
+              "bytes": 204791
+            }
+          ]
+        },
+        {
+          "folder": "Indesign KotE20 Dharmabook interior",
+          "file_count": 48,
+          "documents": [
+            {
+              "path": "Indesign KotE20 Dharmabook interior/Template KotE20 Dharmabook interior.idml",
+              "format": "idml",
+              "bytes": 126376019,
+              "sha256": "8905a8e757f187d700b14ea503a81bc4191db8101d847646aca012e06d635ff5"
+            },
+            {
+              "path": "Indesign KotE20 Dharmabook interior/Template KotE20 Dharmabook interior.indd",
+              "format": "indd",
+              "bytes": 154247168,
+              "sha256": "a98a4f3e543074c6d60f53051e5d67a56d71a4d3f0b05775f666ff2924c9fc13"
+            },
+            {
+              "path": "Indesign KotE20 Dharmabook interior/Template KotE20 Dharmabook interior.pdf",
+              "format": "pdf",
+              "bytes": 39700040,
+              "sha256": "375c898c7cd6839d20133328a80825d3969d8765099ae6cae14554defd0c3891"
+            }
+          ],
+          "archives": [],
+          "font_files": [
+            {
+              "path": "Indesign KotE20 Dharmabook interior/Document fonts/akiraregular.ttf",
+              "bytes": 94396
+            },
+            {
+              "path": "Indesign KotE20 Dharmabook interior/Document fonts/GOUDOS.TTF",
+              "bytes": 81376
+            },
+            {
+              "path": "Indesign KotE20 Dharmabook interior/Document fonts/GOUDOSB_0.TTF",
+              "bytes": 82796
+            },
+            {
+              "path": "Indesign KotE20 Dharmabook interior/Document fonts/GOUDOSI_0.TTF",
+              "bytes": 80280
+            },
+            {
+              "path": "Indesign KotE20 Dharmabook interior/Document fonts/kendo-itc1.ttf",
+              "bytes": 133863
+            },
+            {
+              "path": "Indesign KotE20 Dharmabook interior/Document fonts/MinionPro-Regular_0.otf",
+              "bytes": 218640
+            },
+            {
+              "path": "Indesign KotE20 Dharmabook interior/Document fonts/Runchuu.ttf",
+              "bytes": 32940
+            },
+            {
+              "path": "Indesign KotE20 Dharmabook interior/Document fonts/TREEFRO0.TTF",
+              "bytes": 47960
+            }
+          ],
+          "linked_assets": [
+            {
+              "path": "Indesign KotE20 Dharmabook interior/Links/BKGN- Dragon Paper [color].jpg",
+              "bytes": 3094954
+            },
+            {
+              "path": "Indesign KotE20 Dharmabook interior/Links/BKGN- Flowery clouds[color].jpg",
+              "bytes": 4240851
+            },
+            {
+              "path": "Indesign KotE20 Dharmabook interior/Links/BKGN- Hand-Leaf 2pg.jpg",
+              "bytes": 3784308
+            },
+            {
+              "path": "Indesign KotE20 Dharmabook interior/Links/BKGN- Large Leaf 2pg.jpg",
+              "bytes": 3374511
+            },
+            {
+              "path": "Indesign KotE20 Dharmabook interior/Links/BKGN- Myst Leaf 2pg.jpg",
+              "bytes": 3372816
+            },
+            {
+              "path": "Indesign KotE20 Dharmabook interior/Links/BKGN- Partcl Leaf 2pg.jpg",
+              "bytes": 3671476
+            },
+            {
+              "path": "Indesign KotE20 Dharmabook interior/Links/BKGN-Bamboo [color].jpg",
+              "bytes": 3057985
+            },
+            {
+              "path": "Indesign KotE20 Dharmabook interior/Links/BKGN-BigDragonHandwrit [color].jpg",
+              "bytes": 3647119
+            },
+            {
+              "path": "Indesign KotE20 Dharmabook interior/Links/BKGN-Branches [Color].jpg",
+              "bytes": 3558800
+            },
+            {
+              "path": "Indesign KotE20 Dharmabook interior/Links/BKGN-Branchesw-Flowers [Color].jpg",
+              "bytes": 4822060
+            },
+            {
+              "path": "Indesign KotE20 Dharmabook interior/Links/BKGN-Pine Branches Small [color].jpg",
+              "bytes": 4125434
+            },
+            {
+              "path": "Indesign KotE20 Dharmabook interior/Links/BKGN-Squiggle 2pg.jpg",
+              "bytes": 5315621
+            },
+            {
+              "path": "Indesign KotE20 Dharmabook interior/Links/Chi.tiff",
+              "bytes": 1051246
+            },
+            {
+              "path": "Indesign KotE20 Dharmabook interior/Links/Color Light Dark Edge.eps",
+              "bytes": 7060141
+            },
+            {
+              "path": "Indesign KotE20 Dharmabook interior/Links/Dharma symbol.png",
+              "bytes": 1925173
+            },
+            {
+              "path": "Indesign KotE20 Dharmabook interior/Links/JADE EPS w clip.eps",
+              "bytes": 16012198
+            },
+            {
+              "path": "Indesign KotE20 Dharmabook interior/Links/koe character sheet without frame.eps",
+              "bytes": 2682738
+            },
+            {
+              "path": "Indesign KotE20 Dharmabook interior/Links/KotE 20A Dharma header.tif",
+              "bytes": 11950288
+            },
+            {
+              "path": "Indesign KotE20 Dharmabook interior/Links/KOTE Cover green texture 20A.jpg",
+              "bytes": 3183232
+            },
+            {
+              "path": "Indesign KotE20 Dharmabook interior/Links/KOTE Cover red texture 20A.jpg",
+              "bytes": 3392075
+            },
+            {
+              "path": "Indesign KotE20 Dharmabook interior/Links/line-Pagenumber thinbrush.tiff",
+              "bytes": 85456
+            },
+            {
+              "path": "Indesign KotE20 Dharmabook interior/Links/Line.ai",
+              "bytes": 180702
+            },
+            {
+              "path": "Indesign KotE20 Dharmabook interior/Links/Mandala Wheel Color.ai",
+              "bytes": 17951311
+            },
+            {
+              "path": "Indesign KotE20 Dharmabook interior/Links/Page frame effects Character sheet.tif",
+              "bytes": 10679048
+            },
+            {
+              "path": "Indesign KotE20 Dharmabook interior/Links/Page frame effects.tif",
+              "bytes": 16346992
+            },
+            {
+              "path": "Indesign KotE20 Dharmabook interior/Links/Papyrus Square.jpg",
+              "bytes": 2337520
+            },
+            {
+              "path": "Indesign KotE20 Dharmabook interior/Links/Sidebar Dark [color].ai",
+              "bytes": 1917368
+            },
+            {
+              "path": "Indesign KotE20 Dharmabook interior/Links/SidebarWicker(Dark)VERT[color].ai",
+              "bytes": 3939842
+            },
+            {
+              "path": "Indesign KotE20 Dharmabook interior/Links/Vertical Leaf TextureRIGHT [color].ai",
+              "bytes": 5477868
+            },
+            {
+              "path": "Indesign KotE20 Dharmabook interior/Links/WW_Logo.eps",
+              "bytes": 204791
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "style_id": "kotek20",
+      "proposed_class": "kotek20book",
+      "runtime_status": "not-implemented",
+      "packages": [
+        {
+          "folder": "Indesign KotEK20 Sourcebook cover",
+          "file_count": 16,
+          "documents": [
+            {
+              "path": "Indesign KotEK20 Sourcebook cover/KotEK20 Sourcebook cover.idml",
+              "format": "idml",
+              "bytes": 73164,
+              "sha256": "c2afc8bac977bc5fcdff3b846b4970550d1287f7d9103d9de7c41e49887e1494"
+            },
+            {
+              "path": "Indesign KotEK20 Sourcebook cover/KotEK20 Sourcebook cover.indd",
+              "format": "indd",
+              "bytes": 3530752,
+              "sha256": "ba8931a6a4e31b6327397f59ba17390920295c1ad4474b2f025fb0b04eccc001"
+            },
+            {
+              "path": "Indesign KotEK20 Sourcebook cover/KotEK20 Sourcebook cover.pdf",
+              "format": "pdf",
+              "bytes": 2963614,
+              "sha256": "2d29e83992cbef94fedce50f0f4bf908e4b990f95924e8a8d1b56e17427faea0"
+            }
+          ],
+          "archives": [],
+          "font_files": [
+            {
+              "path": "Indesign KotEK20 Sourcebook cover/Document fonts/Caesar.ttf",
+              "bytes": 61240
+            },
+            {
+              "path": "Indesign KotEK20 Sourcebook cover/Document fonts/GOUDY.TTF",
+              "bytes": 48432
+            },
+            {
+              "path": "Indesign KotEK20 Sourcebook cover/Document fonts/MinionPro-Regular_0.otf",
+              "bytes": 218640
+            }
+          ],
+          "linked_assets": [
+            {
+              "path": "Indesign KotEK20 Sourcebook cover/Links/Ebon Kingdom Cover background.psd",
+              "bytes": 57561319
+            },
+            {
+              "path": "Indesign KotEK20 Sourcebook cover/Links/Full Cover KotEK20.tif",
+              "bytes": 101960060
+            },
+            {
+              "path": "Indesign KotEK20 Sourcebook cover/Links/Green parchment.tif",
+              "bytes": 23450752
+            },
+            {
+              "path": "Indesign KotEK20 Sourcebook cover/Links/Logo KotEK20.tif",
+              "bytes": 3727180
+            },
+            {
+              "path": "Indesign KotEK20 Sourcebook cover/Links/SV WoD final.png",
+              "bytes": 1145510
+            },
+            {
+              "path": "Indesign KotEK20 Sourcebook cover/Links/V20 Logo GreenMarble.tif",
+              "bytes": 3999456
+            },
+            {
+              "path": "Indesign KotEK20 Sourcebook cover/Links/WoD Logo 3ª white letters.eps",
+              "bytes": 395286
+            },
+            {
+              "path": "Indesign KotEK20 Sourcebook cover/Links/WW_Logo.eps",
+              "bytes": 204791
+            }
+          ]
+        },
+        {
+          "folder": "Indesign KotEK20 Sourcebook interior",
+          "file_count": 34,
+          "documents": [
+            {
+              "path": "Indesign KotEK20 Sourcebook interior/KotEK20 Sourcebook interior.idml",
+              "format": "idml",
+              "bytes": 589209,
+              "sha256": "41a07af02862dec68193213e4223aa1a8107a17c86e837ea9b0c126935862130"
+            },
+            {
+              "path": "Indesign KotEK20 Sourcebook interior/KotEK20 Sourcebook interior.indd",
+              "format": "indd",
+              "bytes": 8081408,
+              "sha256": "ad4f1656f1b0a3251708f549989e5953c0be9b13e1f829874a018153995c2300"
+            },
+            {
+              "path": "Indesign KotEK20 Sourcebook interior/KotEK20 Sourcebook interior.pdf",
+              "format": "pdf",
+              "bytes": 7101364,
+              "sha256": "156d06127eb21652c62d8093843338ad93e0b86f7b0a36be7adff944833e5092"
+            }
+          ],
+          "archives": [],
+          "font_files": [
+            {
+              "path": "Indesign KotEK20 Sourcebook interior/Document fonts/Caesar.ttf",
+              "bytes": 61240
+            },
+            {
+              "path": "Indesign KotEK20 Sourcebook interior/Document fonts/Friz Quadrata Std Medium.otf",
+              "bytes": 28504
+            },
+            {
+              "path": "Indesign KotEK20 Sourcebook interior/Document fonts/GOUDOS.TTF",
+              "bytes": 81376
+            },
+            {
+              "path": "Indesign KotEK20 Sourcebook interior/Document fonts/GOUDOSB.TTF",
+              "bytes": 82796
+            },
+            {
+              "path": "Indesign KotEK20 Sourcebook interior/Document fonts/GOUDOSBI.ttf",
+              "bytes": 85220
+            },
+            {
+              "path": "Indesign KotEK20 Sourcebook interior/Document fonts/GOUDOSI.TTF",
+              "bytes": 80280
+            },
+            {
+              "path": "Indesign KotEK20 Sourcebook interior/Document fonts/Goudy Old Style Italic BT.ttf",
+              "bytes": 58984
+            },
+            {
+              "path": "Indesign KotEK20 Sourcebook interior/Document fonts/Goudy SSi Bold Italic.ttf",
+              "bytes": 76500
+            },
+            {
+              "path": "Indesign KotEK20 Sourcebook interior/Document fonts/Goudy SSi Bold.ttf",
+              "bytes": 75749
+            },
+            {
+              "path": "Indesign KotEK20 Sourcebook interior/Document fonts/Goudy SSi Italic.ttf",
+              "bytes": 76299
+            },
+            {
+              "path": "Indesign KotEK20 Sourcebook interior/Document fonts/Goudy SSi.ttf",
+              "bytes": 75240
+            },
+            {
+              "path": "Indesign KotEK20 Sourcebook interior/Document fonts/GoudyOlSt BT Roman.ttf",
+              "bytes": 61600
+            },
+            {
+              "path": "Indesign KotEK20 Sourcebook interior/Document fonts/Goudyolst-bt-bold.ttf",
+              "bytes": 65944
+            },
+            {
+              "path": "Indesign KotEK20 Sourcebook interior/Document fonts/MinionPro-Regular_0.otf",
+              "bytes": 218640
+            }
+          ],
+          "linked_assets": [
+            {
+              "path": "Indesign KotEK20 Sourcebook interior/Links/barra.psd",
+              "bytes": 39153136
+            },
+            {
+              "path": "Indesign KotEK20 Sourcebook interior/Links/book back color frame.tif",
+              "bytes": 22561212
+            },
+            {
+              "path": "Indesign KotEK20 Sourcebook interior/Links/book background color.tif",
+              "bytes": 35104300
+            },
+            {
+              "path": "Indesign KotEK20 Sourcebook interior/Links/bookfullback color character sheetB.tif",
+              "bytes": 42676544
+            },
+            {
+              "path": "Indesign KotEK20 Sourcebook interior/Links/bookfullback color character sheetB2.tif",
+              "bytes": 42677512
+            },
+            {
+              "path": "Indesign KotEK20 Sourcebook interior/Links/chapterfullback.tif",
+              "bytes": 36150134
+            },
+            {
+              "path": "Indesign KotEK20 Sourcebook interior/Links/chapterfullbackColor.tif",
+              "bytes": 112658296
+            },
+            {
+              "path": "Indesign KotEK20 Sourcebook interior/Links/Character Sheet empty.ai",
+              "bytes": 194037
+            },
+            {
+              "path": "Indesign KotEK20 Sourcebook interior/Links/charsheet.tif",
+              "bytes": 9414538
+            },
+            {
+              "path": "Indesign KotEK20 Sourcebook interior/Links/Ebon Ankh with effects.ai",
+              "bytes": 11043805
+            },
+            {
+              "path": "Indesign KotEK20 Sourcebook interior/Links/Ebony Sidebar Box.tif",
+              "bytes": 10461588
+            },
+            {
+              "path": "Indesign KotEK20 Sourcebook interior/Links/Ebony Sidebar frame2.png",
+              "bytes": 227937
+            },
+            {
+              "path": "Indesign KotEK20 Sourcebook interior/Links/Frame.tif",
+              "bytes": 5500256
+            },
+            {
+              "path": "Indesign KotEK20 Sourcebook interior/Links/tome.tif",
+              "bytes": 4939752
+            },
+            {
+              "path": "Indesign KotEK20 Sourcebook interior/Links/WW_Logo.eps",
+              "bytes": 204791
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "style_id": "kotek20-legacybook",
+      "proposed_class": "kotek20legacybook",
+      "runtime_status": "not-implemented",
+      "packages": [
+        {
+          "folder": "Indesign KotEK20 Legacybook cover",
+          "file_count": 17,
+          "documents": [
+            {
+              "path": "Indesign KotEK20 Legacybook cover/KotEK20 Legacybook cover.idml",
+              "format": "idml",
+              "bytes": 78478,
+              "sha256": "146553da8e5334a28a4b2ce43b38f0465c5385f654775e827d8dabad44d26869"
+            },
+            {
+              "path": "Indesign KotEK20 Legacybook cover/KotEK20 Legacybook cover.indd",
+              "format": "indd",
+              "bytes": 3932160,
+              "sha256": "b1cdfe4593acb2f881e2ca16ae2e895ed057bd261de589528b08e86a506eec25"
+            },
+            {
+              "path": "Indesign KotEK20 Legacybook cover/KotEK20 Legacybook cover.pdf",
+              "format": "pdf",
+              "bytes": 3855751,
+              "sha256": "c2ecd4c7acf0eb81b21b660a868457b530f020369259bd9140f09b63849e2638"
+            }
+          ],
+          "archives": [],
+          "font_files": [
+            {
+              "path": "Indesign KotEK20 Legacybook cover/Document fonts/Caesar.ttf",
+              "bytes": 61240
+            },
+            {
+              "path": "Indesign KotEK20 Legacybook cover/Document fonts/GOUDY.TTF",
+              "bytes": 48432
+            },
+            {
+              "path": "Indesign KotEK20 Legacybook cover/Document fonts/MinionPro-Regular_0.otf",
+              "bytes": 218640
+            }
+          ],
+          "linked_assets": [
+            {
+              "path": "Indesign KotEK20 Legacybook cover/Links/Chapter header color.tif",
+              "bytes": 19050140
+            },
+            {
+              "path": "Indesign KotEK20 Legacybook cover/Links/Ebon Kingdom Cover background.psd",
+              "bytes": 57561319
+            },
+            {
+              "path": "Indesign KotEK20 Legacybook cover/Links/Full Cover KotEK20.tif",
+              "bytes": 101960060
+            },
+            {
+              "path": "Indesign KotEK20 Legacybook cover/Links/Green parchment.tif",
+              "bytes": 23450752
+            },
+            {
+              "path": "Indesign KotEK20 Legacybook cover/Links/Logo KotEK20.tif",
+              "bytes": 3727180
+            },
+            {
+              "path": "Indesign KotEK20 Legacybook cover/Links/SV WoD final.png",
+              "bytes": 1145510
+            },
+            {
+              "path": "Indesign KotEK20 Legacybook cover/Links/V20 Logo GreenMarble.tif",
+              "bytes": 3999456
+            },
+            {
+              "path": "Indesign KotEK20 Legacybook cover/Links/WoD Logo 3ª white letters.eps",
+              "bytes": 395286
+            },
+            {
+              "path": "Indesign KotEK20 Legacybook cover/Links/WW_Logo.eps",
+              "bytes": 204791
+            }
+          ]
+        },
+        {
+          "folder": "Indesign KotEK20 Legacybook interior",
+          "file_count": 33,
+          "documents": [
+            {
+              "path": "Indesign KotEK20 Legacybook interior/KotEK20 Legacybook interior.idml",
+              "format": "idml",
+              "bytes": 767474,
+              "sha256": "741baed2e19f770efd7cf15a44401aeeb6ff887e34a2c5d2a68aae9ccc6071ce"
+            },
+            {
+              "path": "Indesign KotEK20 Legacybook interior/KotEK20 Legacybook interior.indd",
+              "format": "indd",
+              "bytes": 6381568,
+              "sha256": "bd851376bb522d1677089b9216949563488dafb9e11fad4305cf679f91c1cf55"
+            },
+            {
+              "path": "Indesign KotEK20 Legacybook interior/KotEK20 Legacybook interior.pdf",
+              "format": "pdf",
+              "bytes": 19302147,
+              "sha256": "94d102c21b5b32de3f81dfc657ded5e3ab2c18be463c588065f4d5a0a0df3adb"
+            }
+          ],
+          "archives": [],
+          "font_files": [
+            {
+              "path": "Indesign KotEK20 Legacybook interior/Document fonts/Aquiline.ttf",
+              "bytes": 173596
+            },
+            {
+              "path": "Indesign KotEK20 Legacybook interior/Document fonts/Caesar.ttf",
+              "bytes": 61240
+            },
+            {
+              "path": "Indesign KotEK20 Legacybook interior/Document fonts/Friz Quadrata Std Medium.otf",
+              "bytes": 28504
+            },
+            {
+              "path": "Indesign KotEK20 Legacybook interior/Document fonts/GOUDOS.TTF",
+              "bytes": 81376
+            },
+            {
+              "path": "Indesign KotEK20 Legacybook interior/Document fonts/GOUDOSB.TTF",
+              "bytes": 82796
+            },
+            {
+              "path": "Indesign KotEK20 Legacybook interior/Document fonts/GOUDOSBI.ttf",
+              "bytes": 85220
+            },
+            {
+              "path": "Indesign KotEK20 Legacybook interior/Document fonts/GOUDOSI.TTF",
+              "bytes": 80280
+            },
+            {
+              "path": "Indesign KotEK20 Legacybook interior/Document fonts/Goudy Old Style Italic BT.ttf",
+              "bytes": 58984
+            },
+            {
+              "path": "Indesign KotEK20 Legacybook interior/Document fonts/Goudy SSi Bold Italic.ttf",
+              "bytes": 76500
+            },
+            {
+              "path": "Indesign KotEK20 Legacybook interior/Document fonts/Goudy SSi Bold.ttf",
+              "bytes": 75749
+            },
+            {
+              "path": "Indesign KotEK20 Legacybook interior/Document fonts/Goudy SSi Italic.ttf",
+              "bytes": 76299
+            },
+            {
+              "path": "Indesign KotEK20 Legacybook interior/Document fonts/Goudy SSi.ttf",
+              "bytes": 75240
+            },
+            {
+              "path": "Indesign KotEK20 Legacybook interior/Document fonts/GoudyOlSt BT Roman.ttf",
+              "bytes": 61600
+            },
+            {
+              "path": "Indesign KotEK20 Legacybook interior/Document fonts/Goudyolst-bt-bold.ttf",
+              "bytes": 65944
+            },
+            {
+              "path": "Indesign KotEK20 Legacybook interior/Document fonts/MinionPro-Regular_0.otf",
+              "bytes": 218640
+            }
+          ],
+          "linked_assets": [
+            {
+              "path": "Indesign KotEK20 Legacybook interior/Links/background color character sheet.tif",
+              "bytes": 8685100
+            },
+            {
+              "path": "Indesign KotEK20 Legacybook interior/Links/barra.psd",
+              "bytes": 39153136
+            },
+            {
+              "path": "Indesign KotEK20 Legacybook interior/Links/book back color frame.tif",
+              "bytes": 22561212
+            },
+            {
+              "path": "Indesign KotEK20 Legacybook interior/Links/book background color.tif",
+              "bytes": 35104300
+            },
+            {
+              "path": "Indesign KotEK20 Legacybook interior/Links/chapterfullback.tif",
+              "bytes": 36150134
+            },
+            {
+              "path": "Indesign KotEK20 Legacybook interior/Links/chapterfullbackColor.tif",
+              "bytes": 112658296
+            },
+            {
+              "path": "Indesign KotEK20 Legacybook interior/Links/Character Sheet empty.ai",
+              "bytes": 194037
+            },
+            {
+              "path": "Indesign KotEK20 Legacybook interior/Links/charsheet.tif",
+              "bytes": 9414538
+            },
+            {
+              "path": "Indesign KotEK20 Legacybook interior/Links/Ebony Sidebar Box.tif",
+              "bytes": 10461588
+            },
+            {
+              "path": "Indesign KotEK20 Legacybook interior/Links/Ebony Sidebar frame2.png",
+              "bytes": 227937
+            },
+            {
+              "path": "Indesign KotEK20 Legacybook interior/Links/foreground color character sheet.tif",
+              "bytes": 6641820
+            },
+            {
+              "path": "Indesign KotEK20 Legacybook interior/Links/Updated Prologue Parchment.tif",
+              "bytes": 43139576
+            },
+            {
+              "path": "Indesign KotEK20 Legacybook interior/Links/WW_Logo.eps",
+              "bytes": 204791
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "style_id": "wod",
+      "proposed_class": "wodbook",
+      "runtime_status": "not-implemented",
+      "packages": [
+        {
+          "folder": "World of Darkness 20th Anniversary Edition",
+          "file_count": 30,
+          "documents": [
+            {
+              "path": "World of Darkness 20th Anniversary Edition/wod 20th sourcebook cover/WoD 20th Sourcebook Cover.idml",
+              "format": "idml",
+              "bytes": 68976,
+              "sha256": "f7ce80b9491d375e1e40b9e88ffb395bfa38ea0a16ad2f98aeefd5595f0d3151"
+            },
+            {
+              "path": "World of Darkness 20th Anniversary Edition/wod 20th sourcebook cover/WoD 20th Sourcebook Cover.indd",
+              "format": "indd",
+              "bytes": 2207744,
+              "sha256": "7ec759bdea6da7faec59919300020ee1b326c371225c3ba8621e9e7b15a3a74e"
+            },
+            {
+              "path": "World of Darkness 20th Anniversary Edition/wod 20th sourcebook cover/WoD 20th Sourcebook Cover.pdf",
+              "format": "pdf",
+              "bytes": 5220315,
+              "sha256": "46a53193a0a22759c775befe84c12184e76829a410d24a2fbb20d72fe1503688"
+            },
+            {
+              "path": "World of Darkness 20th Anniversary Edition/WoD 20th Sourcebook template/WoD 20th Sourcebook inside.idml",
+              "format": "idml",
+              "bytes": 110072,
+              "sha256": "84aff5fbb2a45948b4e744a54a488e61187beeff1a001b77334f3264f2a32b02"
+            },
+            {
+              "path": "World of Darkness 20th Anniversary Edition/WoD 20th Sourcebook template/WoD 20th Sourcebook inside.indd",
+              "format": "indd",
+              "bytes": 3608576,
+              "sha256": "e221a1922d26fc0772aa5d8e5cb606909157264bd3b48ac5812d018d3a6fae45"
+            },
+            {
+              "path": "World of Darkness 20th Anniversary Edition/WoD 20th Sourcebook template/WoD 20th Sourcebook inside.pdf",
+              "format": "pdf",
+              "bytes": 2341297,
+              "sha256": "eb0a320af9e6d061ed4df32be2e17a1c97e4bed6338a6e611fd2d13db9a1dd0c"
+            }
+          ],
+          "archives": [],
+          "font_files": [
+            {
+              "path": "World of Darkness 20th Anniversary Edition/wod 20th sourcebook cover/Document fonts/Goudy SSi Bold.ttf",
+              "bytes": 75749
+            },
+            {
+              "path": "World of Darkness 20th Anniversary Edition/wod 20th sourcebook cover/Document fonts/Goudy SSi.ttf",
+              "bytes": 75240
+            },
+            {
+              "path": "World of Darkness 20th Anniversary Edition/wod 20th sourcebook cover/Document fonts/MinionPro-Regular_0.otf",
+              "bytes": 218640
+            },
+            {
+              "path": "World of Darkness 20th Anniversary Edition/wod 20th sourcebook cover/Document fonts/OPTIProtea.otf",
+              "bytes": 36524
+            },
+            {
+              "path": "World of Darkness 20th Anniversary Edition/WoD 20th Sourcebook template/Document fonts/Goudy SSi Bold.ttf",
+              "bytes": 75749
+            },
+            {
+              "path": "World of Darkness 20th Anniversary Edition/WoD 20th Sourcebook template/Document fonts/Goudy SSi Italic.ttf",
+              "bytes": 76299
+            },
+            {
+              "path": "World of Darkness 20th Anniversary Edition/WoD 20th Sourcebook template/Document fonts/Goudy SSi.ttf",
+              "bytes": 75240
+            },
+            {
+              "path": "World of Darkness 20th Anniversary Edition/WoD 20th Sourcebook template/Document fonts/MinionPro-Regular_0.otf",
+              "bytes": 218640
+            },
+            {
+              "path": "World of Darkness 20th Anniversary Edition/WoD 20th Sourcebook template/Document fonts/OPTIProtea.otf",
+              "bytes": 36524
+            }
+          ],
+          "linked_assets": [
+            {
+              "path": "World of Darkness 20th Anniversary Edition/wod 20th sourcebook cover/Links/20th World of Darkness frame cover.tif",
+              "bytes": 39317212
+            },
+            {
+              "path": "World of Darkness 20th Anniversary Edition/wod 20th sourcebook cover/Links/SV WoD final.png",
+              "bytes": 1145510
+            },
+            {
+              "path": "World of Darkness 20th Anniversary Edition/wod 20th sourcebook cover/Links/WoD 2nd ed background cover.tif",
+              "bytes": 9845640
+            },
+            {
+              "path": "World of Darkness 20th Anniversary Edition/wod 20th sourcebook cover/Links/WoD Logo covers.eps",
+              "bytes": 390166
+            },
+            {
+              "path": "World of Darkness 20th Anniversary Edition/wod 20th sourcebook cover/Links/WW_Logo.eps",
+              "bytes": 204791
+            },
+            {
+              "path": "World of Darkness 20th Anniversary Edition/WoD 20th Sourcebook template/Links/20th World of Darkness frame 1 page.tif",
+              "bytes": 82664652
+            },
+            {
+              "path": "World of Darkness 20th Anniversary Edition/WoD 20th Sourcebook template/Links/20th World of Darkness frame.tif",
+              "bytes": 115909444
+            },
+            {
+              "path": "World of Darkness 20th Anniversary Edition/WoD 20th Sourcebook template/Links/WoD 20th Header.tif",
+              "bytes": 7453224
+            },
+            {
+              "path": "World of Darkness 20th Anniversary Edition/WoD 20th Sourcebook template/Links/WoD 2nd ed background cover.tif",
+              "bytes": 9845640
+            },
+            {
+              "path": "World of Darkness 20th Anniversary Edition/WoD 20th Sourcebook template/Links/WoD symbol 20th.tif",
+              "bytes": 1760696
+            },
+            {
+              "path": "World of Darkness 20th Anniversary Edition/WoD 20th Sourcebook template/Links/WW logo BN Adress.eps",
+              "bytes": 828310
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

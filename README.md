@@ -7,6 +7,11 @@ The corrected native PDF installation implements generic class-selected commands
 See the [Crossover Style Architecture guide](docs/design/Crossover-Style-Architecture.md) for implemented behavior and extension hooks.
 WoD/MSC renderers and generic EPUB acceptance remain future work.
 
+The supplied X20 packages are catalogued in the
+[output-profile inventory and class proposal](docs/design/X20-Output-Profiles.md).
+It identifies 17 candidate styles across gamelines, historical sublines, and
+book formats; only M20 is currently implemented.
+
 ## Install and update (Windows / Git Bash)
 
 From your checkout on `main`, first install and repeat updates use the same commands:
