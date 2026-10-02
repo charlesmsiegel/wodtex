@@ -1,0 +1,188 @@
+{
+  "kind": "wodtex-output-profile",
+  "schema_version": 1,
+  "style_id": "w20",
+  "class": "w20book",
+  "family": "werewolf",
+  "outputs": [
+    "pdf"
+  ],
+  "renderer": "measured-native-pdf",
+  "page": [
+    612.0,
+    792.0
+  ],
+  "geometry": {
+    "top": 54.0,
+    "bottom": 54.0,
+    "inner": 63.0,
+    "outer": 54.0,
+    "columns": 2,
+    "gutter": 12.0
+  },
+  "typography": {
+    "body_size": 11.0,
+    "body_leading": 12.5,
+    "indent": 18.0,
+    "heading_size": 30.0,
+    "heading_leading": 36.0,
+    "chapter_size": 48.0,
+    "chapter_leading": 56.0
+  },
+  "fonts": {
+    "body": {
+      "path": "W4 InDesign/Indesign/W20 Supplement Template/Document fonts/GOUDOS.TTF",
+      "bytes": 81376,
+      "member": null,
+      "sha256": "380e2cd97160e14042cea52ff785ca92d966e29f873cf2b93e1746f3a582ec74",
+      "postscript": "GoudyOldStyleT-Regular",
+      "family": "Goudy Old Style",
+      "face": "Regular",
+      "notice": "Data by URW, Type Solutions, Inc. \u00a9 1993. Microsoft Corporation. All rights reserved.",
+      "license": null
+    },
+    "bold": {
+      "path": "W4 InDesign/Indesign/W20 Supplement Template/Document fonts/GOUDOSB_0.TTF",
+      "bytes": 82796,
+      "member": null,
+      "sha256": "f3cd0e13e4a0ed77522b1ab29061da6658f449d1d89b56751cdcdeed86da47e2",
+      "postscript": "GoudyOldStyleT-Bold",
+      "family": "Goudy Old Style",
+      "face": "Bold",
+      "notice": "Data by URW, Type Solutions, Inc. \u00a9 1993. Microsoft Corporation. All rights reserved.",
+      "license": null
+    },
+    "italic": {
+      "path": "W4 InDesign/Indesign/W20 Supplement Template/Document fonts/GOUDOSI_0.TTF",
+      "bytes": 80280,
+      "member": null,
+      "sha256": "71d2d85781689de6326a229aeba2d143a5b3e8a4f0fc93b75af197fb63bf05bd",
+      "postscript": "GoudyOldStyleT-Italic",
+      "family": "Goudy Old Style",
+      "face": "Italic",
+      "notice": "Data by URW, Type Solutions, Inc. \u00a9 1993. Microsoft Corporation. All rights reserved.",
+      "license": null
+    },
+    "heading": {
+      "path": "W4 InDesign/Indesign/W20 Supplement Template/Document fonts/balthazarregular.ttf",
+      "bytes": 64544,
+      "member": null,
+      "sha256": "d15c469565c4ce3a52ef9cdd6b79d0dcd68521d598166055d8c330186f981e7f",
+      "postscript": "Balthazar",
+      "family": "Balthazar",
+      "face": "Regular",
+      "notice": "Copyright 1990-1993 FontBank, Inc.",
+      "license": null
+    },
+    "chapter": {
+      "path": "W4 InDesign/Indesign/W20 Supplement Template/Document fonts/balthazarregular.ttf",
+      "bytes": 64544,
+      "member": null,
+      "sha256": "d15c469565c4ce3a52ef9cdd6b79d0dcd68521d598166055d8c330186f981e7f",
+      "postscript": "Balthazar",
+      "family": "Balthazar",
+      "face": "Regular",
+      "notice": "Copyright 1990-1993 FontBank, Inc.",
+      "license": null
+    },
+    "bolditalic": {
+      "path": "Vampire the Masquerade 20th Anniversary Edition Clanbooks/Inside/Document fonts/GOUDOSBI.ttf",
+      "bytes": 85220,
+      "member": null,
+      "sha256": "577ccf75485cd4088a94be38dcf4c0fff758c8d74b555ce05d7ee3e585dedc36",
+      "postscript": "GoudyOldStyle-BoldItalic",
+      "family": "Goudy Old Style",
+      "face": "Bold Italic",
+      "notice": "Copyright (c) 1992-96 ElseWare. All rights reserved.",
+      "license": null
+    }
+  },
+  "reference": {
+    "path": "W4 InDesign/Indesign/W20 Supplement Template/Werewolf 4th ed. template.pdf",
+    "member": null,
+    "sha256": "be7d95d055f77d7182b649440fd707086b7205efe8b4078ce582a9c17462af72"
+  },
+  "border_pages": {
+    "body-left": 2,
+    "body-right": 3
+  },
+  "source_measurements": {
+    "styles": {},
+    "geometry": [],
+    "pdf_source": {
+      "path": "W4 InDesign/Indesign/W20 Supplement Template/Werewolf 4th ed. template.pdf",
+      "member": null
+    },
+    "idml_source": null,
+    "pdf_pages": 8,
+    "pdf_dimensions": [
+      [
+        0.0,
+        0.0,
+        612.0,
+        792.0
+      ],
+      [
+        0.0,
+        0.0,
+        612.0,
+        792.0
+      ],
+      [
+        0.0,
+        0.0,
+        612.0,
+        792.0
+      ],
+      [
+        0.0,
+        0.0,
+        612.0,
+        792.0
+      ],
+      [
+        0.0,
+        0.0,
+        612.0,
+        792.0
+      ],
+      [
+        0.0,
+        0.0,
+        612.0,
+        792.0
+      ],
+      [
+        0.0,
+        0.0,
+        612.0,
+        792.0
+      ],
+      [
+        0.0,
+        0.0,
+        612.0,
+        792.0
+      ]
+    ]
+  },
+  "limitations": [
+    "No IDML supplied: page and typography measured from PDF; body margins use the PDF text-frame envelope with explicit two-column composition.",
+    "Interior titles, credits, chapter composition and component boxes are native adaptations; alternate clan/season/chapter variants are not exhaustive pixel replicas.",
+    "PDF-only profile; EPUB and foreign-host explicit element adapters are not implemented.",
+    "Outer frame strips use the supplied reference artwork; decorative sample art and template placeholder content are excluded."
+  ],
+  "capabilities": [
+    "setup",
+    "maketitle",
+    "makecredits",
+    "sidebar",
+    "sidebarwide",
+    "sidebarbreak",
+    "booktable",
+    "tablelead",
+    "statblock",
+    "statentry",
+    "artreserve"
+  ]
+}
