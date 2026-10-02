@@ -12,7 +12,7 @@ the user's request. Their verified tips below remain in main's commit history.
 | `x20/changeling` | `7b360f8` | C20, Dark Ages Fae |
 | `x20/demon` | `fb01578` | D20 |
 | `x20/wraith` | `216e4c9` | Wr20 |
-| `x20/eastern` | `8acfb2a` | KotE20 dharmabook, KotEK20, KotEK20 legacybook |
+| `x20/eastern` | `c8b4217` | KotE20 dharmabook, KotEK20, KotEK20 legacybook |
 | `x20/wod` | `220273c` | General World of Darkness sourcebook |
 
 Every family started from `x20/foundation` and includes the final shared fixes.
@@ -51,13 +51,20 @@ Class names are listed in [the examples index](../../examples/profiles/README.md
   bytes on update. The native archive acceptance test passes; its PDFs and
   per-class page counts are under `build/x20/archive-proof/`.
 - Full discovery was compared with an untouched `git archive main` checkout
+  at the original `8270c61` baseline
   under the same environment. No failing test was introduced. The remaining
   four launcher failures and 34 legacy runtime/input errors also occur on main;
   the package-path and CRLF installer failures on main are resolved here.
-  Final discovery ran 141 tests: four failures, 34 errors, 44 skips and one
+  Final publication discovery ran 142 tests: four failures, 34 errors, 44 skips and one
   expected failure; the baseline has the same 38 remaining failing tests plus
   the two resolved failures. Dedicated native X20 rendering and archive tests
   run separately with their explicit environment flags.
+- Before GitHub publication, embedded IDML image Contents were replaced by
+  provenance hashes and lengths in the Dharmabook measurements. The affected
+  profile's native rendering checks pass; fonts, runtime geometry and prepared
+  resources are unchanged. Unpublished history was compacted to avoid including
+  the original 180 MB payload. Original history is backed up locally in the
+  ignored `build/prepublish-history.bundle`.
 
 Local proof PDFs are in `build/x20/proofs/<style>/pdf/`; installed specimens
 are in `build/x20/installed-specimens/`. They are ignored build artifacts.
