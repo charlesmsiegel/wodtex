@@ -9,7 +9,9 @@ import hashlib
 import json
 from pathlib import Path
 import sys
+import io
 import fitz
+from pypdf.generic import ContentStream, DecodedStreamObject
 try:
     from profile_registry import ROOT, load_profiles
     from template_reader import source_bytes
@@ -26,6 +28,26 @@ def checked_source(root, record):
     if hashlib.sha256(data).hexdigest() != record['sha256']:
         raise ValueError('WODTEX_E_SOURCE_HASH: ' + str(relative))
     return data
+
+
+def remove_template_text(pdf):
+    """Remove text-show operations in page streams and nested Form XObjects.
+
+    Rectangle redaction misses template running matter stored in reusable Forms.
+    Parse PDF operators rather than matching byte patterns inside encoded strings.
+    Keep graphics, transforms, font state and images intact.
+    """
+    streams = set()
+    for page in pdf:
+        streams.update(page.get_contents())
+        streams.update(record[0] for record in page.get_xobjects())
+    for xref in streams:
+        stream = DecodedStreamObject()
+        stream.set_data(pdf.xref_stream(xref))
+        content = ContentStream(stream, None)
+        content.operations = [(operands, operator) for operands, operator in content.operations
+                              if operator not in (b'Tj', b'TJ', b"'", b'"')]
+        pdf.update_stream(xref, content.get_data())
 
 
 def prepare_profile(profile_id, source_root, output_root, root=ROOT):
@@ -45,15 +67,9 @@ def prepare_profile(profile_id, source_root, output_root, root=ROOT):
         resources[name] = hashlib.sha256(data).hexdigest()
     data = checked_source(source_root, profile['reference'])
     with fitz.open(stream=data, filetype='pdf') as original:
+        remove_template_text(original)
         for role, number in profile['border_pages'].items():
             src = original[number - 1]
-            # Remove all template text, including folios and legal placeholders,
-            # without touching reference artwork or vector borders.
-            for block in src.get_text('dict')['blocks']:
-                for line in block.get('lines', []):
-                    for span in line['spans']:
-                        src.add_redact_annot(span['bbox'], fill=False)
-            src.apply_redactions(images=0, graphics=0)
             width, height = src.rect.width, src.rect.height
             margins = profile['geometry']
             left, right = margins['inner'], margins['outer']

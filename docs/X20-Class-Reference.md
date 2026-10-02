@@ -78,6 +78,8 @@ fails explicitly; cross-host M20 components remain a separate extension task.
 
 Display sizes may be explicitly adapted to fit authored headings. Missing
 matching faces have named, genuine-font substitutions in the source audits.
+Missing display punctuation uses the selected host's genuine body face as a
+glyph fallback; supported display characters retain the original display face.
 Clans, seasons, and alternative chapter variants are not automatically selected.
 Outer page decorations come from audited PDF strips; interior sidebar/table/art
 box composition is native and does not reproduce every illustrated frame.

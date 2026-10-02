@@ -16,8 +16,11 @@
  inner=\wodtexInner bp,outer=\wodtexOuter bp,top=\wodtexTop bp,bottom=\wodtexBottom bp,headheight=14bp}
 \IfFileExists{\wodtexProfilePath\wodtexBodyFont}{}{\PackageError{wodtex}{WODTEX_E_RESOURCE_MISSING: \wodtexProfileId}{Run scripts/prepare_profile.py and configure profile-root.}}
 \setmainfont{\wodtexBodyFont}[Path=\wodtexProfilePath,BoldFont=\wodtexBoldFont,ItalicFont=\wodtexItalicFont,BoldItalicFont=\wodtexBoldItalicFont]
-\newfontfamily\wodtexHeadingFont{\wodtexHeadingFace}[Path=\wodtexProfilePath]
-\newfontfamily\wodtexChapterFont{\wodtexChapterFace}[Path=\wodtexProfilePath]
+% Display fonts can lack punctuation. Use this host's genuine body face only
+% for missing glyphs, retaining the display face for every supported character.
+\directlua{luaotfload.add_fallback("wodtex-\wodtexProfileId-display",{"[\luaescapestring{\wodtexProfilePath\wodtexBodyFont}]:mode=node;"})}
+\newfontfamily\wodtexHeadingFont{\wodtexHeadingFace}[Path=\wodtexProfilePath,HyphenChar=None,RawFeature={fallback=wodtex-\wodtexProfileId-display}]
+\newfontfamily\wodtexChapterFont{\wodtexChapterFace}[Path=\wodtexProfilePath,HyphenChar=None,RawFeature={fallback=wodtex-\wodtexProfileId-display}]
 \setlength\columnsep{\wodtexGutter bp}
 \setlength\parindent{\wodtexIndent bp}
 \setlength\parskip{0pt}
@@ -60,6 +63,14 @@
  \fontsize{\wodtexChapterSize bp}{\wodtexChapterLeading bp}\selectfont #1\par\nobreak\vspace{30bp}}}
 \newcounter{wodtexElement}
 \ExplSyntaxOn
+\cs_generate_variant:Nn\tl_replace_all:Nnn{Nxn}
+\NewDocumentCommand\wodtexDisplayText{m}{
+ \tl_set:Nn\l_tmpa_tl{#1}
+ \clist_map_inline:nn{45,34,39,33,63,58,59,40,41,91,93,8211,8212}{
+  \iffontchar\font##1\else
+   \tl_replace_all:Nxn\l_tmpa_tl{\char_generate:nn{##1}{12}}{{\normalfont\char##1\relax}}
+  \fi}
+ \tl_use:N\l_tmpa_tl}
 \tl_new:N \l_wodtex_id_tl
 \tl_new:N \l_wodtex_place_tl
 \tl_new:N \l_wodtex_image_tl
@@ -122,7 +133,7 @@
  \par\tl_use:N\l_wodtex_caption_tl\par\tl_use:N\l_wodtex_credit_tl\par\group_end:\wodtexBodyBegin}
 \ExplSyntaxOff
 \newcommand\wodtexProfileTitle{\wodtexBodyEnd\begin{titlepage}\centering\vspace*{.13\textheight}
- {\wodtexChapterFont\fontsize{36bp}{42bp}\selectfont\@title\par}\vspace{24bp}
+ {\wodtexChapterFont\fontsize{36bp}{42bp}\selectfont\expandafter\wodtexDisplayText\expandafter{\@title}\par}\vspace{24bp}
  {\Large\wodtexSubtitleText\par}\vspace{18bp}\wodtexDescriptionText\par\vfill\@author\par\end{titlepage}}
 \newcommand\wodtexProfileCredits{\wodtexBodyEnd\clearpage\thispagestyle{empty}
  {\wodtexHeadingFont\Large Credits\par}\bigskip
