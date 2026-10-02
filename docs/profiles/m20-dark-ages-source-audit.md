@@ -22,3 +22,5 @@ Adaptation decisions and limitations:
 - Outer frame strips use the supplied reference artwork; decorative sample art and template placeholder content are excluded.
 
 The profile descriptor retains inherited IDML styles and master/spread records where supplied. Source data is private local input, prepared separately; no source PDF/font bytes are included in this branch.
+
+- Outlined or raster template labels/folios are excluded by audited normalized frame rectangles. Small gaps in the outer decoration are intentional.
