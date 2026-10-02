@@ -6,7 +6,7 @@
     "install.sh",
     "README.md",
     "requirements.txt",
-    "m20book.cls",
+    "*.cls",
     "runtime.lock.json",
     "package-manifest.json",
     "profiles/*.json",
@@ -32,6 +32,9 @@
     "contrib/original-m20-layout/overrides/tests/*.py",
     "examples/art/*",
     "docs/superpowers/plans/*.md"
+    ,"docs/profiles/*.md"
+    ,"examples/profiles/*.tex"
+    ,"examples/profiles/*.md"
   ],
   "excluded_inputs": [
     "fonts",

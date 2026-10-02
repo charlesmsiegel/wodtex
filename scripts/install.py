@@ -8,6 +8,10 @@ from pathlib import Path
 import shutil
 import subprocess
 import tempfile
+try:
+    from profile_registry import load_profiles
+except ImportError:
+    from scripts.profile_registry import load_profiles
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = '.wodtex-installed.json'
@@ -26,6 +30,10 @@ def canonical_text(data):
 
 def payload(layout):
     files = {'m20book.cls': canonical_text((ROOT / 'm20book.cls').read_bytes())}
+    for style, profile in load_profiles(ROOT).items():
+        cls = profile['class'] + '.cls'
+        files[cls] = canonical_text((ROOT / cls).read_bytes())
+        files['wodtex-output-' + style + '.json'] = (json.dumps(profile, indent=2) + '\n').encode()
     for path in sorted((ROOT / 'tex').glob('*')):
         if path.suffix in ('.sty', '.lua'):
             files[path.name] = canonical_text(path.read_bytes())
@@ -54,9 +62,13 @@ def payload(layout):
             data = data.replace(b'tex/wodtex-', b'wodtex-')
             data = data.replace(b'profiles/m20.tex', b'wodtex-profile-m20.tex')
             data = data.replace(b'profiles/\\mTwentyProfile.tex', b'wodtex-profile-\\mTwentyProfile.tex')
+            data = data.replace(b'profiles/\\wodtexProfileId.tex', b'wodtex-profile-\\wodtexProfileId.tex')
         if name == 'm20book.cls':
             data = data.replace(b'\\RequirePackage{m20-core}',
                                 b'\\InputIfFileExists{wodtex-local.tex}{}{}\n\\RequirePackage{m20-core}')
+        if name.endswith('.cls') and name != 'm20book.cls':
+            data = data.replace(b'\\RequirePackage{wodtex-profile-core}',
+                b'\\InputIfFileExists{wodtex-profiles-local.tex}{}{}\n\\RequirePackage{wodtex-profile-core}')
         files[name] = data
     return files
 
@@ -118,7 +130,7 @@ def verify_bundle():
     return ROOT / 'fonts', ROOT / 'assets'
 
 
-def install(tree, layout, font_dir=None, asset_dir=None, configure=False):
+def install(tree, layout, font_dir=None, asset_dir=None, configure=False, profile_root=None):
     tree = tree.expanduser().resolve()
     target = tree / 'tex/latex/wodtex'
     config_dir = tree / 'tex/latex/wodtex-local'
@@ -140,6 +152,9 @@ def install(tree, layout, font_dir=None, asset_dir=None, configure=False):
                        '\\def\\mTwentyBuildFontPath{' + tex_path(font_dir) + '}\n'
                        '\\def\\mTwentyBuildAssetPath{' + tex_path(asset_dir) + '}\n')
     files = payload(layout)
+    profile_config = None
+    if profile_root is not None:
+        profile_config = '% Profile resources, independent of legacy M20 configuration.\n\\def\\wodtexResourceRoot{' + tex_path(profile_root) + '}\n'
     # Refuse unowned trees and locally edited managed files, rather than silently
     # deleting user data. Only this dedicated directory is replaced on update.
     if target.exists():
@@ -177,6 +192,9 @@ def install(tree, layout, font_dir=None, asset_dir=None, configure=False):
         if config_data is not None:
             config_dir.mkdir(parents=True, exist_ok=True)
             config.write_text(config_data, encoding='utf-8')
+        if profile_config is not None:
+            config_dir.mkdir(parents=True, exist_ok=True)
+            (config_dir / 'wodtex-profiles-local.tex').write_text(profile_config, encoding='utf-8')
     finally:
         if staging.exists():
             shutil.rmtree(staging)
@@ -193,6 +211,7 @@ def main():
     parser.add_argument('--font-dir', type=Path)
     parser.add_argument('--asset-dir', type=Path)
     parser.add_argument('--configure', action='store_true', help='Explicitly replace private path configuration')
+    parser.add_argument('--profile-root', type=Path, help='Prepared, namespaced X20 resource root; preserves M20 configuration')
     parser.add_argument('--miktex', action='store_true', help='Register root in MiKTeX user mode and refresh FNDB')
     args = parser.parse_args()
     if args.miktex:
@@ -200,7 +219,7 @@ def main():
             if shutil.which(command) is None:
                 parser.error(command + ' must be on PATH before installation')
     try:
-        tree, target, config = install(args.tree, args.layout, args.font_dir, args.asset_dir, args.configure)
+        tree, target, config = install(args.tree, args.layout, args.font_dir, args.asset_dir, args.configure, args.profile_root)
         print('Installed ' + args.layout + ' layout: ' + str(target))
         print('Private configuration: ' + str(config))
         if args.miktex:

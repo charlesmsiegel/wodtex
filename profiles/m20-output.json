@@ -1,0 +1,10 @@
+{
+  "kind": "wodtex-output-profile",
+  "schema_version": 1,
+  "style_id": "m20",
+  "class": "m20book",
+  "family": "mage",
+  "outputs": ["pdf", "epub"],
+  "renderer": "legacy-m20",
+  "measurements": "m20.json"
+}

@@ -125,6 +125,16 @@ def build_epub(source, work, env):
     return output
 
 def build(args):
+    from profile_registry import document_class, profile_for_class
+    candidate = Path(args.source).resolve()
+    if candidate.is_file():
+        try:
+            selected = profile_for_class(ROOT, document_class(candidate.read_text(encoding='utf-8')))
+        except ValueError:
+            selected = None
+        if selected and selected['style_id'] != 'm20':
+            from profile_build import build_profile
+            return build_profile(args)
     report = {'schema_version':1,'status':'building','target':args.target,'diagnostics':[], 'targets':{}}
     out = ROOT/'build/failed-build'
     try:

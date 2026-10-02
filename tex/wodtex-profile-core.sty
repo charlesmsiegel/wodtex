@@ -1,0 +1,155 @@
+\NeedsTeXFormat{LaTeX2e}[2022-06-01]
+\ProvidesPackage{wodtex-profile-core}[2026/10/02 measured X20 native PDF page policy]
+% Theory: the host's immutable profile owns geometry and page decoration;
+% captured semantic elements use its measured font roles and local dimensions.
+% Different page policies are data, never inherited Mage output routines.
+\RequirePackage{iftex}
+\ifLuaTeX\pdfvariable minorversion=7\relax\else\PackageError{wodtex}{WODTEX_E_ENGINE: LuaLaTeX required}{Compile with LuaLaTeX.}\fi
+\RequirePackage{expl3,xparse,fontspec,geometry,graphicx,multicol,longtable,array,xcolor}
+\RequirePackage[skins,breakable]{tcolorbox}
+\RequirePackage{fancyhdr,hyperref,makeidx}
+\RequirePackage{tex/wodtex-metadata,tex/wodtex-registry}
+\providecommand\wodtexResourceRoot{inputs/profiles/}
+\edef\wodtexProfilePath{\wodtexResourceRoot\wodtexProfileId/}
+\InputIfFileExists{profiles/\wodtexProfileId.tex}{}{\PackageError{wodtex}{WODTEX_E_PROFILE_MISSING}{Install the selected profile.}}
+\geometry{paperwidth=\wodtexPageWidth bp,paperheight=\wodtexPageHeight bp,
+ inner=\wodtexInner bp,outer=\wodtexOuter bp,top=\wodtexTop bp,bottom=\wodtexBottom bp,headheight=14bp}
+\IfFileExists{\wodtexProfilePath\wodtexBodyFont}{}{\PackageError{wodtex}{WODTEX_E_RESOURCE_MISSING: \wodtexProfileId}{Run scripts/prepare_profile.py and configure profile-root.}}
+\setmainfont{\wodtexBodyFont}[Path=\wodtexProfilePath,BoldFont=\wodtexBoldFont,ItalicFont=\wodtexItalicFont,BoldItalicFont=\wodtexBoldItalicFont]
+\newfontfamily\wodtexHeadingFont{\wodtexHeadingFace}[Path=\wodtexProfilePath]
+\newfontfamily\wodtexChapterFont{\wodtexChapterFace}[Path=\wodtexProfilePath]
+\setlength\columnsep{\wodtexGutter bp}
+\setlength\parindent{\wodtexIndent bp}
+\setlength\parskip{0pt}
+\renewcommand\normalsize{\fontsize{\wodtexBodySize bp}{\wodtexBodyLeading bp}\selectfont}
+\AtBeginDocument{\normalsize
+ \hypersetup{pdftitle={\@title},pdfauthor={\@author},colorlinks=true,linkcolor=black,urlcolor=blue}}
+\pagestyle{fancy}\fancyhf{}\fancyfoot[LE,RO]{\thepage}
+\fancyhead[LE]{\small\@title}\fancyhead[RO]{\small\leftmark}
+\renewcommand\headrulewidth{0pt}\renewcommand\footrulewidth{0pt}
+\renewcommand\section{\@startsection{section}{1}{0pt}{-18bp}{9bp}{\wodtexHeadingFont\fontsize{\wodtexHeadingSize bp}{\wodtexHeadingLeading bp}\selectfont}}
+\renewcommand\subsection{\@startsection{subsection}{2}{0pt}{-12bp}{6bp}{\wodtexHeadingFont\large}}
+\renewcommand\subsubsection{\@startsection{subsubsection}{3}{0pt}{-9bp}{4bp}{\wodtexHeadingFont\normalsize}}
+\newif\ifwodtexBodyActive
+\newif\ifwodtexInsideSidebar
+\def\wodtexPageKind{body}
+\newcommand\wodtexBodyBegin{\ifwodtexBodyActive\else\if@mainmatter
+ \ifnum\wodtexColumns>1 \global\wodtexBodyActivetrue\begin{multicols}{\wodtexColumns}\fi\fi\fi}
+\newcommand\wodtexBodyEnd{\ifwodtexBodyActive\end{multicols}\global\wodtexBodyActivefalse\fi}
+\newcommand\wodtexNoop{}
+\AddToHook{enddocument/before}{\wodtexBodyEnd}
+\let\wodtexOriginalFrontmatter\frontmatter
+\let\wodtexOriginalMainmatter\mainmatter
+\let\wodtexOriginalBackmatter\backmatter
+\renewcommand\frontmatter{\wodtexBodyEnd\wodtexOriginalFrontmatter}
+\renewcommand\mainmatter{\wodtexBodyEnd\wodtexOriginalMainmatter}
+\renewcommand\backmatter{\wodtexBodyEnd\wodtexOriginalBackmatter}
+\AddToHook{cmd/tableofcontents/before}{\wodtexBodyEnd}
+\AddToHook{cmd/printindex/before}{\wodtexBodyEnd}
+\AddToHook{shipout/background}{%
+ \ifodd\value{page}\def\wodtexBorderName{body-right}\else\def\wodtexBorderName{body-left}\fi
+ \put(0,-\paperheight){\includegraphics[width=\paperwidth,height=\paperheight]{\wodtexProfilePath\wodtexBorderName.pdf}}}
+\let\wodtexOriginalChapter\chapter
+\RenewDocumentCommand\chapter{s o m}{\wodtexBodyEnd
+ \IfBooleanTF{#1}{\wodtexOriginalChapter*{#3}}{\IfNoValueTF{#2}{\wodtexOriginalChapter{#3}}{\wodtexOriginalChapter[#2]{#3}}}
+ \wodtexBodyBegin}
+\def\@makechapterhead#1{{\parindent=0pt\centering\wodtexChapterFont
+ \if@mainmatter{\fontsize{20bp}{24bp}\selectfont\chaptername\ \thechapter\par}\vspace{12bp}\fi
+ \fontsize{\wodtexChapterSize bp}{\wodtexChapterLeading bp}\selectfont #1\par\nobreak\vspace{30bp}}}
+\def\@makeschapterhead#1{{\parindent=0pt\centering\wodtexChapterFont
+ \fontsize{\wodtexChapterSize bp}{\wodtexChapterLeading bp}\selectfont #1\par\nobreak\vspace{30bp}}}
+\newcounter{wodtexElement}
+\ExplSyntaxOn
+\tl_new:N \l_wodtex_id_tl
+\tl_new:N \l_wodtex_place_tl
+\tl_new:N \l_wodtex_image_tl
+\tl_new:N \l_wodtex_caption_tl
+\tl_new:N \l_wodtex_credit_tl
+\tl_new:N \l_wodtex_alt_tl
+\tl_new:N \l_wodtex_kind_tl
+\int_new:N \l_wodtex_columns_int
+\bool_new:N \l_wodtex_breakable_bool
+\prop_new:N \g_wodtex_element_ids_prop
+\seq_new:N \l_wodtex_table_rows_seq
+\tl_new:N \l_wodtex_table_header_tl
+\tl_new:N \l_wodtex_table_body_tl
+\keys_define:nn {wodtex/element}{
+ id .tl_set:N=\l_wodtex_id_tl,
+ place .choice:,place/flow .code:n=\tl_set:Nn\l_wodtex_place_tl{flow},place/here .code:n=\tl_set:Nn\l_wodtex_place_tl{here},place/next-page .code:n=\tl_set:Nn\l_wodtex_place_tl{next-page},
+ columns .choice:,columns/1 .code:n=\int_set:Nn\l_wodtex_columns_int{1},columns/2 .code:n=\int_set:Nn\l_wodtex_columns_int{2},
+ breakable .bool_set:N=\l_wodtex_breakable_bool,
+ image .tl_set:N=\l_wodtex_image_tl,caption .tl_set:N=\l_wodtex_caption_tl,credit .tl_set:N=\l_wodtex_credit_tl,alt .tl_set:N=\l_wodtex_alt_tl,
+ kind .choice:,kind/horizontal .code:n=\tl_set:Nn\l_wodtex_kind_tl{horizontal},kind/vertical .code:n=\tl_set:Nn\l_wodtex_kind_tl{vertical},
+ role .choice:,role/decorative .code:n={},role/meaningful .code:n={},
+ position .choice:,position/top .code:n={},position/bottom .code:n={},position/inner .code:n={},position/outer .code:n={},
+ head-rows .code:n=\def\wodtexHeadRows{#1},
+ unknown .code:n=\PackageError{wodtex}{WODTEX_E_OPTION:~\l_keys_key_str}{Unsupported~element~option.}}
+\cs_new_protected:Npn\wodtexElementSetup#1{
+ \tl_clear:N\l_wodtex_id_tl\tl_clear:N\l_wodtex_image_tl\tl_clear:N\l_wodtex_caption_tl\tl_clear:N\l_wodtex_credit_tl\tl_clear:N\l_wodtex_alt_tl
+ \tl_set:Nn\l_wodtex_kind_tl{horizontal}\tl_set:Nn\l_wodtex_place_tl{flow}\int_set:Nn\l_wodtex_columns_int{1}\bool_set_true:N\l_wodtex_breakable_bool
+ \def\wodtexHeadRows{1}\keys_set:nn{wodtex/element}{#1}
+ \refstepcounter{wodtexElement}\tl_if_empty:NT\l_wodtex_id_tl{\tl_set:Nx\l_wodtex_id_tl{wodtex-element-\thewodtexElement}}
+ \exp_args:NnV\regex_match:nnF{\A[A-Za-z][-A-Za-z0-9:._]*\Z}\l_wodtex_id_tl{\PackageError{wodtex}{WODTEX_E_INVALID_ID}{Use~an~XML-safe~semantic~ID.}}
+ \exp_args:NNV\prop_if_in:NnTF\g_wodtex_element_ids_prop\l_wodtex_id_tl{\PackageError{wodtex}{WODTEX_E_DUPLICATE_ID}{Use~unique~semantic~IDs.}}{\exp_args:NNV\prop_gput:Nnn\g_wodtex_element_ids_prop\l_wodtex_id_tl{used}}
+ \exp_args:NV\label\l_wodtex_id_tl
+ \tl_if_eq:NnT\l_wodtex_place_tl{next-page}{\clearpage}}
+\NewDocumentCommand\wodtexProfileSetup{m}{\keys_set:nn{wodtex/setup}{#1}}
+\keys_define:nn{wodtex/setup}{running-title .code:n=\fancyhead[LE]{\small #1},unknown .code:n=\PackageError{wodtex}{WODTEX_E_SETUP_OPTION:~\l_keys_key_str}{Page~policy~is~selected~by~the~class.}}
+\NewDocumentCommand\wodtexRenderSidebar{mmmm}{\wodtexElementSetup{#2}\wodtexInsideSidebartrue
+ \bool_if:NTF\l_wodtex_breakable_bool{\tcbset{breakable}}{\tcbset{breakable=false}}
+ \begin{tcolorbox}[enhanced,width=#1,colback=white,colframe=wodtexAccent,title={#3},title~after~break={#3~(continued)},fonttitle=\wodtexHeadingFont,coltitle=black,colbacktitle=white,boxrule=.7bp,arc=0pt,left=9bp,right=9bp]
+ \int_compare:nNnTF{\l_wodtex_columns_int}={2}{\begin{multicols}{2}#4\end{multicols}}{#4}\end{tcolorbox}}
+\NewDocumentCommand\wodtexProfileSidebar{mmm}{\wodtexRenderSidebar{\dimexpr(\textwidth-\columnsep)/2\relax}{#1}{#2}{#3}}
+\NewDocumentCommand\wodtexProfileSidebarWide{mmm}{\wodtexRenderSidebar{\textwidth}{#1}{#2}{#3}}
+\NewDocumentCommand\wodtexProfileSidebarBreak{m}{\str_case:nnF{#1}{{page}{\tcbbreak}{column}{\tcbbreak}}{\PackageError{wodtex}{WODTEX_E_BREAK_MODE}{Use~page~or~column.}}}
+\NewDocumentCommand\wodtexProfileTable{mmm}{\wodtexElementSetup{#1}
+ \ifwodtexInsideSidebar\begin{tabular}{#2}#3\end{tabular}\else
+ \seq_set_split:Nnn\l_wodtex_table_rows_seq{\\}{#3}\tl_clear:N\l_wodtex_table_header_tl
+ \int_step_inline:nn{\wodtexHeadRows}{\seq_if_empty:NF\l_wodtex_table_rows_seq{\seq_pop_left:NN\l_wodtex_table_rows_seq\l_tmpa_tl\tl_put_right:NV\l_wodtex_table_header_tl\l_tmpa_tl\tl_put_right:Nn\l_wodtex_table_header_tl{\\}}}
+ \tl_clear:N\l_wodtex_table_body_tl
+ \seq_map_inline:Nn\l_wodtex_table_rows_seq{\tl_if_blank:nF{##1}{\tl_put_right:Nn\l_wodtex_table_body_tl{##1\\}}}
+ \begin{longtable}{#2}\tl_use:N\l_wodtex_table_header_tl\endfirsthead\tl_use:N\l_wodtex_table_header_tl\endhead\tl_use:N\l_wodtex_table_body_tl\end{longtable}\fi}
+\NewDocumentCommand\wodtexProfileTableLead{m}{\par\noindent #1\par\smallskip}
+\NewDocumentCommand\wodtexProfileStatblock{m}{\begin{tcolorbox}[breakable,colback=white,colframe=wodtexAccent,arc=0pt]#1\end{tcolorbox}}
+\NewDocumentCommand\wodtexProfileStatentry{m}{\par\noindent #1\par}
+\NewDocumentCommand\wodtexProfileArt{mm}{\wodtexBodyEnd\group_begin:\wodtexElementSetup{#1}
+ \IfNoValueF{#2}{\label{#2}}
+ \tl_if_empty:NTF\l_wodtex_image_tl{
+  \begin{tcolorbox}[height=.4\textheight,colback=white,colframe=wodtexAccent,arc=0pt]\centering Artwork~reservation\end{tcolorbox}
+ }{\exp_args:NV\IfFileExists\l_wodtex_image_tl{
+  \noindent\includegraphics[width=\linewidth,height=.4\textheight,keepaspectratio]{\l_wodtex_image_tl}
+ }{\PackageError{wodtex}{WODTEX_E_IMAGE_MISSING:~\l_wodtex_image_tl}{Supply~the~authored~image.}}}
+ \par\tl_use:N\l_wodtex_caption_tl\par\tl_use:N\l_wodtex_credit_tl\par\group_end:\wodtexBodyBegin}
+\ExplSyntaxOff
+\newcommand\wodtexProfileTitle{\wodtexBodyEnd\begin{titlepage}\centering\vspace*{.13\textheight}
+ {\wodtexChapterFont\fontsize{36bp}{42bp}\selectfont\@title\par}\vspace{24bp}
+ {\Large\wodtexSubtitleText\par}\vspace{18bp}\wodtexDescriptionText\par\vfill\@author\par\end{titlepage}}
+\newcommand\wodtexProfileCredits{\wodtexBodyEnd\clearpage\thispagestyle{empty}
+ {\wodtexHeadingFont\Large Credits\par}\bigskip
+ \textbf{Written by:} \wodtexWrittenByText\par
+ \textbf{Developed by:} \wodtexDevelopedByText\par
+ \textbf{Edited by:} \wodtexEditedByText\par
+ \textbf{Special thanks:} \wodtexSpecialThanksText\par\vfill
+ \copyright\ \wodtexCopyrightYearText\ \@author\par\clearpage}
+\newcommand\wodtexTableBefore{\ifwodtexInsideSidebar\else\wodtexBodyEnd\fi}
+\newcommand\wodtexTableAfter{\ifwodtexInsideSidebar\else\wodtexBodyBegin\fi}
+\newcommand\wodtexRegisterProfile{%
+ \expandafter\wodtexRegisterRenderer\expandafter{\wodtexProfileId}{setup}{wodtexProfileSetup}
+ \expandafter\wodtexRegisterRenderer\expandafter{\wodtexProfileId}{maketitle}{wodtexProfileTitle}
+ \expandafter\wodtexRegisterRenderer\expandafter{\wodtexProfileId}{makecredits}{wodtexProfileCredits}
+ \expandafter\wodtexRegisterRenderer\expandafter{\wodtexProfileId}{sidebar}{wodtexProfileSidebar}
+ \expandafter\wodtexRegisterRenderer\expandafter{\wodtexProfileId}{sidebarwide}{wodtexProfileSidebarWide}
+ \expandafter\wodtexRegisterRenderer\expandafter{\wodtexProfileId}{sidebarbreak}{wodtexProfileSidebarBreak}
+ \expandafter\wodtexRegisterRenderer\expandafter{\wodtexProfileId}{booktable}{wodtexProfileTable}
+ \expandafter\wodtexRegisterRenderer\expandafter{\wodtexProfileId}{tablelead}{wodtexProfileTableLead}
+ \expandafter\wodtexRegisterRenderer\expandafter{\wodtexProfileId}{statblock}{wodtexProfileStatblock}
+ \expandafter\wodtexRegisterRenderer\expandafter{\wodtexProfileId}{statentry}{wodtexProfileStatentry}
+ \expandafter\wodtexRegisterRenderer\expandafter{\wodtexProfileId}{artreserve}{wodtexProfileArt}
+ \@for\wodtexEnv:=sidebar,sidebarwide,statblock\do{%
+  \edef\wodtexRegisterBefore{\noexpand\wodtexRegisterRenderer{\wodtexProfileId}{\wodtexEnv-before}{wodtexBodyEnd}}\wodtexRegisterBefore
+  \edef\wodtexRegisterAfter{\noexpand\wodtexRegisterRenderer{\wodtexProfileId}{\wodtexEnv-after}{wodtexBodyBegin}}\wodtexRegisterAfter}
+ \expandafter\wodtexRegisterRenderer\expandafter{\wodtexProfileId}{booktable-before}{wodtexTableBefore}
+ \expandafter\wodtexRegisterRenderer\expandafter{\wodtexProfileId}{booktable-after}{wodtexTableAfter}
+ \expandafter\wodtexRegisterRenderer\expandafter{\wodtexProfileId}{tablelead-before}{wodtexNoop}
+ \expandafter\wodtexRegisterRenderer\expandafter{\wodtexProfileId}{tablelead-after}{wodtexNoop}}
+\endinput
