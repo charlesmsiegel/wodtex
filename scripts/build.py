@@ -130,8 +130,14 @@ def build(args):
     if candidate.is_file():
         try:
             selected = profile_for_class(ROOT, document_class(candidate.read_text(encoding='utf-8')))
-        except ValueError:
-            selected = None
+        except ValueError as exc:
+            out = workspace_path(args.out)
+            out.mkdir(parents=True, exist_ok=True)
+            report = {'schema_version': 1, 'status': 'failed', 'target': args.target,
+                      'targets': {}, 'diagnostics': [{'code': str(exc).split(':', 1)[0],
+                      'severity': 'error', 'message': str(exc)}]}
+            (out / 'build-report.json').write_text(json.dumps(report, indent=2) + '\n')
+            return report
         if selected and selected['style_id'] != 'm20':
             from profile_build import build_profile
             return build_profile(args)
