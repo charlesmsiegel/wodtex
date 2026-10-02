@@ -18,6 +18,18 @@ def module(name):
 
 
 class FoundationTests(unittest.TestCase):
+    def test_embedded_image_contents_are_provenance_not_copied_artwork(self):
+        import hashlib
+        import xml.etree.ElementTree as ET
+        payload = 'encoded-image-data' * 10000
+        image = ET.fromstring('<Image ItemTransform="1 0 0 1 20 30"><Properties><Contents>' + payload + '</Contents></Properties></Image>')
+        record = module('template_reader').properties(image)
+        self.assertTrue(isinstance(record['Contents'], dict), 'Embedded artwork must become compact provenance')
+        self.assertEqual(hashlib.sha256(payload.encode()).hexdigest(), record['Contents']['sha256'])
+        self.assertEqual(len(payload), record['Contents']['encoded_characters'])
+        self.assertEqual('1 0 0 1 20 30', record['ItemTransform'])
+        self.assertLess(len(json.dumps(record)), 500)
+
     def test_registry_discovers_only_descriptors_and_rejects_duplicate_classes(self):
         registry = module('profile_registry')
         with tempfile.TemporaryDirectory() as temporary:

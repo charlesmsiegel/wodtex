@@ -23,12 +23,20 @@ def source_bytes(path, member=None):
     return Path(path).read_bytes()
 
 
+def content_provenance(text):
+    """Keep an identity for embedded IDML artwork without copying its payload."""
+    return {'sha256': hashlib.sha256(text.encode('utf-8')).hexdigest(),
+            'encoded_characters': len(text), 'representation': 'IDML Contents text',
+            'external_input': True}
+
+
 def properties(element):
     result = dict(element.attrib)
     props = element.find('Properties')
     if props is not None:
         for child in props:
-            result[child.tag] = (child.text or '').strip() or ET.tostring(child, encoding='unicode')
+            value = (child.text or '').strip() or ET.tostring(child, encoding='unicode')
+            result[child.tag] = content_provenance(value) if element.tag in ('Image', 'PDF') and child.tag == 'Contents' else value
     return result
 
 

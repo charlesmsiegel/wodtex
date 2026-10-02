@@ -21,3 +21,6 @@ Adaptation decisions and limitations:
 - Outer frame strips use the supplied reference artwork; decorative sample art and template placeholder content are excluded.
 
 The profile descriptor retains inherited IDML styles and master/spread records where supplied. Source data is private local input, prepared separately; no source PDF/font bytes are included in this branch.
+Embedded image Contents from the IDML are represented by a hash and encoded
+length, rather than copied artwork. The source IDML remains the authoritative
+input; frame transforms, page measurements and font mappings remain recorded.
