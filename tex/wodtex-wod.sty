@@ -1,0 +1,6 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{wodtex-wod}[2026/10/02 wod source-mapped adapter]
+\def\wodtexExpectedProfile{wod}
+\ifx\wodtexExpectedProfile\wodtexProfileId\else\PackageError{wodtex}{WODTEX_E_HOST_UNSUPPORTED}{Load this adapter only through its matching class.}\fi
+\wodtexRegisterProfile
+\endinput
