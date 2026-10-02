@@ -10,6 +10,17 @@ from tests.test_x20_foundation import ROOT, module
 
 
 class X20ProfileTests(unittest.TestCase):
+    def test_prepared_frames_have_no_template_text(self):
+        import fitz
+        for style in module('profile_registry').load_profiles(ROOT):
+            if style == 'm20':
+                continue
+            for name in ('body-left', 'body-right'):
+                frame = ROOT / 'inputs/profiles' / style / (name + '.pdf')
+                if frame.exists():
+                    with fitz.open(frame) as pdf:
+                        self.assertFalse(''.join(p.get_text() for p in pdf).strip(), (style, name))
+
     def test_descriptors_have_distinct_classes_and_reference_backed_resources(self):
         profiles = module('profile_registry').load_profiles(ROOT)
         for style, profile in profiles.items():
