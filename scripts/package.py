@@ -10,7 +10,7 @@ from preflight import ROOT, workspace_path
 def package(output):
     manifest=json.loads((ROOT/'package-manifest.json').read_text())
     files=sorted({p for pattern in manifest['include'] for p in ROOT.glob(pattern) if p.is_file()})
-    hashes={str(p.relative_to(ROOT)):hashlib.sha256(p.read_bytes()).hexdigest() for p in files}
+    hashes={p.relative_to(ROOT).as_posix():hashlib.sha256(p.read_bytes()).hexdigest() for p in files}
     output=workspace_path(output);output.parent.mkdir(parents=True,exist_ok=True)
     with zipfile.ZipFile(output,'w',compression=zipfile.ZIP_DEFLATED) as z:
         for path in files:

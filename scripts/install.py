@@ -135,7 +135,8 @@ def install(tree, layout, font_dir=None, asset_dir=None, configure=False, profil
     target = tree / 'tex/latex/wodtex'
     config_dir = tree / 'tex/latex/wodtex-local'
     config = config_dir / 'wodtex-local.tex'
-    for path in (tree / 'tex', tree / 'tex/latex', target, config_dir, config):
+    for path in (tree / 'tex', tree / 'tex/latex', target, config_dir, config,
+                 config_dir / 'wodtex-profiles-local.tex'):
         if path.is_symlink():
             raise ValueError('Refusing symlink in installation: ' + str(path))
     if (font_dir is None) != (asset_dir is None):
@@ -176,8 +177,8 @@ def install(tree, layout, font_dir=None, asset_dir=None, configure=False, profil
     try:
         for name, data in files.items():
             (staging / name).write_bytes(data)
-        (staging / MANIFEST).write_text(json.dumps({'schema': 1, 'layout': layout,
-             'files': {name: digest(data) for name, data in files.items()}}, indent=2) + '\n')
+        (staging / MANIFEST).write_bytes((json.dumps({'schema': 1, 'layout': layout,
+                                                  'files': {name: digest(data) for name, data in files.items()}}, indent=2) + '\n').encode('utf-8'))
         if target.exists():
             backup = Path(tempfile.mkdtemp(prefix='.wodtex-backup-', dir=target.parent))
             backup.rmdir()
