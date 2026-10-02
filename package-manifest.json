@@ -17,6 +17,7 @@
     "scripts/*.cjs",
     "epub/*",
     "examples/*.tex",
+    "examples/*.py",
     "examples/content/*",
     "tests/*.py",
     "docs/*.txt",

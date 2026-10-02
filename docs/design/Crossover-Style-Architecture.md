@@ -19,7 +19,7 @@ Existing M20-prefixed commands remain supported and select M20 rendering indepen
 Generic nested tables and continuation/entry commands inherit their enclosing element's selected style.
 An ordinary top-level generic element selects the class default.
 
-The X20 integration checkout now has 17 classes across eight family branches,
+The repository now has 17 classes implemented across eight families,
 including `wodbook` and `mscbook`. New classes use source-mapped typography,
 measured geometry and outer decoration with a shared native PDF composition
 engine. See [the class reference](../X20-Class-Reference.md) and

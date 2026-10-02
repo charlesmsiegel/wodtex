@@ -2,7 +2,8 @@
 
 Prepared 2026-10-02 from `C:/Users/charl/Downloads/templates/WOD/X20`.
 The inventory originally proposed these classes; all 17 now exist on
-`x20/integration`, with each family implemented on its own `x20/*` branch.
+`main`, after implementation on separate family branches and integration.
+Historical family commits are retained in the acceptance record.
 See the [class reference](../X20-Class-Reference.md) and
 [acceptance results](../profiles/Acceptance.md) for supported behavior.
 The accompanying [source catalogue](X20-Template-Catalogue.json) records exact

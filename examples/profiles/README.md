@@ -14,6 +14,8 @@ sidebars, tables, stat blocks, authored art, references and an index.
 | `x20/eastern` | `kote20-dharmabook` / `kote20dharmabook`, `kotek20` / `kotek20book`, `kotek20-legacybook` / `kotek20legacybook` |
 | `x20/wod` | `wod` / `wodbook` |
 
-All families are combined on `x20/integration`. The M20 specimen is
+All families are combined on `main`. Branch names above record the original
+implementation; their preserved commits are in the
+[acceptance record](../../docs/profiles/Acceptance.md). The M20 specimen is
 [`../specimen.tex`](../specimen.tex); other specimens are named for their style.
 See [preparation and installation](../../docs/X20-Class-Reference.md) before building.

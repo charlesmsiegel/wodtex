@@ -1,9 +1,10 @@
 # X20 implementation acceptance
 
-Completed 2026-10-02. `x20/integration` combines all eight family branches;
-`main` remains at the original baseline. No branches were pushed.
+Completed 2026-10-02. All 17 classes are combined on `main`. Implementation
+used eight separate family branches; those merged branches were removed at
+the user's request. Their verified tips below remain in main's commit history.
 
-| Family branch | Verified tip | Implemented styles |
+| Original family branch | Preserved commit | Implemented styles |
 | --- | --- | --- |
 | `x20/mage` | `b6af5e8` | Existing M20, M20 Dark Ages, Mage: The Sorcerers Crusade |
 | `x20/vampire` | `1889bc7` | V20 clanbook, Victorian Age V20, Victorian clanbook |
@@ -14,9 +15,9 @@ Completed 2026-10-02. `x20/integration` combines all eight family branches;
 | `x20/eastern` | `8acfb2a` | KotE20 dharmabook, KotEK20, KotEK20 legacybook |
 | `x20/wod` | `220273c` | General World of Darkness sourcebook |
 
-Every family starts from `x20/foundation` and includes the final shared fixes.
-Family branches contain their own classes, descriptors, specimens and source
-audits. The integration branch adds the complete inventory acceptance tests.
+Every family started from `x20/foundation` and includes the final shared fixes.
+Each preserved family commit contains its classes, descriptors, specimens and
+source audits. Main also includes the combined inventory acceptance tests.
 Class names are listed in [the examples index](../../examples/profiles/README.md).
 
 ## Validation

@@ -182,3 +182,9 @@ and foreign-host adapters were explicitly separated from native interior PDF
 acceptance. W20 measurements come from the supplied PDFs; empty extra M20
 IDML files are recorded rather than treated as valid sources. Existing M20
 resources and its default/prefixed implementation remain unchanged.
+
+The user subsequently requested publication to GitHub and branch cleanup.
+The combined implementation and shared showcase are delivered on `main`;
+merged implementation branches are removed while their commits and per-family
+acceptance records remain in main's history. This later instruction supersedes
+the original no-merge/no-push constraint above.

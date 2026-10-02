@@ -56,6 +56,17 @@ spanning components. IDs must be unique. Images resolve relative to the manuscri
 
 ## Repository builds and verification
 
+Render one shared manuscript through every class with:
+
+```powershell
+python examples/showcase.py
+```
+
+The example covers headings, prose, sidebars, a table, a stat block, art,
+references and an index. It writes individual PDFs and a bookmarked comparison
+PDF under the ignored `build/showcase/` directory. Generated outputs are not
+tracked. Supply `--latex C:/path/to/lualatex.exe` when automatic detection fails.
+
 ```powershell
 $env:WODTEX_LUALATEX = "C:/path/to/lualatex.exe"
 python scripts/build.py --target pdf --source examples/profiles/c20.tex --out build/c20 --verify
