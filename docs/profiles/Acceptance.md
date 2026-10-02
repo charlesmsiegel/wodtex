@@ -5,14 +5,14 @@ Completed 2026-10-02. `x20/integration` combines all eight family branches;
 
 | Family branch | Verified tip | Implemented styles |
 | --- | --- | --- |
-| `x20/mage` | `f0a7074` | Existing M20, M20 Dark Ages, Mage: The Sorcerers Crusade |
-| `x20/vampire` | `b5a8450` | V20 clanbook, Victorian Age V20, Victorian clanbook |
-| `x20/werewolf` | `2057902` | W20, W20 Dark Ages, W20 Wyld West |
-| `x20/changeling` | `c782972` | C20, Dark Ages Fae |
-| `x20/demon` | `221ffd8` | D20 |
-| `x20/wraith` | `e6584c7` | Wr20 |
-| `x20/eastern` | `e5d5352` | KotE20 dharmabook, KotEK20, KotEK20 legacybook |
-| `x20/wod` | `daaf625` | General World of Darkness sourcebook |
+| `x20/mage` | `b6af5e8` | Existing M20, M20 Dark Ages, Mage: The Sorcerers Crusade |
+| `x20/vampire` | `1889bc7` | V20 clanbook, Victorian Age V20, Victorian clanbook |
+| `x20/werewolf` | `78d45f0` | W20, W20 Dark Ages, W20 Wyld West |
+| `x20/changeling` | `7b360f8` | C20, Dark Ages Fae |
+| `x20/demon` | `fb01578` | D20 |
+| `x20/wraith` | `216e4c9` | Wr20 |
+| `x20/eastern` | `8acfb2a` | KotE20 dharmabook, KotEK20, KotEK20 legacybook |
+| `x20/wod` | `220273c` | General World of Darkness sourcebook |
 
 Every family starts from `x20/foundation` and includes the final shared fixes.
 Family branches contain their own classes, descriptors, specimens and source
