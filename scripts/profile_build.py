@@ -35,7 +35,7 @@ def build_profile(args, root=ROOT):
         if any(target not in profile['outputs'] for target in targets):
             raise ValueError('WODTEX_E_OUTPUT_UNSUPPORTED: ' + profile['style_id'] + ' supports ' + ', '.join(profile['outputs']))
         resources = Path(os.environ.get('WODTEX_PROFILE_ROOT', root / 'inputs/profiles')).resolve()
-        manifest = verify_resources(profile['style_id'], resources)
+        manifest = verify_resources(profile['style_id'], resources, root)
         report['resources'] = manifest
         work = out / 'pdf'
         work.mkdir(exist_ok=True)
@@ -50,6 +50,8 @@ def build_profile(args, root=ROOT):
         env = dict(os.environ)
         env['PATH'] = str(Path(command).parent) + os.pathsep + env.get('PATH', '')
         env['TEXINPUTS'] = os.pathsep.join((str(source.parent), str(root), ''))
+        for suffix in ('.idx', '.ind', '.ilg'):
+            (work / (source.stem + suffix)).unlink(missing_ok=True)
         previous = None
         for number in range(1, args.max_runs + 1):
             native_options = ['--disable-installer'] if os.name == 'nt' and 'miktex' in command.lower() else []
@@ -67,6 +69,9 @@ def build_profile(args, root=ROOT):
                 indexed = subprocess.run([makeindex, index.name], cwd=work, env=env, capture_output=True, timeout=60)
                 if indexed.returncode:
                     raise ValueError('WODTEX_E_INDEX: ' + indexed.stderr.decode(errors='replace'))
+            else:
+                for suffix in ('.ind', '.ilg'):
+                    (work / (source.stem + suffix)).unlink(missing_ok=True)
             state = {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in work.iterdir()
                      if p.suffix in ('.aux', '.toc', '.out', '.ind')}
             if state == previous:
