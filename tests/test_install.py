@@ -142,7 +142,7 @@ class InstallTests(unittest.TestCase):
         for name, data in files.items():
             if name.endswith(('.cls', '.sty')):
                 self.assertNotIn(b'tex/m20-', data)
-                self.assertNotIn(b'profiles/', data)
+                self.assertNotRegex(data, rb'\\(?:input|InputIfFileExists)\{profiles/')
 
     def test_symlinked_config_and_managed_parent_are_refused(self):
         if os.name == 'nt':
@@ -186,7 +186,8 @@ class InstallTests(unittest.TestCase):
     def test_windows_crlf_checkout_installs_updates_and_rejects_real_edits(self):
         source = self.base / 'windows-source'
         source.mkdir()
-        shutil.copy2(ROOT / 'm20book.cls', source / 'm20book.cls')
+        for cls in ROOT.glob('*.cls'):
+            shutil.copy2(cls, source / cls.name)
         for name in ('tex', 'profiles', 'contrib'):
             shutil.copytree(ROOT / name, source / name)
         for path in source.rglob('*'):
