@@ -3,16 +3,16 @@
 Completed 2026-10-02. `x20/integration` combines all eight family branches;
 `main` remains at the original baseline. No branches were pushed.
 
-| Family branch | Implemented styles |
-| --- | --- |
-| `x20/mage` | Existing M20, M20 Dark Ages, Mage: The Sorcerers Crusade |
-| `x20/vampire` | V20 clanbook, Victorian Age V20, Victorian clanbook |
-| `x20/werewolf` | W20, W20 Dark Ages, W20 Wyld West |
-| `x20/changeling` | C20, Dark Ages Fae |
-| `x20/demon` | D20 |
-| `x20/wraith` | Wr20 |
-| `x20/eastern` | KotE20 dharmabook, KotEK20, KotEK20 legacybook |
-| `x20/wod` | General World of Darkness sourcebook |
+| Family branch | Verified tip | Implemented styles |
+| --- | --- | --- |
+| `x20/mage` | `f0a7074` | Existing M20, M20 Dark Ages, Mage: The Sorcerers Crusade |
+| `x20/vampire` | `b5a8450` | V20 clanbook, Victorian Age V20, Victorian clanbook |
+| `x20/werewolf` | `2057902` | W20, W20 Dark Ages, W20 Wyld West |
+| `x20/changeling` | `c782972` | C20, Dark Ages Fae |
+| `x20/demon` | `221ffd8` | D20 |
+| `x20/wraith` | `e6584c7` | Wr20 |
+| `x20/eastern` | `e5d5352` | KotE20 dharmabook, KotEK20, KotEK20 legacybook |
+| `x20/wod` | `daaf625` | General World of Darkness sourcebook |
 
 Every family starts from `x20/foundation` and includes the final shared fixes.
 Family branches contain their own classes, descriptors, specimens and source
@@ -44,6 +44,19 @@ Class names are listed in [the examples index](../../examples/profiles/README.md
   and Windows CRLF checkouts. Prepared resource manifests bind exact font hashes
   and the complete preparation recipe; stale resources fail verification.
 - Independent code review findings were addressed with regression checks.
+- A fresh source archive independently prepares all 16 new resource sets from
+  Downloads, installs all 17 classes into a new user tree, compiles every new
+  full specimen plus an M20 preservation specimen, and preserves installed
+  bytes on update. The native archive acceptance test passes; its PDFs and
+  per-class page counts are under `build/x20/archive-proof/`.
+- Full discovery was compared with an untouched `git archive main` checkout
+  under the same environment. No failing test was introduced. The remaining
+  four launcher failures and 34 legacy runtime/input errors also occur on main;
+  the package-path and CRLF installer failures on main are resolved here.
+  Final discovery ran 141 tests: four failures, 34 errors, 44 skips and one
+  expected failure; the baseline has the same 38 remaining failing tests plus
+  the two resolved failures. Dedicated native X20 rendering and archive tests
+  run separately with their explicit environment flags.
 
 Local proof PDFs are in `build/x20/proofs/<style>/pdf/`; installed specimens
 are in `build/x20/installed-specimens/`. They are ignored build artifacts.
@@ -71,3 +84,17 @@ Downloaded fonts and reference PDFs are external inputs, prepared under the
 ignored `inputs/profiles/` directory. They are neither modified in Downloads
 nor added to the family commits or source archive. See the
 [class reference](../X20-Class-Reference.md) for preparation and installation.
+
+## Reproduce final acceptance
+
+```powershell
+$env:WODTEX_LUALATEX = "C:/path/to/lualatex.exe"
+$env:WODTEX_X20_RENDER = "1"
+python -m unittest tests.test_x20_profiles tests.test_x20_installation -v
+$env:WODTEX_X20_ARCHIVE = "1"
+python -m unittest tests.test_x20_archive -v
+```
+
+The archive test uses the supplied Downloads directory by default; set
+`WODTEX_X20_SOURCE` to relocate that input. It supplies licensed M20 fonts/art
+separately because the source archive deliberately excludes rendering inputs.

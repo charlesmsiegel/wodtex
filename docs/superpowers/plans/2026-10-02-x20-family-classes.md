@@ -149,6 +149,36 @@ Create `kote20dharmabook.cls`, `kotek20book.cls`, and `kotek20legacybook.cls`. R
 
 The baseline probe on 2026-10-02 ran 12 tests: four passed, four profile tests errored because the default external M20 IDML path does not exist, and four shell-launcher tests failed on Windows with incorrect/un-normalized script paths. These are pre-existing results, not family implementation regressions. LuaLaTeX/kpsewhich/tex4ebook are absent from the current PATH; Poppler tools are available. One conventional user MiKTeX location could not be inspected due to filesystem permissions, so runtime absence has not been established beyond PATH. Resolve runtime access before visual acceptance; do not install or claim it exists based on speculation.
 
-## Plan review status
+## Execution record and completion audit
 
-The user approved implementing all inventoried profiles with one branch per family. This written implementation plan is ready for review; no product implementation has started. Execution will use the native method, with sequential family work and no subagents unless subsequently requested.
+The sections above preserve the original implementation plan and provisional
+file/test names. Their unchecked boxes are historical planning notes; current
+completion evidence is recorded below and in `docs/profiles/Acceptance.md`.
+The user instructed autonomous completion without confirmation gates. Family
+implementation ran sequentially on native Git branches; a read-only reviewer
+was used by the review skill. No work was merged to main or pushed.
+
+The implementation uses discovered `profiles/*.json` descriptors instead of a
+mutable `profiles/registry.json`, and shared mechanics in
+`tex/wodtex-profile-core.sty` instead of duplicated family layout packages.
+Preparation accepts repeatable profile selection; installation includes every
+descriptor present in its checkout and preserves a separate profile-root
+configuration. These are implementation choices within the original 17-class
+scope. Unsupported foreign-host and EPUB requests fail explicitly.
+
+| Delivery gate | Authoritative evidence |
+| --- | --- |
+| Registry, neutral IDML ingestion, resource isolation | `tests/test_x20_foundation.py`, `tests/test_x20_review_regressions.py`; explicit descriptor hashes and preparation recipe checks |
+| Class-aware installation/build/package | `tests/test_install.py`, `tests/test_package.py`, class-routing regressions; 28 relevant tests passed with four legacy environment skips |
+| All eight family implementations | All `tests/test_<family>_profiles.py` inventory contracts, 17 class/descriptor mappings, per-style source audits, exact branch-local profile-set checks |
+| Native PDF specimens | `tests/test_x20_profiles.py`; all 16 new full specimens passed genuine-font, text, metadata, navigation and measured-size checks; rendered contact sheets inspected |
+| Combined installed classes and updates | `tests/test_x20_installation.py`; six tests passed, including all 17 classes, continuation conservation, explicit error probes and unrelated-directory compilation |
+| Fresh archive preparation/install/build | `tests/test_x20_archive.py`; fresh input preparation for all new profiles, all 17 installed classes compiled, ordinary update preserved every installed byte |
+| Full discovery regression audit | `build/x20/full-suite.log`, `main-full-suite.log`, `baseline-comparison.json`; no introduced failing tests versus untouched main |
+| Source-only package and branch delivery | Archive contains all 17 classes; eight independent family tips merged into `x20/integration`; main stays at `8270c61`; branch tips and limitations published in the acceptance record |
+
+EPUB for new classes, cover layouts, alternate illustrated chapter variants
+and foreign-host adapters were explicitly separated from native interior PDF
+acceptance. W20 measurements come from the supplied PDFs; empty extra M20
+IDML files are recorded rather than treated as valid sources. Existing M20
+resources and its default/prefixed implementation remain unchanged.

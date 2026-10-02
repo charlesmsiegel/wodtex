@@ -19,8 +19,12 @@ Existing M20-prefixed commands remain supported and select M20 rendering indepen
 Generic nested tables and continuation/entry commands inherit their enclosing element's selected style.
 An ordinary top-level generic element selects the class default.
 
-Only M20 has a production class/renderer, and only the corrected native PDF installation has the complete generic capability set.
-There is no `wodbook` class or implemented MSC design.
+The X20 integration checkout now has 17 classes across eight family branches,
+including `wodbook` and `mscbook`. New classes use source-mapped typography,
+measured geometry and outer decoration with a shared native PDF composition
+engine. See [the class reference](../X20-Class-Reference.md) and
+[acceptance record](../profiles/Acceptance.md). Foreign-host style adapters
+and EPUB for the new classes remain unsupported and fail explicitly.
 Setting a legacy profile name is not proof that its fonts, artwork, geometry or rendering have been implemented.
 Generic EPUB acceptance has not been performed, and corrected print-only capabilities produce a capability error in EPUB/base mode.
 The legacy native `maketitle` route remains available in base and EPUB modes.
