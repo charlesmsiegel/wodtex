@@ -32022,5 +32022,23 @@
     "statblock",
     "statentry",
     "artreserve"
-  ]
+  ],
+  "border_exclusions": {
+    "body-left": [
+      [
+        0.4,
+        0.947,
+        0.6,
+        1
+      ]
+    ],
+    "body-right": [
+      [
+        0.4,
+        0.947,
+        0.6,
+        1
+      ]
+    ]
+  }
 }
