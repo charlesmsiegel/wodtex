@@ -1,0 +1,44 @@
+\documentclass{kotek20book}
+\title{kotek20 Specimen}
+\subtitle{Native PDF Output Profile}
+\author{Template Author}
+\writtenby{Template Author}
+\developedby{Developer}
+\editedby{Editor}
+\specialthanks{The readers}
+\copyrightyear{2026}
+\makeindex
+\begin{document}
+\frontmatter
+\maketitle
+\makecredits
+\tableofcontents
+\mainmatter
+\chapter{First Chapter}
+\label{first-chapter}
+\section{A Measured Style}
+This profile uses its own genuine font faces and supplied outer artwork.
+Ordinary prose includes \textbf{genuine bold}, \emph{genuine italic}, and an index term\index{profile}.
+\begin{itemize}\item A readable first item.\item A second item.\end{itemize}
+\begin{sidebar}[id=field-note]{Field Note}
+Conserved sidebar text in the selected class style.
+\begin{booktable}{ll}Nested & Value \\ One & Two \\\end{booktable}
+\end{sidebar}
+\begin{sidebarwide}[id=continued-note]{Continued Note}
+Before the explicit continuation.
+\sidebarbreak[page]
+After the explicit continuation.
+\end{sidebarwide}
+\begin{tablelead}Introductory table prose.\end{tablelead}
+\begin{booktable}[id=records,head-rows=1]{ll}
+Key & Value \\
+First & Conserved cell \\
+Second & Another value \\
+\end{booktable}
+\begin{statblock}\statentry{Strength: 3}\statentry{Resolve: 4}\end{statblock}
+\artreserve[image={../art/scene.png},alt={A geometric scene},caption={Scene caption},credit={Artist credit}]{scene}
+\chapter{Later Chapter}
+Refer to Chapter~\ref{first-chapter}. Later body text must retain its host font.
+\backmatter
+\printindex
+\end{document}
