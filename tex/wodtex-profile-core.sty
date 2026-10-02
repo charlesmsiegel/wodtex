@@ -9,6 +9,8 @@
 \RequirePackage[skins,breakable]{tcolorbox}
 \RequirePackage{fancyhdr,hyperref,makeidx}
 \RequirePackage{tex/wodtex-metadata,tex/wodtex-registry}
+\let\@title\@empty
+\let\@author\@empty
 \providecommand\wodtexResourceRoot{inputs/profiles/}
 \edef\wodtexProfilePath{\wodtexResourceRoot\wodtexProfileId/}
 \InputIfFileExists{profiles/\wodtexProfileId.tex}{}{\PackageError{wodtex}{WODTEX_E_PROFILE_MISSING}{Install the selected profile.}}
@@ -40,7 +42,7 @@
  \ifnum\wodtexColumns>1 \global\wodtexBodyActivetrue\begin{multicols}{\wodtexColumns}\fi\fi\fi}
 \newcommand\wodtexBodyEnd{\ifwodtexBodyActive\end{multicols}\global\wodtexBodyActivefalse\fi}
 \newcommand\wodtexNoop{}
-\AddToHook{enddocument/before}{\wodtexBodyEnd}
+\AtEndDocument{\wodtexBodyEnd}
 \let\wodtexOriginalFrontmatter\frontmatter
 \let\wodtexOriginalMainmatter\mainmatter
 \let\wodtexOriginalBackmatter\backmatter
@@ -92,43 +94,44 @@
  image .tl_set:N=\l_wodtex_image_tl,caption .tl_set:N=\l_wodtex_caption_tl,credit .tl_set:N=\l_wodtex_credit_tl,alt .tl_set:N=\l_wodtex_alt_tl,
  kind .choice:,kind/horizontal .code:n=\tl_set:Nn\l_wodtex_kind_tl{horizontal},kind/vertical .code:n=\tl_set:Nn\l_wodtex_kind_tl{vertical},
  role .choice:,role/decorative .code:n={},role/meaningful .code:n={},
- position .choice:,position/top .code:n={},position/bottom .code:n={},position/inner .code:n={},position/outer .code:n={},
+ position .code:n=\PackageError{wodtex}{WODTEX_E_POSITION_UNSUPPORTED}{Use~place=flow~or~place=next-page;~anchored~art~is~unsupported.},
  head-rows .code:n=\def\wodtexHeadRows{#1},
  unknown .code:n=\PackageError{wodtex}{WODTEX_E_OPTION:~\l_keys_key_str}{Unsupported~element~option.}}
 \cs_new_protected:Npn\wodtexElementSetup#1{
  \tl_clear:N\l_wodtex_id_tl\tl_clear:N\l_wodtex_image_tl\tl_clear:N\l_wodtex_caption_tl\tl_clear:N\l_wodtex_credit_tl\tl_clear:N\l_wodtex_alt_tl
  \tl_set:Nn\l_wodtex_kind_tl{horizontal}\tl_set:Nn\l_wodtex_place_tl{flow}\int_set:Nn\l_wodtex_columns_int{1}\bool_set_true:N\l_wodtex_breakable_bool
  \def\wodtexHeadRows{1}\keys_set:nn{wodtex/element}{#1}
+ \tl_if_eq:NnT\l_wodtex_place_tl{next-page}{\clearpage}
  \refstepcounter{wodtexElement}\tl_if_empty:NT\l_wodtex_id_tl{\tl_set:Nx\l_wodtex_id_tl{wodtex-element-\thewodtexElement}}
  \exp_args:NnV\regex_match:nnF{\A[A-Za-z][-A-Za-z0-9:._]*\Z}\l_wodtex_id_tl{\PackageError{wodtex}{WODTEX_E_INVALID_ID}{Use~an~XML-safe~semantic~ID.}}
  \exp_args:NNV\prop_if_in:NnTF\g_wodtex_element_ids_prop\l_wodtex_id_tl{\PackageError{wodtex}{WODTEX_E_DUPLICATE_ID}{Use~unique~semantic~IDs.}}{\exp_args:NNV\prop_gput:Nnn\g_wodtex_element_ids_prop\l_wodtex_id_tl{used}}
- \exp_args:NV\label\l_wodtex_id_tl
- \tl_if_eq:NnT\l_wodtex_place_tl{next-page}{\clearpage}}
+ \exp_args:NV\label\l_wodtex_id_tl}
 \NewDocumentCommand\wodtexProfileSetup{m}{\keys_set:nn{wodtex/setup}{#1}}
 \keys_define:nn{wodtex/setup}{running-title .code:n=\fancyhead[LE]{\small #1},unknown .code:n=\PackageError{wodtex}{WODTEX_E_SETUP_OPTION:~\l_keys_key_str}{Page~policy~is~selected~by~the~class.}}
-\NewDocumentCommand\wodtexRenderSidebar{mmmm}{\wodtexElementSetup{#2}\wodtexInsideSidebartrue
+\NewDocumentCommand\wodtexRenderSidebar{mmm+m}{\wodtexElementSetup{#2}\wodtexInsideSidebartrue
  \bool_if:NTF\l_wodtex_breakable_bool{\tcbset{breakable}}{\tcbset{breakable=false}}
  \begin{tcolorbox}[enhanced,width=#1,colback=white,colframe=wodtexAccent,title={#3},title~after~break={#3~(continued)},fonttitle=\wodtexHeadingFont,coltitle=black,colbacktitle=white,boxrule=.7bp,arc=0pt,left=9bp,right=9bp]
  \int_compare:nNnTF{\l_wodtex_columns_int}={2}{\begin{multicols}{2}#4\end{multicols}}{#4}\end{tcolorbox}}
-\NewDocumentCommand\wodtexProfileSidebar{mmm}{\wodtexRenderSidebar{\dimexpr(\textwidth-\columnsep)/2\relax}{#1}{#2}{#3}}
-\NewDocumentCommand\wodtexProfileSidebarWide{mmm}{\wodtexRenderSidebar{\textwidth}{#1}{#2}{#3}}
+\NewDocumentCommand\wodtexProfileSidebar{mm+m}{\wodtexRenderSidebar{\dimexpr(\textwidth-\columnsep)/2\relax}{#1}{#2}{#3}}
+\NewDocumentCommand\wodtexProfileSidebarWide{mm+m}{\wodtexRenderSidebar{\textwidth}{#1}{#2}{#3}}
 \NewDocumentCommand\wodtexProfileSidebarBreak{m}{\str_case:nnF{#1}{{page}{\tcbbreak}{column}{\tcbbreak}}{\PackageError{wodtex}{WODTEX_E_BREAK_MODE}{Use~page~or~column.}}}
-\NewDocumentCommand\wodtexProfileTable{mmm}{\wodtexElementSetup{#1}
+\NewDocumentCommand\wodtexProfileTable{mm+m}{\wodtexElementSetup{#1}
  \ifwodtexInsideSidebar\begin{tabular}{#2}#3\end{tabular}\else
  \seq_set_split:Nnn\l_wodtex_table_rows_seq{\\}{#3}\tl_clear:N\l_wodtex_table_header_tl
  \int_step_inline:nn{\wodtexHeadRows}{\seq_if_empty:NF\l_wodtex_table_rows_seq{\seq_pop_left:NN\l_wodtex_table_rows_seq\l_tmpa_tl\tl_put_right:NV\l_wodtex_table_header_tl\l_tmpa_tl\tl_put_right:Nn\l_wodtex_table_header_tl{\\}}}
  \tl_clear:N\l_wodtex_table_body_tl
  \seq_map_inline:Nn\l_wodtex_table_rows_seq{\tl_if_blank:nF{##1}{\tl_put_right:Nn\l_wodtex_table_body_tl{##1\\}}}
  \begin{longtable}{#2}\tl_use:N\l_wodtex_table_header_tl\endfirsthead\tl_use:N\l_wodtex_table_header_tl\endhead\tl_use:N\l_wodtex_table_body_tl\end{longtable}\fi}
-\NewDocumentCommand\wodtexProfileTableLead{m}{\par\noindent #1\par\smallskip}
-\NewDocumentCommand\wodtexProfileStatblock{m}{\begin{tcolorbox}[breakable,colback=white,colframe=wodtexAccent,arc=0pt]#1\end{tcolorbox}}
-\NewDocumentCommand\wodtexProfileStatentry{m}{\par\noindent #1\par}
+\NewDocumentCommand\wodtexProfileTableLead{+m}{\par\noindent #1\par\smallskip}
+\NewDocumentCommand\wodtexProfileStatblock{+m}{\begin{tcolorbox}[breakable,colback=white,colframe=wodtexAccent,arc=0pt]#1\end{tcolorbox}}
+\NewDocumentCommand\wodtexProfileStatentry{+m}{\par\noindent #1\par}
 \NewDocumentCommand\wodtexProfileArt{mm}{\wodtexBodyEnd\group_begin:\wodtexElementSetup{#1}
+ \tl_if_eq:NnTF\l_wodtex_kind_tl{vertical}{\def\wodtexArtWidth{.48\linewidth}\def\wodtexArtHeight{.72\textheight}}{\def\wodtexArtWidth{\linewidth}\def\wodtexArtHeight{.4\textheight}}
  \IfNoValueF{#2}{\label{#2}}
  \tl_if_empty:NTF\l_wodtex_image_tl{
-  \begin{tcolorbox}[height=.4\textheight,colback=white,colframe=wodtexAccent,arc=0pt]\centering Artwork~reservation\end{tcolorbox}
+  \begin{tcolorbox}[width=\wodtexArtWidth,height=\wodtexArtHeight,colback=white,colframe=wodtexAccent,arc=0pt]\centering Artwork~reservation\end{tcolorbox}
  }{\exp_args:NV\IfFileExists\l_wodtex_image_tl{
-  \noindent\includegraphics[width=\linewidth,height=.4\textheight,keepaspectratio]{\l_wodtex_image_tl}
+  \noindent\includegraphics[width=\wodtexArtWidth,height=\wodtexArtHeight,keepaspectratio]{\l_wodtex_image_tl}
  }{\PackageError{wodtex}{WODTEX_E_IMAGE_MISSING:~\l_wodtex_image_tl}{Supply~the~authored~image.}}}
  \par\tl_use:N\l_wodtex_caption_tl\par\tl_use:N\l_wodtex_credit_tl\par\group_end:\wodtexBodyBegin}
 \ExplSyntaxOff
