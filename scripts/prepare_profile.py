@@ -40,7 +40,12 @@ def remove_template_text(pdf):
     streams = set()
     for page in pdf:
         streams.update(page.get_contents())
-        streams.update(record[0] for record in page.get_xobjects())
+    # get_xobjects() does not enumerate every transitive transparency group.
+    # Also cover tiling patterns, which can contain text-show operations.
+    for xref in range(1, pdf.xref_length()):
+        if pdf.xref_is_stream(xref) and (pdf.xref_get_key(xref, 'Subtype')[1] == '/Form'
+                                        or pdf.xref_get_key(xref, 'PatternType')[1] == '1'):
+            streams.add(xref)
     for xref in streams:
         stream = DecodedStreamObject()
         stream.set_data(pdf.xref_stream(xref))
@@ -80,24 +85,66 @@ def prepare_profile(profile_id, source_root, output_root, root=ROOT):
             strips = [(0, 0, width, margins['top'] * .7),
                       (0, height - margins['bottom'] * .7, width, height),
                       (0, 0, left * .7, height), (width - right * .7, 0, width, height)]
+            # Some supplied headers/folios are outlines or raster artwork,
+            # rather than text operators. Audited normalized exclusions remove
+            # those template labels and colored placeholders without embedding
+            # sample content in newly authored pages.
+            for bounds in profile.get('border_exclusions', {}).get(role, []):
+                cut = fitz.Rect(bounds[0] * width, bounds[1] * height,
+                                bounds[2] * width, bounds[3] * height)
+                remaining = []
+                for bounds in strips:
+                    rect = fitz.Rect(bounds)
+                    overlap = rect & cut
+                    if overlap.is_empty:
+                        remaining.append(rect)
+                        continue
+                    for part in (fitz.Rect(rect.x0, rect.y0, rect.x1, overlap.y0),
+                                 fitz.Rect(rect.x0, overlap.y1, rect.x1, rect.y1),
+                                 fitz.Rect(rect.x0, overlap.y0, overlap.x0, overlap.y1),
+                                 fitz.Rect(overlap.x1, overlap.y0, rect.x1, overlap.y1)):
+                        if not part.is_empty:
+                            remaining.append(part)
+                strips = remaining
             with fitz.open() as output:
                 page = output.new_page(width=width, height=height)
                 for bounds in strips:
-                    rect = fitz.Rect(bounds)
+                    rect = fitz.Rect(bounds) & src.rect
+                    if rect.width < .01 or rect.height < .01:
+                        continue
                     page.show_pdf_page(rect, original, number - 1, clip=rect)
                 name = role + '.pdf'
                 output.save(dest / name, garbage=4, deflate=True)
                 resources[name] = hashlib.sha256((dest / name).read_bytes()).hexdigest()
     manifest = {'schema_version': 1, 'style_id': profile_id,
+                'preparation_sha256': preparation_hash(profile),
                 'reference_sha256': profile['reference']['sha256'], 'files': resources,
                 'notes': profile.get('limitations', [])}
     (dest / 'resources.json').write_text(json.dumps(manifest, indent=2) + '\n', encoding='utf-8')
     return manifest
 
 
-def verify_resources(profile_id, output_root):
+def preparation_hash(profile):
+    fields = {name: profile.get(name, {}) for name in
+              ('fonts', 'reference', 'border_pages', 'geometry', 'border_exclusions')}
+    return hashlib.sha256(json.dumps(fields, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
+
+
+def verify_resources(profile_id, output_root, root=ROOT):
     base = Path(output_root) / profile_id
     manifest = json.loads((base / 'resources.json').read_text(encoding='utf-8'))
+    profile = load_profiles(root)[profile_id]
+    required_fonts = {role + Path(record.get('member') or record['path']).suffix.lower(): record['sha256']
+                      for role, record in profile['fonts'].items()}
+    required = set(required_fonts) | {role + '.pdf' for role in profile['border_pages']}
+    if (manifest.get('schema_version') != 1 or manifest.get('style_id') != profile_id
+            or manifest.get('reference_sha256') != profile['reference']['sha256']
+            or manifest.get('preparation_sha256') != preparation_hash(profile)
+            or set(manifest.get('files', {})) != required):
+        raise ValueError('WODTEX_E_RESOURCE_MANIFEST: ' + profile_id)
+    for name, expected in required_fonts.items():
+        if manifest['files'][name] != expected:
+            raise ValueError('WODTEX_E_RESOURCE_FONT: ' + profile_id + '/' + name)
     for name, expected in manifest['files'].items():
         if Path(name).name != name or hashlib.sha256((base / name).read_bytes()).hexdigest() != expected:
             raise ValueError('WODTEX_E_RESOURCE_HASH: ' + profile_id + '/' + name)
