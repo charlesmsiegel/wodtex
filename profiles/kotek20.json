@@ -6582,5 +6582,23 @@
     "statblock",
     "statentry",
     "artreserve"
-  ]
+  ],
+  "border_exclusions": {
+    "body-left": [
+      [
+        0.47,
+        0.955,
+        0.53,
+        1
+      ]
+    ],
+    "body-right": [
+      [
+        0.47,
+        0.955,
+        0.53,
+        1
+      ]
+    ]
+  }
 }
