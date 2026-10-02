@@ -1,7 +1,9 @@
 # Crossover styles and template ingestion
 
-The generic author interface and M20 adapter described below are implemented.
-WoD/MSC renderers and adaptation to foreign page policies remain planned.
+The generic author interface, all 17 native PDF classes, and prefixed foreign
+PDF component adapters are implemented. See [crossover usage](../Crossover.md)
+for the supported components, resource setup, and pagination limits.
+Foreign page-level renderers and cross-template EPUB remain separate work.
 Do not turn this guide into an unrequested framework rewrite.
 
 ## Current implementation
@@ -23,8 +25,9 @@ The repository now has 17 classes implemented across eight families,
 including `wodbook` and `mscbook`. New classes use source-mapped typography,
 measured geometry and outer decoration with a shared native PDF composition
 engine. See [the class reference](../X20-Class-Reference.md) and
-[acceptance record](../profiles/Acceptance.md). Foreign-host style adapters
-and EPUB for the new classes remain unsupported and fail explicitly.
+[acceptance record](../profiles/Acceptance.md). Foreign-host PDF components are
+available through their explicit prefixes. Page policy stays with the host;
+foreign page commands and EPUB for the new classes remain unsupported.
 Setting a legacy profile name is not proof that its fonts, artwork, geometry or rendering have been implemented.
 Generic EPUB acceptance has not been performed, and corrected print-only capabilities produce a capability error in EPUB/base mode.
 The legacy native `maketitle` route remains available in base and EPUB modes.
@@ -70,12 +73,12 @@ It is not a WoD or MSC renderer.
 
 Generic author commands select the document class's style. Explicitly prefixed
 **rendering** commands select their named style for that element, even in a book
-whose surrounding style differs. For example, a future generic `sidebar` in
+whose surrounding style differs. For example, a generic `sidebar` in
 `wodbook` uses WoD, while `m20sidebar` in the same book must use M20. Do not make
 `m20sidebar` an alias that silently changes meaning with the document class.
 
 A style is a stable ID with explicit resources and rendering capabilities.
-Examples of future IDs are `m20`, `wod` and `msc`; the IDs alone do not authorize
+Examples of implemented IDs are `m20`, `wod` and `msc`; the IDs alone do not authorize
 inventing their designs. A class owns the default ID. Element construction
 records either the class default or an explicit ID, and retains that selection
 through measurement, page breaking, continuation, output painting and EPUB
@@ -158,11 +161,12 @@ navigation tests exist; a PDF-only checkpoint must say so explicitly.
 5. Define a profile's capabilities, resource roles, component metrics and page
    policy independently. Implement its class default hook and explicit element
    selection without changing another style's global defaults.
-6. Register all new classes, namespaced packages, Lua helpers, profiles and
-   resources in installation and source-package manifests. **The current
-   installer explicitly copies `m20book.cls`; adding `wodbook.cls` alone does
-   not install it.** Its current bundle validation is also M20-specific and
-   must gain an explicit profile registry when a second renderer is approved.
+6. Register new classes with an output-profile descriptor consumed by
+   `scripts/profile_registry.py`. The installer discovers registered classes,
+   shared TeX/Lua packages, and profile definitions; the source packager must
+   include their source and notices. Keep bundle validation specific to the
+   resource set being installed. Do not edit checked M20 correction hashes to
+   include unrelated shared packages.
 7. Version private configuration carefully. Preserve current M20 font/art
    overrides and existing config bytes on ordinary updates. Add profile-specific
    paths without conflating different fonts with the same filename. Document
@@ -175,7 +179,7 @@ navigation tests exist; a PDF-only checkpoint must say so explicitly.
 
 - Existing M20 manuscripts and prefixed APIs retain their rendering and metadata.
 - Generic commands select each implemented class default without profile flags.
-- M20 sidebar/table/art in a future WoD host selects M20 resources and styling;
+- M20 sidebar/table/art in a WoD host selects M20 resources and styling;
   a following generic element and body text return to WoD. Test the reverse.
 - Mixed style fonts/colors/lengths do not leak through nested, spanning,
   breakable, deferred and continued elements; test multi-page continuations.
@@ -197,7 +201,16 @@ Fresh installation and repeat updates include all shared packages and preserve l
 The exact approved source and its explicitly labeled public geometric fixture are `examples/generic-book.tex` and `examples/art/scene.png`.
 The new/old API comparison checks identical rendered page pixels, genuine font roles, text conservation and PDF navigation.
 
-The next checkpoint must ingest an authorized WoD or MSC template, add a real class/install hook and profile-scoped configuration, and implement only reference-backed capabilities.
-Foreign page policies need approved adapters and capability restrictions before explicit M20 elements can be claimed to work in those real hosts.
-Further style namespaces for Lua callbacks, caches and resources must be added when the second production renderer exists.
+The crossover checkpoint supplies all 17 component prefixes and lazy,
+style-scoped font/resource records. PDF components fit the host page area;
+they never load a foreign class, geometry, page artwork, or output routine.
+M20 foreign sidebars retain their extracted texture, shadow, gold rules, and
+Goudy/Abbess faces. Tables, leads, statblocks, and flow art have portable
+adapters with explicit placement and nesting limits.
+Installed proofs cover M20 in W20, the reverse, all prefixes, nested overrides,
+notes, references, content conservation, unsupported capabilities, and native
+M20 pixel compatibility. Synthetic non-M20 resources verify isolation rather
+than full original-template visual acceptance. Foreign page-level rendering,
+automatic multi-page two-column foreign sidebars, and anchored foreign art
+remain unimplemented capabilities.
 Generic EPUB mappings and acceptance remain a separate checkpoint.

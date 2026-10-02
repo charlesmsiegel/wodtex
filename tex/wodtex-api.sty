@@ -35,4 +35,11 @@
 \clist_map_inline:nn {subtitle,bookdescription,writtenby,developedby,editedby,specialthanks,copyrightyear,booksetup,makecredits,sidebarbreak,statentry,artreserve,sidebar,endsidebar,sidebarwide,endsidebarwide,booktable,endbooktable,tablelead,endtablelead,statblock,endstatblock}
  {\wodtexRememberPublicName{#1}}
 \ExplSyntaxOff
+% PDF classes opt into scoped foreign components automatically. EPUB retains
+% its existing semantic adapter until mixed-style conversion is supported.
+\ExplSyntaxOn
+\cs_if_exist:NTF\ifmTwentyEpub
+ {\ifmTwentyEpub\else\RequirePackage{tex/wodtex-crossover,tex/wodtex-prefixes}\fi}
+ {\RequirePackage{tex/wodtex-crossover,tex/wodtex-prefixes}}
+\ExplSyntaxOff
 \endinput

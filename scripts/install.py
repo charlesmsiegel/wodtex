@@ -63,6 +63,7 @@ def payload(layout):
             data = data.replace(b'profiles/m20.tex', b'wodtex-profile-m20.tex')
             data = data.replace(b'profiles/\\mTwentyProfile.tex', b'wodtex-profile-\\mTwentyProfile.tex')
             data = data.replace(b'profiles/\\wodtexProfileId.tex', b'wodtex-profile-\\wodtexProfileId.tex')
+            data = data.replace(b'profiles/\\wodtexCrossProfileId.tex', b'wodtex-profile-\\wodtexCrossProfileId.tex')
         if name == 'm20book.cls':
             data = data.replace(b'\\RequirePackage{m20-core}',
                                 b'\\InputIfFileExists{wodtex-local.tex}{}{}\n\\RequirePackage{m20-core}')

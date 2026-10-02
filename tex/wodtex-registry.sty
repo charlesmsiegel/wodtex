@@ -29,6 +29,14 @@
 % Expand the selected ID now; deferred backends must capture their own boxes
 % or immutable resources rather than enqueueing this dispatcher for shipout.
 \cs_new_protected:Npn \wodtexDispatchStyle #1#2 {
+ \cs_if_exist:NTF\ifwodtexCrossContext
+  {\legacy_if:nTF{wodtexCrossContext}
+    {\cs_if_exist:cTF{wodtexCross/#1/#2}
+      {\use:c{wodtexCross/#1/#2}}{\wodtex_dispatch_native:nn{#1}{#2}}}
+    {\wodtex_dispatch_native:nn{#1}{#2}}}
+  {\wodtex_dispatch_native:nn{#1}{#2}}
+}
+\cs_new_protected:Npn\wodtex_dispatch_native:nn#1#2{
  \cs_if_exist:cTF {wodtex/render/#1/#2}
   {\use:c {wodtex/render/#1/#2}}
   {\PackageError{wodtex}{WODTEX_E_CAPABILITY:~#1/#2}{This~style~does~not~implement~the~requested~capability.}}

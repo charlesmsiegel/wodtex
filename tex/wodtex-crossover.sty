@@ -1,0 +1,363 @@
+\NeedsTeXFormat{LaTeX2e}[2022-06-01]
+\ProvidesPackage{wodtex-crossover}[2026/10/02 host-independent PDF components]
+% Foreign components never load a class, geometry, page art or output routine.
+% Resource records and font families are immutable; each element selects them
+% locally. Host columns are suspended outside the element's formatting group.
+\RequirePackage{fontspec,graphicx,multicol,longtable,array,colortbl,hyperref}
+\RequirePackage[skins,breakable]{tcolorbox}
+\tcbuselibrary{hooks}
+\RequirePackage{tex/wodtex-registry}
+\ifdefined\mTwentyBuildFontPath\else\InputIfFileExists{wodtex-local.tex}{}{}\fi
+\ifdefined\wodtexResourceRoot\else\InputIfFileExists{wodtex-profiles-local.tex}{}{}\fi
+\providecommand\mTwentyBuildFontPath{fonts/}
+\providecommand\mTwentyBuildAssetPath{assets/}
+\providecommand\wodtexResourceRoot{inputs/profiles/}
+\newif\ifwodtexCrossSidebar
+\newif\ifwodtexCrossContext
+\newcounter{wodtexCrossElement}
+\newcounter{wodtexCrossNote}
+\newcounter{wodtexCrossRepeatedNote}
+\ExplSyntaxOn
+\prop_new:N \g_wodtex_cross_resources_prop
+\prop_if_exist:NF\g_wodtex_element_ids_prop{\prop_new:N\g_wodtex_element_ids_prop}
+\seq_new:N \g_wodtex_cross_notes_seq
+\seq_new:N \g_wodtex_cross_header_marks_seq
+\bool_new:N \g_wodtex_cross_record_header_bool
+\bool_new:N \g_wodtex_cross_replay_header_bool
+\seq_new:N \l_wodtex_cross_rows_seq
+\tl_new:N \l_wodtex_cross_header_tl
+\tl_new:N \l_wodtex_cross_body_tl
+\tl_new:N \l_wodtex_cross_id_tl
+\tl_new:N \l_wodtex_cross_alias_id_tl
+\tl_new:N \l_wodtex_cross_place_tl
+\tl_new:N \l_wodtex_cross_image_tl
+\tl_new:N \l_wodtex_cross_caption_tl
+\tl_new:N \l_wodtex_cross_credit_tl
+\tl_new:N \l_wodtex_cross_kind_tl
+\tl_new:N \l_wodtex_cross_colspec_tl
+\bool_new:N \l_wodtex_cross_dark_table_bool
+\bool_new:N \l_wodtex_cross_contained_bool
+\bool_new:N \l_wodtex_cross_breakable_bool
+\bool_new:N \l_wodtex_cross_auto_id_bool
+\int_new:N \l_wodtex_cross_columns_int
+\int_new:N \l_wodtex_cross_head_int
+\cs_new:Npn\wodtexCrossField#1#2{\exp_args:NNe\prop_item:Nn\g_wodtex_cross_resources_prop{#1/#2}}
+\cs_new_protected:Npn\wodtex_cross_put:nnn#1#2#3{
+ \prop_gput:Nnx\g_wodtex_cross_resources_prop{#1/#2}{#3}}
+\cs_new_protected:Npn\wodtexCrossPrepare#1{
+ \prop_if_in:NnF\g_wodtex_cross_resources_prop{#1/path}{
+  \group_begin:
+  \str_if_eq:nnTF{#1}{m20}{
+   \cs_if_exist:NTF\mTwentyFontPath
+    {\wodtex_cross_put:nnn{#1}{path}{\mTwentyFontPath}}
+    {\wodtex_cross_put:nnn{#1}{path}{\mTwentyBuildFontPath}}
+   \cs_if_exist:NTF\mTwentyAssetPath
+    {\wodtex_cross_put:nnn{#1}{assets}{\mTwentyAssetPath}}
+    {\wodtex_cross_put:nnn{#1}{assets}{\mTwentyBuildAssetPath}}
+   \wodtex_cross_put:nnn{#1}{body}{GOUDOS.TTF}
+   \wodtex_cross_put:nnn{#1}{bold}{GOUDOSB_0.TTF}
+   \wodtex_cross_put:nnn{#1}{italic}{GOUDOSI_0.TTF}
+   \wodtex_cross_put:nnn{#1}{bolditalic}{GOUDOSI_0.TTF}
+   \wodtex_cross_put:nnn{#1}{heading}{abbess-regular.ttf}
+   \wodtex_cross_put:nnn{#1}{size}{10}\wodtex_cross_put:nnn{#1}{leading}{10}
+   \wodtex_cross_put:nnn{#1}{heading-size}{18}\wodtex_cross_put:nnn{#1}{heading-leading}{18}
+   \definecolor{wodtexCrossProfileAccent}{cmyk}{.8549,1,.2161,.1239}
+  }{
+   \def\wodtexCrossProfileId{#1}
+   \InputIfFileExists{wodtex-profile-#1.tex}{}{
+    \InputIfFileExists{profiles/\wodtexCrossProfileId.tex}{}{
+     \PackageError{wodtex}{WODTEX_E_PROFILE_MISSING:~#1}{Install~the~selected~component~profile.}}}
+   \wodtex_cross_put:nnn{#1}{path}{\wodtexResourceRoot#1/}
+   \clist_map_inline:nn{body/BodyFont,bold/BoldFont,italic/ItalicFont,bolditalic/BoldItalicFont,heading/HeadingFace,size/BodySize,leading/BodyLeading,heading-size/HeadingSize,heading-leading/HeadingLeading}{
+    \seq_set_split:Nnn\l_tmpa_seq{/}{##1}
+    \exp_args:Nxx\wodtex_cross_put:nnn{#1}{\seq_item:Nn\l_tmpa_seq{1}}{\use:c{wodtex\seq_item:Nn\l_tmpa_seq{2}}}}
+   \colorlet{wodtexCrossProfileAccent}{wodtexAccent}
+  }
+  \convertcolorspec{named}{wodtexCrossProfileAccent}{rgb}\wodtexCrossAccentSpec
+  \wodtex_cross_put:nnn{#1}{accent}{\wodtexCrossAccentSpec}
+  \group_end:
+  \clist_map_inline:nn{body,bold,italic,bolditalic,heading}{
+   \IfFileExists{\wodtexCrossField{#1}{path}\wodtexCrossField{#1}{##1}}{}{
+    \PackageError{wodtex}{WODTEX_E_RESOURCE_MISSING:~#1/##1}{Prepare~the~component~resources~and~configure~their~paths.}}}
+  \directlua{luaotfload.add_fallback("wodtex-cross-#1-display",{"[\luaescapestring{\wodtexCrossField{#1}{path}\wodtexCrossField{#1}{body}}]:mode=node;"})}
+  \exp_args:Nc\newfontfamily{wodtexCrossBody#1}{\wodtexCrossField{#1}{body}}[
+   Path={\wodtexCrossField{#1}{path}},BoldFont={\wodtexCrossField{#1}{bold}},
+   ItalicFont={\wodtexCrossField{#1}{italic}},BoldItalicFont={\wodtexCrossField{#1}{bolditalic}}]
+  \exp_args:Nc\newfontfamily{wodtexCrossHeading#1}{\wodtexCrossField{#1}{heading}}[
+   Path={\wodtexCrossField{#1}{path}},HyphenChar=None,RawFeature={fallback=wodtex-cross-#1-display}]
+ }
+}
+\cs_new_protected:Npn\wodtexCrossSelect#1{
+ \wodtexCrossPrepare{#1}\def\wodtexCrossStyle{#1}\def\wodtexActiveStyle{#1}
+ \wodtexCrossContexttrue
+ % Native aliases nested inside a foreign component must not reopen columns.
+ \cs_if_exist:NT\mTwentyBodyBegin{\let\mTwentyBodyBegin\relax\let\mTwentyBodyEnd\relax}
+ \cs_if_exist:NT\wodtexBodyBegin{\let\wodtexBodyBegin\relax\let\wodtexBodyEnd\relax}
+ \use:c{wodtexCrossBody#1}\fontsize{\wodtexCrossField{#1}{size}bp}{\wodtexCrossField{#1}{leading}bp}\selectfont
+ \parindent=18bp\parskip=0pt
+ \definecolor{wodtexCrossAccent}{rgb}{\wodtexCrossField{#1}{accent}}
+}
+\cs_new_protected:Npn\wodtexCrossHeading{
+ \use:c{wodtexCrossHeading\wodtexCrossStyle}
+ \fontsize{\wodtexCrossField{\wodtexCrossStyle}{heading-size}bp}{\wodtexCrossField{\wodtexCrossStyle}{heading-leading}bp}\selectfont
+}
+\cs_new_protected:Npn\wodtexCrossOptionFor#1#2{
+ \str_if_eq:eeF{#1}{\wodtexCrossComponent}{
+  \PackageError{wodtex}{WODTEX_E_OPTION:~#2}{This~option~does~not~apply~to~the~selected~component.}}}
+\keys_define:nn{wodtex/crossover}{
+ id .tl_set:N=\l_wodtex_cross_id_tl,
+ place .choice:,place/flow .code:n=\tl_set:Nn\l_wodtex_cross_place_tl{flow},
+ place/here .code:n={\str_if_eq:eeT{\wodtexCrossComponent}{art}{
+  \PackageError{wodtex}{WODTEX_E_POSITION_UNSUPPORTED}{Foreign~art~supports~flow~or~next-page~placement.}}
+  \tl_set:Nn\l_wodtex_cross_place_tl{here}},
+ place/next-page .code:n=\tl_set:Nn\l_wodtex_cross_place_tl{next-page},
+ columns .choice:,
+ columns/1 .code:n={\wodtexCrossOptionFor{sidebar}{columns}\int_set:Nn\l_wodtex_cross_columns_int{1}},
+ columns/2 .code:n={\wodtexCrossOptionFor{sidebar}{columns}\int_set:Nn\l_wodtex_cross_columns_int{2}},
+ breakable .choice:,
+ breakable/true .code:n={\wodtexCrossOptionFor{sidebar}{breakable}\bool_set_true:N\l_wodtex_cross_breakable_bool},
+ breakable/false .code:n={\wodtexCrossOptionFor{sidebar}{breakable}\bool_set_false:N\l_wodtex_cross_breakable_bool},
+ breakable .default:n=true,
+ head-rows .code:n={\wodtexCrossOptionFor{table}{head-rows}\int_set:Nn\l_wodtex_cross_head_int{#1}},
+ image .code:n={\wodtexCrossOptionFor{art}{image}\tl_set:Nn\l_wodtex_cross_image_tl{#1}},
+ caption .code:n={\wodtexCrossOptionFor{art}{caption}\tl_set:Nn\l_wodtex_cross_caption_tl{#1}},
+ credit .code:n={\wodtexCrossOptionFor{art}{credit}\tl_set:Nn\l_wodtex_cross_credit_tl{#1}},
+ alt .code:n={\wodtexCrossOptionFor{art}{alt}},role .choice:,
+ role/decorative .code:n={\wodtexCrossOptionFor{art}{role}},role/meaningful .code:n={\wodtexCrossOptionFor{art}{role}},
+ kind .choice:,
+ kind/horizontal .code:n={\wodtexCrossOptionFor{art}{kind}\tl_set:Nn\l_wodtex_cross_kind_tl{horizontal}},
+ kind/vertical .code:n={\wodtexCrossOptionFor{art}{kind}\tl_set:Nn\l_wodtex_cross_kind_tl{vertical}},
+ position .code:n=\PackageError{wodtex}{WODTEX_E_POSITION_UNSUPPORTED}{Foreign~art~supports~flow~or~next-page~placement.},
+ unknown .code:n=\PackageError{wodtex}{WODTEX_E_OPTION:~\l_keys_key_str}{Unsupported~crossover~component~option.}}
+\cs_new_protected:Npn\wodtexCrossOptions#1#2{
+ \def\wodtexCrossComponent{#1}
+ \tl_clear:N\l_wodtex_cross_id_tl\tl_clear:N\l_wodtex_cross_image_tl
+ \tl_clear:N\l_wodtex_cross_alias_id_tl
+ \tl_clear:N\l_wodtex_cross_caption_tl\tl_clear:N\l_wodtex_cross_credit_tl
+ \tl_set:Nn\l_wodtex_cross_place_tl{flow}\tl_set:Nn\l_wodtex_cross_kind_tl{horizontal}
+ \int_set:Nn\l_wodtex_cross_columns_int{1}\int_set:Nn\l_wodtex_cross_head_int{1}
+ \bool_set_true:N\l_wodtex_cross_breakable_bool\keys_set:nn{wodtex/crossover}{#2}
+ \int_compare:nNnT{\l_wodtex_cross_head_int}<{0}{\PackageError{wodtex}{WODTEX_E_TABLE_HEADERS}{head-rows~cannot~be~negative.}}
+ \tl_if_eq:NnT\l_wodtex_cross_place_tl{next-page}{
+  \str_if_eq:nnT{#1}{table}{\bool_if:NT\l_wodtex_cross_contained_bool{
+   \PackageError{wodtex}{WODTEX_E_CONTAINED_PLACEMENT}{A~contained~table~cannot~start~an~independent~page.}}}
+  \clearpage}
+ \stepcounter{wodtexCrossElement}\edef\wodtexCrossNumber{\thewodtexCrossElement}
+ \bool_set_false:N\l_wodtex_cross_auto_id_bool
+ \tl_if_empty:NT\l_wodtex_cross_id_tl{
+  \bool_set_true:N\l_wodtex_cross_auto_id_bool
+  \tl_set:Nx\l_wodtex_cross_id_tl{wodtex-cross-\wodtexCrossNumber}}
+}
+\cs_new_protected:Npn\wodtexCrossClaimId#1{
+ \exp_args:NnV\regex_match:nnF{\A[A-Za-z][-A-Za-z0-9:._]*\Z}#1{
+  \PackageError{wodtex}{WODTEX_E_INVALID_ID}{Use~an~XML-safe~semantic~ID.}}
+ \exp_args:NNV\prop_if_in:NnT\g_wodtex_element_ids_prop#1{
+  \PackageError{wodtex}{WODTEX_E_DUPLICATE_ID}{Use~unique~semantic~IDs.}}
+ \prop_if_exist:NT\g_mtw_ids_prop{
+  \exp_args:NNV\prop_if_in:NnT\g_mtw_ids_prop#1{
+   \PackageError{wodtex}{WODTEX_E_DUPLICATE_ID}{Use~unique~semantic~IDs.}}
+  \exp_args:NNV\prop_gput:Nnn\g_mtw_ids_prop#1{used}}
+ \exp_args:NNV\prop_gput:Nnn\g_wodtex_element_ids_prop#1{used}}
+\cs_new_protected:Npn\wodtexCrossRegisterIds{
+ \wodtexCrossClaimId\l_wodtex_cross_id_tl
+ \tl_if_empty:NF\l_wodtex_cross_alias_id_tl{\wodtexCrossClaimId\l_wodtex_cross_alias_id_tl}}
+% Keep anchors and delayed label writes in the placed box/first table header,
+% so an automatic page move carries references with the component.
+\cs_new_protected:Npn\wodtexCrossAnchor{
+ \phantomsection\protected@edef\@currentlabel{\wodtexCrossNumber}
+ \exp_args:NV\label\l_wodtex_cross_id_tl
+ \tl_if_empty:NF\l_wodtex_cross_alias_id_tl{\exp_args:NV\label\l_wodtex_cross_alias_id_tl}
+}
+\prg_new_conditional:Npnn\wodtex_cross_inside: {TF,T,F}{
+ \legacy_if:nTF{wodtexCrossSidebar}{\prg_return_true:}{
+  \cs_if_exist:NTF\ifmTwentySidebarActive{
+   \legacy_if:nTF{mTwentySidebarActive}{\prg_return_true:}{\prg_return_false:}
+  }{\cs_if_exist:NTF\ifwodtexInsideSidebar{
+   \legacy_if:nTF{wodtexInsideSidebar}{\prg_return_true:}{\prg_return_false:}
+  }{\prg_return_false:}}}}
+% Capture the actual host, independent of later registry extensions.
+\cs_if_exist:NTF\mTwentyBodyEnd{
+ \cs_new_eq:NN\wodtexCrossHostEnd\mTwentyBodyEnd
+ \cs_new_eq:NN\wodtexCrossHostBegin\mTwentyBodyBegin
+}{\cs_new_eq:NN\wodtexCrossHostEnd\wodtexBodyEnd
+  \cs_new_eq:NN\wodtexCrossHostBegin\wodtexBodyBegin}
+\cs_new_protected:Npn\wodtexCrossBefore{
+ \legacy_if:nF{wodtexCrossContext}{\wodtex_cross_inside:F{\wodtexCrossHostEnd}}}
+\cs_new_protected:Npn\wodtexCrossAfter{
+ \legacy_if:nF{wodtexCrossContext}{\wodtex_cross_inside:F{\wodtexCrossHostBegin}}}
+\cs_new_protected:Npn\wodtexCrossSidebarBefore{
+ \legacy_if:nT{wodtexCrossContext}{\PackageError{wodtex}{WODTEX_E_UNSUPPORTED_NESTING}{Place~sidebars~outside~other~components.}}
+ \wodtex_cross_inside:T{\PackageError{wodtex}{WODTEX_E_UNSUPPORTED_NESTING}{A~sidebar~cannot~contain~another~sidebar.}}
+ \wodtexCrossHostEnd}
+\cs_new_protected:Npn\wodtexCrossNoop{}
+% Internal multicols is one atomic box. Never ask the outer breakable frame
+% to split it: that would discard overflow. Each explicit page fragment must
+% fit the host page, including its title, insets and collected notes.
+\cs_new_protected:Npn\wodtexCrossCheckFragment{
+ \dim_compare:nNnT{\tcb@natheight}>{\textheight}{
+  \PackageError{wodtex}{WODTEX_E_SIDEBAR_FRAGMENT_TOO_TALL}{Use~columns=1,~enable~one-column~breaking,~or~insert~sidebarbreak[page]~between~shorter~two-column~fragments.}}
+ \wodtexCrossPlaceAtomic}
+\cs_new_protected:Npn\wodtexCrossPlaceAtomic{
+ \par\dim_compare:nNnT{\tcb@natheight}>{\pagegoal-\pagetotal}{\newpage}}
+\NewDocumentCommand\wodtexCrossNote{o+m}{
+ \IfNoValueTF{#1}{\stepcounter{wodtexCrossNote}}{\setcounter{wodtexCrossNote}{#1}}
+ \textsuperscript{\thewodtexCrossNote}
+ \seq_gput_right:Nx\g_wodtex_cross_notes_seq{
+  \exp_not:N\par\exp_not:N\noindent\exp_not:N\textsuperscript{\thewodtexCrossNote}\exp_not:n{#2}}}
+\NewDocumentCommand\wodtexCrossRepeatNote{o+m}{
+ \stepcounter{wodtexCrossRepeatedNote}
+ \textsuperscript{\seq_item:Nn\g_wodtex_cross_header_marks_seq{\value{wodtexCrossRepeatedNote}}}}
+\NewDocumentCommand\wodtexCrossTableNote{o+m}{
+ \bool_if:NTF\g_wodtex_cross_replay_header_bool{\wodtexCrossRepeatNote{#2}}{
+  \IfNoValueTF{#1}{\wodtexCrossNote{#2}}{\wodtexCrossNote[#1]{#2}}
+  \bool_if:NT\g_wodtex_cross_record_header_bool{
+   \seq_gput_right:Nx\g_wodtex_cross_header_marks_seq{\thewodtexCrossNote}}}}
+\NewDocumentCommand\wodtexCrossSidebar{mmmm+m}{
+ \wodtexCrossSelect{#1}\wodtexCrossOptions{sidebar}{#3}\wodtexCrossRegisterIds
+ \str_if_eq:nnT{#2}{narrow}{\int_compare:nNnT{\l_wodtex_cross_columns_int}>{1}{
+  \PackageError{wodtex}{WODTEX_E_NARROW_TWO_COLUMNS}{Use~sidebarwide~for~two~text~columns.}}}
+ \wodtexCrossSidebartrue
+ \def\wodtexCrossSidebarOwner{#1}\def\wodtexCrossSidebarTitle{#4}
+ \cs_if_exist:NT\wodtexInsideSidebartrue{\wodtexInsideSidebartrue}
+ \seq_gclear:N\g_wodtex_cross_notes_seq\setcounter{wodtexCrossNote}{0}\let\footnote\wodtexCrossNote
+ \str_if_eq:nnTF{#2}{wide}{\def\wodtexCrossWidth{\textwidth}}{
+  \def\wodtexCrossWidth{\dimexpr(\textwidth-\columnsep)/2\relax}}
+ \tcbset{reset,enhanced,width=\wodtexCrossWidth,arc=0pt,boxrule=.7bp,colback=white,colframe=wodtexCrossAccent,
+  colbacktitle=white,coltitle=black,title={#4},title~after~break={#4~(continued)},fonttitle=\wodtexCrossHeading,left=9bp,right=9bp}
+ \bool_if:NTF\l_wodtex_cross_breakable_bool{\tcbset{breakable}}{\tcbset{breakable=false}}
+ \str_if_eq:nnT{#1}{m20}{\wodtexCrossMageSidebarPaint}
+ \bool_if:NF\l_wodtex_cross_breakable_bool{\tcbset{before~pre={\wodtexCrossCheckFragment}}}
+ \int_compare:nNnT{\l_wodtex_cross_columns_int}={2}{
+  \tcbset{breakable=false,before~pre={\wodtexCrossCheckFragment}}}
+ \begin{tcolorbox}
+  \wodtexCrossAnchor
+  \int_compare:nNnTF{\l_wodtex_cross_columns_int}={2}{\begin{multicols}{2}#5\end{multicols}}{#5}
+  \seq_map_inline:Nn\g_wodtex_cross_notes_seq{##1}
+ \end{tcolorbox}
+}
+\NewDocumentCommand\wodtexCrossBreak{m}{
+ \ifwodtexCrossSidebar
+  \bool_if:NF\l_wodtex_cross_breakable_bool{\PackageError{wodtex}{WODTEX_E_ATOMIC_SIDEBAR_BREAK}{Choose~breakable=true~or~remove~the~manual~break.}}
+  \str_case:nnF{#1}{{page}{\int_compare:nNnTF{\l_wodtex_cross_columns_int}={2}{
+    \end{multicols}\seq_map_inline:Nn\g_wodtex_cross_notes_seq{##1}\seq_gclear:N\g_wodtex_cross_notes_seq
+    \end{tcolorbox}\clearpage
+    \begin{tcolorbox}[title={\wodtexCrossSidebarTitle~(continued)}]\begin{multicols}{2}
+   }{\tcbbreak}}{column}{\int_compare:nNnTF{\l_wodtex_cross_columns_int}={2}{\columnbreak}{\tcbbreak}}}{
+   \PackageError{wodtex}{WODTEX_E_BREAK_MODE}{Use~page~or~column.}}
+ \else\PackageError{wodtex}{WODTEX_E_BREAK_OUTSIDE_SIDEBAR}{Sidebar~breaks~require~an~enclosing~sidebar.}\fi}
+\NewDocumentCommand\wodtexCrossTable{mmm+m}{
+ \bool_set_false:N\l_wodtex_cross_contained_bool
+ \legacy_if:nT{wodtexCrossContext}{\bool_set_true:N\l_wodtex_cross_contained_bool}
+ \wodtex_cross_inside:T{\bool_set_true:N\l_wodtex_cross_contained_bool}
+ \bool_set_false:N\l_wodtex_cross_dark_table_bool
+ \legacy_if:nT{wodtexCrossSidebar}{\str_if_eq:eeT{\wodtexCrossSidebarOwner}{m20}{
+  \str_if_eq:nnT{#1}{m20}{\bool_set_true:N\l_wodtex_cross_dark_table_bool}}}
+ \wodtexCrossSelect{#1}\wodtexCrossOptions{table}{#2}\wodtexCrossRegisterIds\color{black}
+ \rowcolors{1}{white}{white}\tl_set:Nn\l_wodtex_cross_colspec_tl{#3}
+ \str_if_eq:nnT{#1}{m20}{\definecolor{wodtexCrossTableBand}{RGB}{237,232,241}\rowcolors{2}{white}{wodtexCrossTableBand}}
+ \bool_if:NT\l_wodtex_cross_dark_table_bool{
+  \rowcolors{1}{}{}\color{white}
+  \regex_match:nnT{\A[lcr|\s]+\Z}{#3}{
+   \tl_clear:N\l_wodtex_cross_colspec_tl
+   \tl_map_inline:nn{#3}{\str_case:nn{##1}{
+    {l}{\tl_put_right:Nn\l_wodtex_cross_colspec_tl{>{\wodtexCrossMageCell}l}}
+    {c}{\tl_put_right:Nn\l_wodtex_cross_colspec_tl{>{\wodtexCrossMageCell}c}}
+    {r}{\tl_put_right:Nn\l_wodtex_cross_colspec_tl{>{\wodtexCrossMageCell}r}}
+    {|}{\tl_put_right:Nn\l_wodtex_cross_colspec_tl{|}}}}}}
+ \bool_if:NTF\l_wodtex_cross_contained_bool{
+  \exp_args:NnV\begin{tabular}\l_wodtex_cross_colspec_tl\noalign{\wodtexCrossAnchor}#4\end{tabular}}{
+  \seq_set_split:Nnn\l_wodtex_cross_rows_seq{\\}{#4}\tl_clear:N\l_wodtex_cross_header_tl
+  \int_step_inline:nn{\l_wodtex_cross_head_int}{\seq_if_empty:NF\l_wodtex_cross_rows_seq{
+   \seq_pop_left:NN\l_wodtex_cross_rows_seq\l_tmpa_tl\tl_put_right:NV\l_wodtex_cross_header_tl\l_tmpa_tl\tl_put_right:Nn\l_wodtex_cross_header_tl{\\}}}
+  \tl_clear:N\l_wodtex_cross_body_tl\seq_map_inline:Nn\l_wodtex_cross_rows_seq{
+   \tl_if_blank:nF{##1}{\tl_put_right:Nn\l_wodtex_cross_body_tl{##1\\}}}
+  \seq_gclear:N\g_wodtex_cross_notes_seq\setcounter{wodtexCrossNote}{0}\setcounter{wodtexCrossRepeatedNote}{0}
+  \seq_gclear:N\g_wodtex_cross_header_marks_seq\let\footnote\wodtexCrossTableNote
+  \begin{longtable}{#3}
+   \noalign{\wodtexCrossAnchor\bool_gset_true:N\g_wodtex_cross_record_header_bool\bool_gset_false:N\g_wodtex_cross_replay_header_bool}
+   \tl_use:N\l_wodtex_cross_header_tl\endfirsthead
+   \noalign{\bool_gset_false:N\g_wodtex_cross_record_header_bool\bool_gset_true:N\g_wodtex_cross_replay_header_bool}
+   \tl_use:N\l_wodtex_cross_header_tl\endhead
+   \noalign{\bool_gset_false:N\g_wodtex_cross_replay_header_bool}
+   \tl_use:N\l_wodtex_cross_body_tl\end{longtable}
+  \seq_map_inline:Nn\g_wodtex_cross_notes_seq{##1}}
+}
+\NewDocumentCommand\wodtexCrossLead{m+m}{\wodtexCrossSelect{#1}\par\noindent #2\par\smallskip}
+\NewDocumentCommand\wodtexCrossStat{m+m}{\wodtexCrossSelect{#1}
+ \str_if_eq:nnTF{#1}{m20}{\color{wodtexCrossMagePurple}
+  \begin{list}{}{\leftmargin=13.5bp\rightmargin=0bp\topsep=1.44bp\parsep=0bp}\item[]#2\end{list}
+ }{\begin{tcolorbox}[reset,enhanced,breakable,colback=white,colframe=wodtexCrossAccent,arc=0pt]#2\end{tcolorbox}}}
+\NewDocumentCommand\wodtexCrossEntry{m+m}{\group_begin:\wodtexCrossSelect{#1}
+ \str_if_eq:nnTF{#1}{m20}{\color{wodtexCrossMagePurple}
+  \legacy_if:nT{wodtexCrossSidebar}{\str_if_eq:eeT{\wodtexCrossSidebarOwner}{m20}{\color{white}}}
+ }{\color{black}}
+ \tl_set:Nn\l_tmpa_tl{#2}\str_if_eq:nnT{#1}{m20}{\tl_replace_all:Nnn\l_tmpa_tl{|}{\par\noindent}}
+ \cs_if_exist:NTF\mTwentyStatEntry{
+  \str_if_eq:eeTF{\wodtexClassStyle/#1/\@currenvir}{m20/m20/m20statblock}
+   {\mTwentyStatEntry{#2}}{\par\noindent\tl_use:N\l_tmpa_tl\par}
+ }{\par\noindent\tl_use:N\l_tmpa_tl\par}\group_end:}
+\NewDocumentCommand\wodtexCrossArt{mmm}{
+ \legacy_if:nT{wodtexCrossContext}{\PackageError{wodtex}{WODTEX_E_UNSUPPORTED_NESTING}{Place~art~outside~other~components.}}
+ \wodtex_cross_inside:T{\PackageError{wodtex}{WODTEX_E_UNSUPPORTED_NESTING}{Place~art~outside~sidebars.}}
+ \wodtexCrossHostEnd\group_begin:\wodtexCrossSelect{#1}\wodtexCrossOptions{art}{#2}
+ \IfNoValueF{#3}{\bool_if:NTF\l_wodtex_cross_auto_id_bool{
+   \tl_set:Nn\l_wodtex_cross_id_tl{#3}}{
+   \tl_if_eq:NnF\l_wodtex_cross_id_tl{#3}{\tl_set:Nn\l_wodtex_cross_alias_id_tl{#3}}}}
+ \wodtexCrossRegisterIds
+ \tl_if_eq:NnTF\l_wodtex_cross_kind_tl{vertical}{\def\wodtexCrossArtWidth{.48\textwidth}\def\wodtexCrossArtHeight{.72\textheight}}{
+  \def\wodtexCrossArtWidth{\textwidth}\def\wodtexCrossArtHeight{.4\textheight}}
+ \tcbset{reset,enhanced,width=\wodtexCrossArtWidth,height=\wodtexCrossArtHeight,colback=white,colframe=wodtexCrossAccent,arc=0pt}
+ \str_if_eq:nnT{#1}{m20}{\wodtexCrossMageArtSetup}
+ \tcbset{before~pre={\wodtexCrossPlaceAtomic}}
+ \begin{tcolorbox}
+  \wodtexCrossAnchor
+  \tl_if_empty:NTF\l_wodtex_cross_image_tl{\centering Artwork~reservation}{
+   \exp_args:NV\IfFileExists\l_wodtex_cross_image_tl{
+    \includegraphics[width=\linewidth,height=\dimexpr\wodtexCrossArtHeight-30bp\relax,keepaspectratio]{\l_wodtex_cross_image_tl}
+   }{\PackageError{wodtex}{WODTEX_E_IMAGE_MISSING}{Supply~the~authored~image.}}}
+ \end{tcolorbox}\par\tl_use:N\l_wodtex_cross_caption_tl\par\tl_use:N\l_wodtex_cross_credit_tl\par
+ \group_end:\wodtexCrossHostBegin}
+% Snapshot callbacks with literal style IDs. Native host callbacks stay intact.
+\cs_new_protected:Npn\wodtexCrossRegister#1{
+  \cs_new_protected:cpn{wodtexCross/#1/sidebar}##1##2##3{\wodtexCrossSidebar{#1}{narrow}{##1}{##2}{##3}}
+  \cs_new_protected:cpn{wodtexCross/#1/sidebarwide}##1##2##3{\wodtexCrossSidebar{#1}{wide}{##1}{##2}{##3}}
+  \cs_new_protected:cpn{wodtexCross/#1/booktable}##1##2##3{\wodtexCrossTable{#1}{##1}{##2}{##3}}
+  \cs_new_protected:cpn{wodtexCross/#1/tablelead}##1{\wodtexCrossLead{#1}{##1}}
+  \cs_new_protected:cpn{wodtexCross/#1/statblock}##1{\wodtexCrossStat{#1}{##1}}
+  \cs_new_protected:cpn{wodtexCross/#1/statentry}##1{\wodtexCrossEntry{#1}{##1}}
+  \cs_new_protected:cpn{wodtexCross/#1/artreserve}##1##2{\wodtexCrossArt{#1}{##1}{##2}}
+  \cs_new_eq:cN{wodtexCross/#1/sidebarbreak}\wodtexCrossBreak
+  \clist_map_inline:nn{sidebar,sidebarwide}{
+   \cs_new_eq:cN{wodtexCross/#1/##1-before}\wodtexCrossSidebarBefore
+   \cs_new_eq:cN{wodtexCross/#1/##1-after}\wodtexCrossAfter}
+  \clist_map_inline:nn{booktable,tablelead,statblock}{
+   \cs_new_eq:cN{wodtexCross/#1/##1-before}\wodtexCrossBefore
+   \cs_new_eq:cN{wodtexCross/#1/##1-after}\wodtexCrossAfter}
+ \str_if_eq:eeF{#1}{\wodtexClassStyle}{
+  \clist_map_inline:nn{sidebar,sidebarwide,booktable,tablelead,statblock,statentry,artreserve}{
+   \wodtexRegisterRenderer{#1}{##1}{wodtexCross/#1/##1}}
+  \wodtexRegisterRenderer{#1}{sidebarbreak}{wodtexCrossBreak}
+  \clist_map_inline:nn{sidebar,sidebarwide}{\wodtexRegisterRenderer{#1}{##1-before}{wodtexCrossSidebarBefore}\wodtexRegisterRenderer{#1}{##1-after}{wodtexCrossAfter}}
+  \clist_map_inline:nn{booktable,tablelead,statblock}{\wodtexRegisterRenderer{#1}{##1-before}{wodtexCrossBefore}\wodtexRegisterRenderer{#1}{##1-after}{wodtexCrossAfter}}
+ }
+}
+\clist_map_inline:nn{m20,m20-dark-ages,msc,v20-clanbook,vva20,vva20-clanbook,w20,w20-dark-ages,w20-wyld-west,c20,dark-ages-fae,d20,wr20,kote20-dharmabook,kotek20,kotek20-legacybook,wod}{\wodtexCrossRegister{#1}}
+% The legacy M20 environment calls its paginator directly. In a foreign
+% sidebar it must produce a contained table instead of enqueueing a float.
+\cs_if_exist:NT\mTwentyTablePDF{
+ \NewCommandCopy\wodtexCrossNativeMageTable\mTwentyTablePDF
+ \cs_set_protected:Npn\mTwentyTablePDF#1#2#3{
+  \ifwodtexCrossContext
+   \group_begin:\wodtexCrossTable{m20}{#1}{#2}{#3}\group_end:
+  \else\wodtexCrossNativeMageTable{#1}{#2}{#3}\fi}}
+% Preserve native bounded floats outside crossover, but use styled prose in
+% a foreign component. LaTeX copies the captured-body environment safely.
+\cs_if_exist:NT\mTwentyTableLeadBox{
+ \NewEnvironmentCopy{wodtexCrossNativeMageLead}{m20tablelead}
+ \RenewDocumentEnvironment{m20tablelead}{+b}{
+  \legacy_if:nTF{wodtexCrossContext}{\wodtexCrossLead{m20}{#1}}{
+   \begin{wodtexCrossNativeMageLead}#1\end{wodtexCrossNativeMageLead}}
+ }{}}
+\ExplSyntaxOff
+\RequirePackage{tex/wodtex-crossover-m20}
+\endinput

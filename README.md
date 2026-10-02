@@ -452,8 +452,11 @@ vertical reservations. Use `place=flow` or `place=next-page`; M20's anchored
 
 ## System and layout overrides
 
-### Explicit M20 commands
+### Explicit template components
 
+PDF books can mix components from all 17 templates. Use a template prefix to
+select the component style: `m20sidebar` in a `w20book`, `w20table` in an M20
+sidebar, or `mscstatblock` in a WoD book. The host class keeps its page layout.
 Generic commands select the class style. Existing explicit M20 commands retain
 their M20 meaning. They are useful for M20-specific source and compatibility:
 
@@ -490,14 +493,23 @@ Further notes.
 \end{m20sidebarwide}
 ```
 
-**Cross-system component mixing is still an extension point.** Production
-adapters for placing M20 elements inside a WoD/W20/MSC host, or vice versa,
-are not implemented. Do not assume that loading a foreign style package or
-changing a style ID makes that combination supported. New profile adapters
-require their matching class and reject a foreign host; unavailable registry
-capabilities fail explicitly. There is no implemented general
-`style=OTHER-SYSTEM` element option or complete set of `w20...`/`msc...`
-prefixed component commands.
+This works in a W20 host as well as an M20 host. Nested generic elements
+inherit the sidebar's selected style; an explicit prefix can override it again.
+Body text and subsequent generic elements return to the surrounding style.
+
+Every style provides prefixed `sidebar`, `sidebarwide`, `table`, `tablelead`,
+and `statblock` environments, plus `sidebarbreak`, `statentry`, and `artreserve`
+commands. For example, use `\m20statentry{TEXT}`, `\w20artreserve[KEYS]{ID}`,
+or `\mscsidebarbreak[page]`. See [crossover usage and all prefixes](docs/Crossover.md)
+and the [complete mixed-template example](examples/crossover.tex).
+
+Install the updated packages and prepare the resources for each style you use.
+Foreign component resources load on demand. These prefixes cover PDF components;
+front matter, chapter pages, running heads, and page-policy setup stay with the
+host. Foreign tables use portable `longtable`/`tabular` rendering, and foreign
+art supports flow/next-page placement. Native M20's additional positioning and
+floating options remain specific to its host renderer. Cross-template EPUB
+support remains pending; the generic `style=...` option is not implemented.
 
 The registry provides preamble-only extension hooks
 `\wodtexRegisterRenderer{STYLE}{CAPABILITY}{COMMAND-NAME}` and
@@ -663,8 +675,9 @@ It does not claim a clean full historical test suite.
 
 The additional profiles are native adaptations of supplied templates, with
 documented genuine-face substitutions and extracted outer frames. They do not
-reproduce every illustrated clan, season, or chapter variant. Separate covers,
-foreign-host component adapters, and EPUB for these profiles remain open.
+reproduce every illustrated clan, season, or chapter variant. Separate covers
+and EPUB for these profiles remain open. PDF component mixing is supported
+through the [prefixed crossover interface](docs/Crossover.md).
 
 | Symptom | Check or action |
 | --- | --- |

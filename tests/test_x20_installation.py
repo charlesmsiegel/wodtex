@@ -92,7 +92,7 @@ class InstalledProfileTests(unittest.TestCase):
             'duplicate-id': ('\\begin{sidebar}[id=same]{One}A\\end{sidebar}\\begin{sidebar}[id=same]{Two}B\\end{sidebar}', 'WODTEX_E_DUPLICATE_ID'),
             'invalid-id': ('\\begin{sidebar}[id=bad id]{One}A\\end{sidebar}', 'WODTEX_E_INVALID_ID'),
             'missing-art': ('\\artreserve[image={missing.png}]', 'WODTEX_E_IMAGE_MISSING'),
-            'unknown-style': ('\\wodtexDispatchStyle{m20}{sidebar}{}{Title}{Text}', 'WODTEX_E_CAPABILITY'),
+            'unknown-style': ('\\wodtexDispatchStyle{missing}{sidebar}{}{Title}{Text}', 'WODTEX_E_CAPABILITY'),
             'anchored-art': ('\\artreserve[position=outer]', 'WODTEX_E_POSITION_UNSUPPORTED'),
         }
         for name, (body, error) in probes.items():

@@ -1,0 +1,37 @@
+% Install corrected M20 resources and prepare the W20 profile before compiling.
+\documentclass{w20book}
+\title{Crossover Notes}
+\author{Example Author}
+\begin{document}
+\mainmatter
+\chapter{Shared Perspectives}
+This body text and the page layout use the W20 template.
+
+\begin{m20sidebarwide}[id=mage-note]{An Awakened Perspective}
+This sidebar uses M20 typography and its textured, gold-edged frame.
+Its nested generic elements inherit the M20 style.\footnote{A local sidebar note.}
+
+\begin{booktable}[id=mage-traits,head-rows=1]{ll}
+Trait & Rating \\
+Arete & 3 \\
+\end{booktable}
+
+\begin{w20table}[id=wolf-traits,head-rows=1]{ll}
+Trait & Rating \\
+Gnosis & 4 \\
+\end{w20table}
+
+\sidebarbreak[page]
+The M20 sidebar continues on another W20 page.
+\end{m20sidebarwide}
+
+This body text returns to W20.
+\begin{sidebar}[id=wolf-note]{A Garou Perspective}
+The unprefixed sidebar follows the W20 document class again.
+\end{sidebar}
+
+\begin{m20statblock}
+\statentry{\textbf{Crossover character}|Arete: 3|Willpower: 6}
+\end{m20statblock}
+
+\end{document}

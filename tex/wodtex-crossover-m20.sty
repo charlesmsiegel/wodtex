@@ -1,0 +1,88 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{wodtex-crossover-m20}[2026/10/02 scoped M20 component paint]
+% The page-6 paint is shared in appearance with the corrected native M20
+% sidebar. All names and dimensions here belong to the component, not host.
+\definecolor{wodtexCrossMagePurple}{cmyk}{.8549,1,.2161,.1239}
+\definecolor{wodtexCrossMageGold}{cmyk}{.1144,.1735,.6863,0}
+\begingroup\selectcolormodel{cmyk}
+\pgfdeclareverticalshading{wodtexCrossMageGoldRules}{100bp}{%
+ cmyk(0bp)=(.2888,.4368,.8328,.0635);
+ cmyk(25bp)=(.2888,.4368,.8328,.0635);
+ cmyk(25.5525bp)=(.2888,.4368,.8328,.0635);
+ cmyk(75bp)=(.09,.06,.55,0);
+ cmyk(100bp)=(.09,.06,.55,0)}
+\endgroup
+\newdimen\wodtexCrossPaintWidth
+\newdimen\wodtexCrossPaintHeight
+\ExplSyntaxOn
+\newcommand\wodtexCrossMageCell{
+ \int_compare:nNnTF{\rownum}>{\l_wodtex_cross_head_int}{
+  \int_if_odd:nTF{\rownum-\l_wodtex_cross_head_int}{\color{wodtexCrossMageGold}}{\color{white}}
+ }{\bfseries\color{white}}}
+\ExplSyntaxOff
+\newcommand\wodtexCrossMageTile[5]{%
+ \node[inner sep=0bp,outer sep=0bp,anchor=south west] at (#2,#3)
+  {\includegraphics[width=#4,height=#5]{\wodtexCrossField{m20}{assets}sidebar-shadow-#1.reference-template.pdf}};}
+\newcommand\wodtexCrossMagePaint{%
+ \pgfextractx{\wodtexCrossPaintWidth}{\pgfpointdiff{\pgfpointanchor{frame}{south west}}{\pgfpointanchor{frame}{north east}}}%
+ \pgfextracty{\wodtexCrossPaintHeight}{\pgfpointdiff{\pgfpointanchor{frame}{south west}}{\pgfpointanchor{frame}{north east}}}%
+ \begin{scope}[shift={(frame.south west)}]
+  \wodtexCrossMageTile{bottom-left}{-.94bp}{-9.86bp}{12bp}{12bp}
+  \wodtexCrossMageTile{bottom-middle}{11.06bp}{-9.86bp}{\dimexpr\wodtexCrossPaintWidth-12.97bp}{12bp}
+  \wodtexCrossMageTile{bottom-right}{\dimexpr\wodtexCrossPaintWidth-1.91bp}{-9.86bp}{12bp}{12bp}
+  \wodtexCrossMageTile{middle-left}{-.94bp}{2.14bp}{12bp}{\dimexpr\wodtexCrossPaintHeight-13.2bp}
+  \wodtexCrossMageTile{middle-middle}{11.06bp}{2.14bp}{\dimexpr\wodtexCrossPaintWidth-12.97bp}{\dimexpr\wodtexCrossPaintHeight-13.2bp}
+  \wodtexCrossMageTile{middle-right}{\dimexpr\wodtexCrossPaintWidth-1.91bp}{2.14bp}{12bp}{\dimexpr\wodtexCrossPaintHeight-13.2bp}
+  \wodtexCrossMageTile{top-left}{-.94bp}{\dimexpr\wodtexCrossPaintHeight-11.06bp}{12bp}{12bp}
+  \wodtexCrossMageTile{top-middle}{11.06bp}{\dimexpr\wodtexCrossPaintHeight-11.06bp}{\dimexpr\wodtexCrossPaintWidth-12.97bp}{12bp}
+  \wodtexCrossMageTile{top-right}{\dimexpr\wodtexCrossPaintWidth-1.91bp}{\dimexpr\wodtexCrossPaintHeight-11.06bp}{12bp}{12bp}
+  \fill[wodtexCrossMagePurple] (0,0) rectangle (\wodtexCrossPaintWidth,\wodtexCrossPaintHeight);
+  \begin{scope}
+   \clip (0,0) rectangle (\wodtexCrossPaintWidth,\wodtexCrossPaintHeight);
+   \@tempdima=4.714048443\wodtexCrossPaintHeight
+   \ifdim\@tempdima>\wodtexCrossPaintWidth
+    \node[inner sep=0bp] at (.5\wodtexCrossPaintWidth,.5\wodtexCrossPaintHeight)
+     {\includegraphics[height=\wodtexCrossPaintHeight]{\wodtexCrossField{m20}{assets}sidebar-texture.reference-template.pdf}};
+   \else
+    \node[inner sep=0bp] at (.5\wodtexCrossPaintWidth,.5\wodtexCrossPaintHeight)
+     {\includegraphics[width=\wodtexCrossPaintWidth]{\wodtexCrossField{m20}{assets}sidebar-texture.reference-template.pdf}};
+   \fi
+  \end{scope}
+  \begin{scope}[even odd rule]
+   \clip (0,0) rectangle (\wodtexCrossPaintWidth,\wodtexCrossPaintHeight)
+    (3.5bp,3.5bp) rectangle (\dimexpr\wodtexCrossPaintWidth-3.5bp,\dimexpr\wodtexCrossPaintHeight-3.5bp)
+    (5.831bp,5.831bp) rectangle (\dimexpr\wodtexCrossPaintWidth-5.831bp,\dimexpr\wodtexCrossPaintHeight-5.831bp)
+    (7bp,7bp) rectangle (\dimexpr\wodtexCrossPaintWidth-7bp,\dimexpr\wodtexCrossPaintHeight-7bp);
+   \shade[shading=wodtexCrossMageGoldRules] (0,0) rectangle (\wodtexCrossPaintWidth,\wodtexCrossPaintHeight);
+  \end{scope}
+ \end{scope}}
+\newcommand\wodtexCrossMageSidebarPaint{%
+ \@for\wodtexCrossAsset:=sidebar-texture,sidebar-shadow-top-left,sidebar-shadow-top-middle,sidebar-shadow-top-right,sidebar-shadow-middle-left,sidebar-shadow-middle-middle,sidebar-shadow-middle-right,sidebar-shadow-bottom-left,sidebar-shadow-bottom-middle,sidebar-shadow-bottom-right\do{%
+  \IfFileExists{\wodtexCrossField{m20}{assets}\wodtexCrossAsset.reference-template.pdf}{}{%
+   \PackageError{wodtex}{WODTEX_E_RESOURCE_MISSING: m20/\wodtexCrossAsset}{Configure the corrected M20 artwork directory.}}}%
+ \tcbset{boxrule=7bp,boxsep=0bp,left=18bp,right=18bp,top=5bp,bottom=10bp,
+  toptitle=7.2bp,bottomtitle=5bp,center title,coltext=white,coltitle=wodtexCrossMageGold,
+  fonttitle=\wodtexCrossHeading\mdseries,
+  frame code={},interior code={},interior titled code={},
+  underlay unbroken={\wodtexCrossMagePaint},underlay first={\wodtexCrossMagePaint},
+  underlay middle={\wodtexCrossMagePaint},underlay last={\wodtexCrossMagePaint}}}
+\newcommand\wodtexCrossMageArtPaint{%
+ \pgfextractx{\wodtexCrossPaintWidth}{\pgfpointdiff{\pgfpointanchor{frame}{south west}}{\pgfpointanchor{frame}{north east}}}%
+ \pgfextracty{\wodtexCrossPaintHeight}{\pgfpointdiff{\pgfpointanchor{frame}{south west}}{\pgfpointanchor{frame}{north east}}}%
+ \begin{scope}[shift={(frame.south west)}]
+  \ifx\wodtexCrossArtKind\wodtexCrossArtVertical
+   \node[inner sep=0bp,anchor=north west] at (-2.5bp,\dimexpr\wodtexCrossPaintHeight+2.5399bp)
+    {\includegraphics[width=\dimexpr\wodtexCrossPaintWidth+14.0507bp,height=\dimexpr\wodtexCrossPaintHeight+14.0798bp]{\wodtexCrossField{m20}{assets}art-vertical.original-template.pdf}};
+  \else
+   \node[inner sep=0bp,anchor=north west] at (-2.5bp,\wodtexCrossPaintHeight)
+    {\includegraphics[width=\dimexpr\wodtexCrossPaintWidth+13.86bp,height=\wodtexCrossPaintHeight]{\wodtexCrossField{m20}{assets}art-horizontal.original-template.pdf}};
+  \fi
+ \end{scope}}
+\ExplSyntaxOn
+\newcommand\wodtexCrossMageArtSetup{
+ \edef\wodtexCrossArtKind{\tl_use:N\l_wodtex_cross_kind_tl}\def\wodtexCrossArtVertical{vertical}
+ \IfFileExists{\wodtexCrossField{m20}{assets}art-\wodtexCrossArtKind.original-template.pdf}{}{
+  \PackageError{wodtex}{WODTEX_E_RESOURCE_MISSING:~m20/art-\wodtexCrossArtKind}{Configure~the~corrected~M20~artwork~directory.}}
+ \tcbset{boxrule=0bp,boxsep=0bp,left=7bp,right=7bp,top=7bp,bottom=7bp,frame~code={\wodtexCrossMageArtPaint}}}
+\ExplSyntaxOff
+\endinput
