@@ -304,6 +304,16 @@ Keep your own illustrations next to the manuscript, for example
 `art/scene.png`. Installed PDF compilation does not need the checkout on
 `TEXINPUTS` or the repository's Python build driver.
 
+### Markdown research-template specimen
+
+For mechanically structured Markdown reference entries (such as the research
+templates in *Better Book of the Fallen*), see the optional
+[M20 template specimen](examples/bbotf/README.md). It provides an example
+preamble, a Pandoc preparation step, a Markdown-table adapter using native
+WodTeX `booktable`, and a sample document that can include all 21 templates.
+WodTeX itself remains a native LaTeX authoring system; this adapter is an
+explicit, optional Markdown-to-LaTeX example, not a general Markdown renderer.
+
 ## System-neutral commands
 
 Unprefixed author commands use the document class's default renderer.

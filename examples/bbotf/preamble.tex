@@ -1,0 +1,25 @@
+% BBotF research-template specimen preamble for the WodTeX M20 class.
+% The generated body comes from Markdown using prepare.py + Pandoc.
+% This is NOT a publication manuscript and does not contain final prose.
+\documentclass{m20book}
+
+\title{Mage Reference Entry Specimen}
+\subtitle{Research Template Layout Demonstration}
+\bookdescription{Unfilled mechanics and research templates, not publication prose.}
+\author{Reference specimen}
+\writtenby{Research scaffolds only}
+\developedby{Reference specimen}
+\editedby{Reference specimen}
+
+% Use natural section headings from converted Markdown (# -> section, ## -> subsection)
+% without inappropriate sourcebook-style section numbers.
+\setcounter{secnumdepth}{0}
+\setcounter{tocdepth}{2}
+
+% Pandoc inserts \tightlist for compact Markdown bullet lists; WodTeX's native
+% itemize environment handles this with ordinary LaTeX list spacing.
+\providecommand{\tightlist}{\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+% Convenience command for additional human-authored stat entries, when needed.
+% The Markdown filter also recognizes fenced ::: statblock blocks.
+\newcommand{\BBotFStat}[2]{\statentry{\textbf{#1}: #2}}
